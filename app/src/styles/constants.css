@@ -1,0 +1,10 @@
+:root {
+    --background-color: #303030;
+    --background-color-darker: #202020;
+    --background-color-brighter: #404040;
+    --foreground-color: #DDDDDD;
+    --theme-color: #43b14c;
+    --theme-darker: #318038;
+
+    --toolbar-height: 51px;
+}

@@ -1,0 +1,73 @@
+{
+  "name": "electron-react-typescript-app",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/main.js",
+  "build": {
+    "appId": "minide2",
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "category": "IDE",
+      "iconUrl": "public/resources/images/toolbar/build_run.png"
+    },
+    "mac": {
+      "category": "IDE",
+      "iconUrl": "public/resources/images/toolbar/build_run.png"
+    }
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.8.3",
+    "@monaco-editor/react": "^3.0.1",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.4.0",
+    "@testing-library/user-event": "^7.2.1",
+    "electron": "^7.1.8",
+    "electron-is-dev": "^1.1.0",
+    "electron-localshortcut": "^3.2.1",
+    "extends-classes": "^1.0.5",
+    "lodash": "^4.17.15",
+    "mobx": "^5.15.1",
+    "mobx-react": "^6.1.4",
+    "monaco-editor": "^0.19.2",
+    "react": "^16.12.0",
+    "react-accessible-accordion": "^3.0.1",
+    "react-dom": "^16.12.0",
+    "react-redux": "^7.1.3",
+    "react-scripts": "3.3.0",
+    "react-splitter-layout": "^4.0.0",
+    "react-tabs": "^3.1.0",
+    "react-treebeard": "^3.2.4",
+    "redux": "^4.0.5"
+  },
+  "scripts": {
+    "electron": "cross-env NODE_ENV=dev nodemon --exec \"\"electron .\"\"",
+    "react-start": "react-scripts start",
+    "start": "cross-env BROWSER=none npm run react-start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "cross-env": "^6.0.3",
+    "electron-builder": "^21.2.0",
+    "electron-reload": "^1.5.0",
+    "nodemon": "^2.0.2",
+    "redux-devtools": "^3.5.0"
+  }
+}

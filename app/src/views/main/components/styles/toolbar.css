@@ -1,0 +1,21 @@
+#ToolbarContainer {
+    background-color: var(--background-color-darker);
+    padding: 5px;
+    display: flex;
+}
+
+.Seperator {
+    border-right: solid 1px var(--foreground-color);
+    padding-left: 5px;
+    margin-right: 5px;
+}
+
+#ActualToolbar {
+    align-content: center;
+}
+
+.IconButtonGroup {
+    position: relative;
+    top: calc(50% - 13px);
+    display: flex;
+}

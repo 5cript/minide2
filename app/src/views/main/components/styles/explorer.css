@@ -1,0 +1,69 @@
+#ExplorerHeader {
+    height: 35px;
+    background-color: var(--background-color-darker);
+    font-size: 20px;
+    padding-left: 10px;
+}
+
+.accordion {
+    height: 100%;
+}
+
+.accordion__item + .accordion__item {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.accordion__button {
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+    cursor: pointer;
+    padding: 0px;
+    width: 100%;
+    text-align: left;
+    font-size: 11px;
+    border: none;
+    
+    box-shadow: 0 01px 3px 0px black;
+    margin-bottom: 2px;
+}
+
+.accordion__button:hover {
+    background-color: var(--background-color-lighter);
+}
+
+.accordion__button:before {
+    display: inline-block;
+    content: '';
+    height: 5px;
+    width: 5px;
+    margin-right: 8px;
+    margin-left: 4px;
+    margin-bottom: 0px;
+    border-bottom: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    transform: rotate(-45deg);
+}
+
+.accordion__button[aria-expanded='true']::before,
+.accordion__button[aria-selected='true']::before {
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.accordion__panel {
+    animation: fadein 0.35s ease-in;
+}
+
+/* -------------------------------------------------- */
+/* ---------------- Animation part ------------------ */
+/* -------------------------------------------------- */
+
+@keyframes fadein {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
