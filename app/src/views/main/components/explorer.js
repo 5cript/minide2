@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
 import {
     Accordion,
@@ -14,19 +15,41 @@ import OpenFilesList from './open_files';
 // Styling
 import './styles/explorer.css';
 
+// Actions
+import { addOpenFile } from '../../../actions/open_file_actions';
+
 // requires
 let dict = require('../../../util/localization.js');
 
-class Explorer extends React.Component
-{
+/* 
+<button onClick={
+    () => {
+        let fileName = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
+        this.props.dispatch(addOpenFile(fileName));
+    }
+}>x</button>
+*/
+
+class Explorer extends React.Component {
     render = () => {
         return (
             <div>
                 <div id={'ExplorerHeader'}>
-                    Explorer
-                </div> 
-                <Accordion 
-                    allowMultipleExpanded={true} 
+                    <div>Explorer</div>
+                    <div className='explorerOpenDir'>{(() => {
+                        let root = this.props.workspace.root;
+                        if (root !== undefined || root !== '' || root !== null)
+                            return root;
+                    })()}</div>
+                </div>
+                <button onClick={
+                    () => {
+                        let fileName = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
+                        this.props.dispatch(addOpenFile(fileName));
+                    }
+                }>x</button>
+                <Accordion
+                    allowMultipleExpanded={true}
                     allowZeroExpanded={true}
                     preExpanded={['open_files', 'file_browser']}
                 >
@@ -37,7 +60,7 @@ class Explorer extends React.Component
                             </AccordionItemButton>
                         </AccordionItemHeading>
                         <AccordionItemPanel>
-                            <OpenFilesList openFiles={this.props.openFiles}></OpenFilesList>
+                            <OpenFilesList></OpenFilesList>
                         </AccordionItemPanel>
                     </AccordionItem>
                     <AccordionItem uuid={'file_browser'}>
@@ -56,4 +79,6 @@ class Explorer extends React.Component
     }
 }
 
-export default Explorer;
+export default connect(state => {
+    return {workspace: state.workspace};
+})(Explorer);

@@ -7,12 +7,17 @@ import Explorer from './components/explorer';
 import SplitterLayout from 'react-splitter-layout';
 import Editor from './components/editor';
 import LogsAndOthers from './components/logs_and_term';
+import {connect} from 'react-redux';
+
+// Actions
+import {openWorkspace} from '../../actions/workspace_actions';
 
 // Style
 import './styles/main.css'
 
 // requires
-const Classes = require('extends-classes');
+const {ipcRenderer} = window.require('electron');
+const Classes = window.require('extends-classes');
 
 class CommonToolbarEvents 
 {
@@ -59,24 +64,29 @@ class CMakeToolbarEvents extends Classes(CommonToolbarEvents, CppDebugToolbarEve
     }
 }
 
+/**
+ * Main Window
+ */
 class MainWindow extends React.Component {
     state = {
-        openFiles: ['C:/main.cpp', 'bla.hpp'],
         monacoOptions: {
             theme: 'dark',
             options: {}
         }
     }
 
-    fileControl = (mw) => {return{
-        closeFile: (file) => {
-            let filtered = mw.state.openFiles.filter(f => f !== file);
-            mw.setState({openFiles: filtered})
-        },
-        openFile: (file) => {
-            mw.setState({openFiles: mw.state.openFiles.concat([file])});
-        }
-    }}
+    constructor(props) {
+        super(props)
+        this.registerMenuActions();
+    }
+
+    registerMenuActions = () => {
+        ipcRenderer.on('openWorkspace', (event, arg) => {
+            if (arg.canceled)
+                return;
+            this.props.dispatch(openWorkspace(arg.filePaths[0]))
+        })
+    }
 
     render = () => {
         return (
@@ -85,11 +95,11 @@ class MainWindow extends React.Component {
                 <div id='SplitterContainer'>
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={60}>
                         <div>
-                            <Explorer openFiles={this.state.openFiles}/>
+                            <Explorer/>
                         </div>
                         <div id='RightOfExplorer'>
                             <SplitterLayout vertical={true} percentage={true} secondaryInitialSize={20}>
-                                <Editor monacoOptions={this.state.monacoOptions} openFiles={this.state.openFiles} fileControl={this.fileControl(this)}></Editor>
+                                <Editor monacoOptions={this.state.monacoOptions}></Editor>
                                 <LogsAndOthers></LogsAndOthers>
                             </SplitterLayout>
                         </div>
@@ -100,4 +110,4 @@ class MainWindow extends React.Component {
     }
 }
 
-export default MainWindow;
+export default connect()(MainWindow);

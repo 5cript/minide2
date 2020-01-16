@@ -22,7 +22,7 @@
 #x::after,#x::before{
     position:absolute;
     left:0px;
-    top: 10px;
+    top: 8px;
     content:'';
     display:block;
     width:10px;
@@ -42,4 +42,7 @@
     -ms-transform: rotate(-45deg);
     -o-transform: rotate(-45deg);
     transform: rotate(-45deg);
+}
+#x:focus {
+    outline: 0;
 }

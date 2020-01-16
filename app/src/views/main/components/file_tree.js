@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {Treebeard} from 'react-treebeard';
 
+import {connect} from 'react-redux';
+
 // Styles
 import './styles/file_tree.css';
 
@@ -59,12 +61,19 @@ class FileView extends PureComponent {
     render(){
         const {data} = this.state;
         return (
-            <Treebeard
-                data={data}
-                onToggle={this.onToggle}
-            />
+            <>
+                <Treebeard
+                    data={data}
+                    onToggle={this.onToggle}
+                />
+                <code>
+                    {JSON.stringify(this.props.fileTree)}
+                </code>
+            </>
         );
     }
 }
 
-export default FileView;
+export default connect(state => {
+    return state.workspace.fileTree
+})(FileView);

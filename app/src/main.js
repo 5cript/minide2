@@ -17,7 +17,10 @@ const menuTemplate = [
 		submenu: [
 			{
 				label: dict.translate('$OpenWorkspace', 'menu'),
-				click: () => {mainWindow.webContents.send('hello', 'Hello World!')}
+				click: async e => {
+					let folder = await electron.dialog.showOpenDialog(mainWindow, {properties: ['openDirectory']});
+					mainWindow.webContents.send('openWorkspace', folder);
+				}
 			}
 		]
 	}

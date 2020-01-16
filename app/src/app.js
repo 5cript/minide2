@@ -1,18 +1,16 @@
 import React from 'react';
 import MainWindow from './views/main/main';
+import {Provider} from 'react-redux';
+
+import store from './store';
 
 // styles
 
-// requires
-let electron = window.require('electron');
-
-electron.ipcRenderer.on('hello', (event, arg) => {
-	console.log(event);
-})
-
 function App() {
 	return (
-		<MainWindow />
+		<Provider store={store}>
+			<MainWindow />
+		</Provider>
 	);
 }
 

@@ -1,27 +1,53 @@
 import React from 'react';
 
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
+import {connect} from 'react-redux';
 
-//import { observable, computed, action, decorate } from "mobx"
+import classnames from 'classnames';
+
+// Actions
+import { setActiveFile, removeOpenFile } from '../../../actions/open_file_actions';
+
+// Style
+import './styles/open_files.css';
 
 class OpenFilesList extends React.Component
 {
-    constructor(props) {
-        super(props);
-        this.openFiles = this.props.openFiles;
-    }
-
     render = () => {
         return (
-            <div>
-                <List>
-                    <ListItem>hi</ListItem>
-                </List>
+            <div id='OpenFilesList'>
+                {this.props.openFiles.map((f, i) => {return(
+                    <div 
+                        className={classnames({
+                            'openFileItem': true,
+                            'alternativeFileItem': i % 2 === 0,
+                            'activeFileItem': this.props.activeFile === i
+                        })}
+                        key={f}
+                        onClick={() => {
+                            console.log(this.props);
+                            this.props.dispatch(setActiveFile(i));
+                        }}
+                    >
+                        <button 
+                            className={classnames({
+                                'openFileXButton': true,
+                                'inactiveXButton': this.props.activeFile !== i
+                            })}
+                            id='x' 
+                            onClick={(e) => {this.props.dispatch(removeOpenFile(f)); e.stopPropagation()}}></button>
+                        <div className='shortFileItemName'>
+                            {f}
+                        </div>
+                    </div>
+                )})}
             </div>
         )
     }
 }
 
 
-export default OpenFilesList;
+export default connect(
+    state => {
+        return state.openFiles;
+    }
+)(OpenFilesList);

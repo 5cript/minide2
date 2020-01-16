@@ -1,8 +1,17 @@
 #ExplorerHeader {
+    display: flex;
     height: 35px;
     background-color: var(--background-color-darker);
     font-size: 20px;
     padding-left: 10px;
+}
+
+.explorerOpenDir {
+    font-size: 10px;
+    position: relative;
+    left: 10px;
+    top: -3px;
+    align-self: center;
 }
 
 .accordion {

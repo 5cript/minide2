@@ -1,0 +1,45 @@
+#OpenFilesList {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid black;
+}
+
+.openFileItem {
+    display: flex;
+    border: none;
+    background: var(--background-color);
+    color: var(--foreground-color);
+    text-align: left;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 12px;
+    padding-left: 9px;
+    font-style: italic;
+    cursor: pointer;
+}
+
+.shortFileItemName {
+    padding-left: 8px;
+}
+
+.inactiveXButton {
+    visibility: hidden;
+}
+
+.openFileItem:hover > button {
+    visibility: visible;
+    background: red;
+}
+
+.alternativeFileItem {
+    background: var(--background-color-brighter);
+}
+
+.activeFileItem {
+    background: var(--theme-color);
+    color: black;
+}
+
+.openFileItem:focus {
+    outline: 0;
+}

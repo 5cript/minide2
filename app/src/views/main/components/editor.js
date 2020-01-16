@@ -10,9 +10,13 @@ import { styled } from '@material-ui/core/styles';
 // Other
 import {pathModifier} from '../../../util/path_util';
 
+// Redux
+import {connect} from 'react-redux';
+
 // Style
 import './styles/editor.css';
 import './styles/tabs.css';
+import { setActiveFile, removeOpenFile } from '../../../actions/open_file_actions';
 
 // Requires
 const path = require('path');
@@ -37,6 +41,8 @@ const HoverFix = createMuiTheme({
 
 // Tabs:
 // https://github.com/Microsoft/monaco-editor/issues/604
+
+//__dirname = "D:/Development/IDE2/app";
 
 function uriFromPath(_path) {
     let pathName = path.resolve(_path).replace(/\\/g, '/');
@@ -82,7 +88,7 @@ function MonacoEditorComponent(props) {
 
 class CodeEditor extends React.Component {
     onTabChange = (index, lastIndex, event) => {
-        console.log(index);
+        this.props.dispatch(setActiveFile(index));
         return true;
     }
 
@@ -94,13 +100,13 @@ class CodeEditor extends React.Component {
         return (
             <div id='EditorContainer'>
                 <MuiThemeProvider theme={HoverFix}>
-                    <Tabs onSelect={this.onTabChange}>
+                    <Tabs onSelect={this.onTabChange} selectedIndex={this.props.activeFile}>
                         <TabList>
                             {
-                                this.props.openFiles.map((file) => {
+                                this.props.openFiles.map((file, i) => {
                                     return (
                                         <Tab key={file}>{pathModifier.shorten(file)}
-                                            <button id='x' onClick={(e) => {this.props.fileControl.closeFile(file); e.stopPropagation()}}></button>
+                                            <button id='x' onClick={(e) => {this.props.dispatch(removeOpenFile(file)); e.stopPropagation()}}></button>
                                         </Tab>
                                     );
                                 })
@@ -119,4 +125,6 @@ class CodeEditor extends React.Component {
     }
 }
 
-export default CodeEditor;
+export default connect(
+    state => state.openFiles
+)(CodeEditor);
