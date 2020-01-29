@@ -98,9 +98,9 @@ class MainWindow extends React.Component {
                             <Explorer/>
                         </div>
                         <div id='RightOfExplorer'>
-                            <SplitterLayout vertical={true} percentage={true} secondaryInitialSize={20}>
+                            <SplitterLayout vertical={true} secondaryInitialSize={250}>
                                 <Editor monacoOptions={this.state.monacoOptions}></Editor>
-                                <LogsAndOthers></LogsAndOthers>
+                                <LogsAndOthers className="logsAndOthers"></LogsAndOthers>
                             </SplitterLayout>
                         </div>
                     </SplitterLayout>

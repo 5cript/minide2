@@ -53,6 +53,10 @@
 
 #RightOfExplorer {
     position: relative;
+    height: calc(100% + 50px);
+}
+
+.logsAndOthers {
     height: 100%;
 }
 

@@ -11,6 +11,7 @@ import {
 
 import FileTree from './file_tree';
 import OpenFilesList from './open_files';
+import ipc from '../../../ipc_core';
 
 // Styling
 import './styles/explorer.css';
@@ -39,13 +40,19 @@ class Explorer extends React.Component {
                     <div className='explorerOpenDir'>{(() => {
                         let root = this.props.workspace.root;
                         if (root !== undefined || root !== '' || root !== null)
-                            return root;
+                            return root.directory;
                     })()}</div>
                 </div>
                 <button onClick={
                     () => {
+                        /*
                         let fileName = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
                         this.props.dispatch(addOpenFile(fileName));
+                        */
+
+                        ipc.get('/api/toolbar/enlist').then(data => {
+                            console.log(data);
+                        });
                     }
                 }>x</button>
                 <Accordion

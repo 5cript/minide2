@@ -1,0 +1,14 @@
+.tabContainer {
+    display: contents;
+    height: 100%;
+    width: 100%;
+}
+
+.tabContainer > div {
+    height: 100%;
+}
+
+.terminalPanel {
+    height: 100%;
+    width: 100%;
+}
