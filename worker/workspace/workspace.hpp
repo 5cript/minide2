@@ -2,10 +2,10 @@
 
 #include "../json.hpp"
 
-struct Workspace : EnableJson <WorkspaceInfo>
+struct WorkspaceInfo : public EnableJson <WorkspaceInfo>
 {
     std::string root;
     std::string activeProject;
 };
 
-ADAPT(Workspace, root, activeProject)
+//ADAPT(WorkspaceInfo, root, activeProject)

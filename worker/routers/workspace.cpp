@@ -1,7 +1,15 @@
 #include "workspace.hpp"
 
+#include "../workspace/workspace.hpp"
+
+
 namespace Routers
 {
+//#####################################################################################################################
+    struct Workspace::Implementation
+    {
+        WorkspaceInfo info;
+    };
 //#####################################################################################################################
     Workspace::Workspace(attender::tcp_server& server)
     {
@@ -16,7 +24,13 @@ namespace Routers
             res->send_status(200);
         });
 
-        server.get("/api/workspace/enum")
+        /**
+         *  Projects are folders within the workspace.
+         */
+        server.get("/api/workspace/enum_projects", [this](auto req, auto res)
+        {
+            res->end();
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
 //#####################################################################################################################

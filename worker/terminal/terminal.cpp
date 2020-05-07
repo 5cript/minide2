@@ -3,17 +3,26 @@
 #include <tiny-process-library/process.hpp>
 #include <functional>
 
+#include <iostream>
+
 namespace Terminal
 {
 //#####################################################################################################################
-    struct Basic::Implementation
+    struct Spawner::Implementation
     {
-        Implementation(std::string const& process);
+        Implementation
+        (
+            std::string const& command,
+            std::string const& path,
+            std::unordered_map <std::string, std::string> const& environment,
+            std::function <void(std::string&&)> readStdout,
+            std::function <void(std::string&&)> readStderr
+        );
 
         TinyProcessLib::Process proc;
-    }
+    };
 //---------------------------------------------------------------------------------------------------------------------
-    Basic::Implementation::Implementation
+    Spawner::Implementation::Implementation
     (
         std::string const& command,
         std::string const& path,
@@ -26,45 +35,45 @@ namespace Terminal
             command,
             path,
             environment,
-            readStdout,
-            readStdin,
+            [readStdout](char const* cstr, std::size_t s) {readStdout(std::string{cstr, s});},
+            [readStderr](char const* cstr, std::size_t s) {readStderr(std::string{cstr, s});},
             true
         }
     {
 
     }
 //#####################################################################################################################
-    Basic::Basic
+    Spawner::Spawner
     (
         std::string const& command,
         std::string const& path,
         std::unordered_map <std::string, std::string> const& environment
     )
-        : impl_{new Basic::Implementation
+        : impl_{new Spawner::Implementation
         (
             command,
             path,
             environment,
-            [](std::string&& str){onStdout(std::move(str));},
-            [](std::string&& str){onStderr(std::move(str));}
+            [this](std::string&& str){onStdout(std::move(str));},
+            [this](std::string&& str){onStderr(std::move(str));}
         )}
     {
 
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Basic::onStdout(std::string&& str)
+    void Spawner::onStdout(std::string&& str)
     {
         // TEMPORARY
         std::cout << str;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Basic::onStderr(std::string&& str)
+    void Spawner::onStderr(std::string&& str)
     {
         // TEMPORARY
         std::cout << str;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Basic::write(std::string const& str)
+    void Spawner::write(std::string const& str)
     {
         impl_->proc.write(str);
     }

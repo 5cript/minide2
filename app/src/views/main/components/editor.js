@@ -42,6 +42,9 @@ const HoverFix = createMuiTheme({
 // Tabs:
 // https://github.com/Microsoft/monaco-editor/issues/604
 
+// TODO: Monaco security:
+// https://github.com/suren-atoyan/monaco-react/issues/48#issuecomment-583863391
+
 //__dirname = "D:/Development/IDE2/app";
 
 function uriFromPath(_path) {

@@ -93,6 +93,9 @@
 		<Unit filename="../attender/attender/tcp_secure_server.hpp" />
 		<Unit filename="../attender/attender/tcp_server.hpp" />
 		<Unit filename="../attender/attender/tcp_server_interface.hpp" />
+		<Unit filename="filesystem/directory_cache.cpp" />
+		<Unit filename="filesystem/directory_cache.hpp" />
+		<Unit filename="filesystem/filesystem.hpp" />
 		<Unit filename="json.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="routers/router_base.cpp" />

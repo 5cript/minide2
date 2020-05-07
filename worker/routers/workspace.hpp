@@ -1,5 +1,4 @@
 #pragma once
-
 #include <attender/attender.hpp>
 
 namespace Routers
@@ -11,5 +10,8 @@ namespace Routers
 
     private:
         void registerRoutes(attender::tcp_server& server);
+
+    private:
+        struct Implementation;
     };
 }

@@ -6,10 +6,10 @@
 
 namespace Terminal
 {
-    class Basic
+    class Spawner
     {
     public:
-        Basic
+        Spawner
         (
             std::string const& command,
             std::string const& path,

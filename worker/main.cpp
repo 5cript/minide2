@@ -1,5 +1,7 @@
 #include "udp_server.hpp"
 
+#include "filesystem/directory_cache.hpp"
+
 // routers
 #include "routers/workspace.hpp"
 #include "routers/toolbar.hpp"
@@ -37,6 +39,8 @@ int main(int argc, char** argv)
     using namespace Routers;
     Workspace workspace{server};
     Toolbar toolbar{server};
+
+    Filesystem::DirectoryCache cache{"D:/Development/IDE2/test-project"};
 
     std::cin.get();
 }
