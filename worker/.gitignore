@@ -5,3 +5,7 @@ bin
 obj
 *.save-failed
 udp_server.hpp
+
+CMakeLists.txt.user
+CppProperties.json
+.vs/*

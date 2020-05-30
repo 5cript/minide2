@@ -27,7 +27,8 @@ namespace Routers
         }
     }
 //#####################################################################################################################
-    Toolbar::Toolbar(attender::tcp_server& server)
+    Toolbar::Toolbar(RouterCollection* collection, attender::tcp_server& server)
+        : BasicRouter{collection}
     {
         registerRoutes(server);
 

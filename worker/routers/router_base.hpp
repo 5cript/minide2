@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../routers_fwd.hpp"
+
 #include <attender/attender.hpp>
 
 namespace Routers
@@ -20,10 +22,13 @@ namespace Routers
     class BasicRouter
     {
     public:
+        BasicRouter(RouterCollection* collection);
         ~BasicRouter() = default;
 
     protected:
         void respondWithError(attender::response_handler* res, char const* msg);
         void readExcept(boost::system::error_code ec);
+
+        RouterCollection* collection_;
     };
 }

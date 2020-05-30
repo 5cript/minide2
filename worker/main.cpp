@@ -1,18 +1,27 @@
-#include "udp_server.hpp"
-
 #include "filesystem/directory_cache.hpp"
 
 // routers
 #include "routers/workspace.hpp"
 #include "routers/toolbar.hpp"
+#include "routers.hpp"
+
+#include "config.hpp"
+#include "streaming/common_messages/server_time.hpp"
 
 #include <attender/attender.hpp>
 
 #include <iostream>
+#include <thread>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 int main(int argc, char** argv)
 {
     using namespace attender;
+
+    // Load Config
+    Config config;
 
     // an io_service wrapper for boost::asio::io_service.
     // you can provide your own implementation, by subclassing "attender::async_model".
@@ -37,10 +46,15 @@ int main(int argc, char** argv)
 
     // Routings
     using namespace Routers;
-    Workspace workspace{server};
-    Toolbar toolbar{server};
+    RouterCollection routers{&server, config};
 
-    Filesystem::DirectoryCache cache{"D:/Development/IDE2/test-project"};
-
+    //Filesystem::DirectoryCache cache{"D:/Development/IDE2/test-project"};
+    std::cout << "Waiting for enter\n";
     std::cin.get();
+
+    routers.streamer().broadcast(StreamChannel::Control, new Streaming::Messages::ServerTime());
+    std::this_thread::sleep_for(500ms);
+
+    routers.streamer().shutdownAll();
+    std::this_thread::sleep_for(100ms);
 }

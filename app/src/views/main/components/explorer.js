@@ -17,7 +17,7 @@ import ipc from '../../../ipc_core';
 import './styles/explorer.css';
 
 // Actions
-import { addOpenFile } from '../../../actions/open_file_actions';
+//import { addOpenFile } from '../../../actions/open_file_actions';
 
 // requires
 let dict = require('../../../util/localization.js');

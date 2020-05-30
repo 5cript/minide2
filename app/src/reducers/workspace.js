@@ -8,7 +8,7 @@ export default function reducer(state={
 }, action) {
     switch (action.type) {
         case 'FETCH_ROOT': {
-            return {...state}
+            return {root: state.root}
         }
         case 'OPEN_WORKSPACE': {
             return {...state, root: action.payload, fileTree: action.tree}

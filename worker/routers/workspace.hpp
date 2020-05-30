@@ -1,12 +1,13 @@
 #pragma once
-#include <attender/attender.hpp>
+
+#include "router_base.hpp"
 
 namespace Routers
 {
-    class Workspace
+    class Workspace : public BasicRouter
     {
     public:
-        Workspace(attender::tcp_server& server);
+        Workspace(RouterCollection* collection, attender::tcp_server& server);
 
     private:
         void registerRoutes(attender::tcp_server& server);

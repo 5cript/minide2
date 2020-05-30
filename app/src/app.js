@@ -9,7 +9,7 @@ import store from './store';
 function App() {
 	return (
 		<Provider store={store}>
-			<MainWindow />
+			<MainWindow store={store}/>
 		</Provider>
 	);
 }

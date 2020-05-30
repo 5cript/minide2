@@ -11,6 +11,7 @@ import {connect} from 'react-redux';
 
 // Actions
 import {openWorkspace} from '../../actions/workspace_actions';
+import Backend from '../../backend_connector';
 
 // Style
 import './styles/main.css'
@@ -78,6 +79,8 @@ class MainWindow extends React.Component {
     constructor(props) {
         super(props)
         this.registerMenuActions();
+
+        this.backend = new Backend(props.store);
     }
 
     registerMenuActions = () => {
@@ -85,6 +88,11 @@ class MainWindow extends React.Component {
             if (arg.canceled)
                 return;
             this.props.dispatch(openWorkspace(arg.filePaths[0]))
+        })
+
+        ipcRenderer.on('connectBackend', (event, arg) => {
+            console.log('connect');
+            this.backend.attachToStreams();
         })
     }
 

@@ -11,7 +11,7 @@ namespace Routers
     class Toolbar : public BasicRouter
     {
     public:
-        Toolbar(attender::tcp_server& server);
+        Toolbar(RouterCollection* collection, attender::tcp_server& server);
 
     private:
         void registerRoutes(attender::tcp_server& server);

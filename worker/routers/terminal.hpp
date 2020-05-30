@@ -9,7 +9,7 @@ namespace Routers
     class Terminal : public BasicRouter
     {
     public:
-        Terminal(attender::tcp_server& server);
+        Terminal(RouterCollection* collection, attender::tcp_server& server);
 
     private:
         void registerRoutes(attender::tcp_server& server);

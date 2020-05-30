@@ -23,6 +23,17 @@ const menuTemplate = [
 				}
 			}
 		]
+	},
+	{
+		label: dict.translate('$Backend', 'menu'),
+		submenu: [
+			{
+				label: dict.translate('$Connect', 'menu'),
+				click: async e => {
+					mainWindow.webContents.send('connectBackend');
+				}
+			}
+		]
 	}
 ]
 

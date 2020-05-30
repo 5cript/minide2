@@ -5,6 +5,11 @@
 namespace Routers
 {
 //#####################################################################################################################
+    BasicRouter::BasicRouter(RouterCollection* collection)
+        : collection_{collection}
+    {
+    }
+//---------------------------------------------------------------------------------------------------------------------
     void BasicRouter::respondWithError(attender::response_handler* res, char const* msg)
     {
         json_response(res, json {

@@ -3,9 +3,9 @@ import React from 'react';
 // Components
 import Editor, { monaco } from '@monaco-editor/react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import IconButton from '@material-ui/core/IconButton';
+//import IconButton from '@material-ui/core/IconButton';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import { styled } from '@material-ui/core/styles';
+//import { styled } from '@material-ui/core/styles';
 
 // Other
 import {pathModifier} from '../../../util/path_util';
@@ -21,11 +21,13 @@ import { setActiveFile, removeOpenFile } from '../../../actions/open_file_action
 // Requires
 const path = require('path');
 
+/*
 const SimpleIconButton = styled(IconButton)({
     borderRadius: '0px',
     padding: '5px',
     marginLeft: '3px'
 });
+*/
 
 const HoverFix = createMuiTheme({
     overrides: {
@@ -69,6 +71,10 @@ monaco.config({
 
 function MonacoEditorComponent(props) {
     const [isEditorReady, setIsEditorReady] = React.useState(false);
+    
+    // ignore unused variable warning.
+    (() => {return isEditorReady;})();
+
     const valueGetter = React.useRef(null);
 
     function handleEditorDidMount(_valueGetter) {
@@ -93,10 +99,6 @@ class CodeEditor extends React.Component {
     onTabChange = (index, lastIndex, event) => {
         this.props.dispatch(setActiveFile(index));
         return true;
-    }
-
-    constructor(props) {
-        super(props)
     }
 
     render = () => {

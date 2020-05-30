@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
+//import { connect } from 'react-redux';
 import Scrollbar from 'react-scrollbars-custom';
 
 import Terminal from '../../../terminal-react/terminal';

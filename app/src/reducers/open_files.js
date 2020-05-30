@@ -24,9 +24,9 @@ export default function reducer(state={
                 activeFile: (() => {
                     if (state.activeFile >= state.openFiles.length - 1)
                         return state.openFiles.length - 2;
-                    if (state.activeFile == 0)
+                    if (state.activeFile === 0)
                         return 0;
-                    if (state.openFiles.length == 1)
+                    if (state.openFiles.length === 1)
                         return -1;
                     return state.activeFile - 1;
                 })()
