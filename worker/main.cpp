@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     std::cout << "Waiting for enter\n";
     std::cin.get();
 
-    routers.streamer().broadcast(StreamChannel::Control, new Streaming::Messages::ServerTime());
+    routers.streamer().broadcast(StreamChannel::Data, new Streaming::Messages::ServerTime());
     std::this_thread::sleep_for(500ms);
 
     routers.streamer().shutdownAll();

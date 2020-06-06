@@ -3,17 +3,11 @@ export default function reducer(state={
     activeFile: -1
 }, action) {
     switch (action.type) {
-        case 'FETCH_OPEN_FILES': {
-            return {openFiles: state.openFiles}
-        }
         case 'ADD_OPEN_FILE': {
             return {...state, openFiles: state.openFiles.concat([action.payload]), activeFile: state.activeFile === -1 ? 0 : state.activeFile}
         }
         case 'SET_ACTIVE_FILE': {
             return {...state, activeFile: action.payload}
-        }
-        case 'GET_ACTIVE_FILE': {
-            return {...state, activeFile: state.activeFile}
         }
         case 'REMOVE_OPEN_FILE': {
             return {

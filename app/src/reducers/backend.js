@@ -11,18 +11,6 @@ export default function reducer(state={
         case 'SET_DATA_ID': {
             return {...state, dataId: action.payload}
         }
-        case 'GET_CONTROL_ID': {
-            return {controlId: state.controlId}
-        }
-        case 'GET_DATA_ID': {
-            return {dataId: state.dataId}
-        }
-        case 'GET_BACKEND_IP': {
-            return {ip: state.backendIp}
-        }
-        case 'GET_BACKEND_PORT': {
-            return {port: state.backendPort}
-        }
         default:
             return state;
     }

@@ -1,8 +1,12 @@
 #pragma once
 
 #include "../routers_fwd.hpp"
+#include "../json.hpp"
 
 #include <attender/attender.hpp>
+
+#include <memory>
+#include <string>
 
 namespace Routers
 {
@@ -31,4 +35,43 @@ namespace Routers
 
         RouterCollection* collection_;
     };
+
+    // helpers
+    template <typename ReqT, typename ResT, typename ActionT>
+    void readJsonBody(ReqT req, ResT res, ActionT&& action)
+    {
+        auto data = std::make_shared <std::string>();
+        req->read_body(*data).then(
+            [data, res, action{std::move(action)}]()
+            {
+                try
+                {
+                    action(json::parse(*data));
+                }
+                catch(std::exception const& exc)
+                {
+                    res->status(400).send(exc.what());
+                }
+            }
+        );
+    }
+
+    template <typename ReqT, typename ResT, typename ActionT>
+    void readTextBody(ReqT req, ResT res, ActionT&& action)
+    {
+        auto data = std::make_shared <std::string>();
+        req->read_body(*data).then(
+            [data, res, action{std::move(action)}]()
+            {
+                try
+                {
+                    action(*data);
+                }
+                catch(std::exception const& exc)
+                {
+                    res->status(400).send(exc.what());
+                }
+            }
+        );
+    }
 }

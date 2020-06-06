@@ -8,11 +8,13 @@ namespace Routers
     {
     public:
         Workspace(RouterCollection* collection, attender::tcp_server& server);
+        ~Workspace();
 
     private:
         void registerRoutes(attender::tcp_server& server);
 
     private:
         struct Implementation;
+        std::unique_ptr <Implementation> impl_;
     };
 }

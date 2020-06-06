@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <unordered_map>
 #include <mutex>
+#include <iostream>
 
 namespace Routers
 {
@@ -81,6 +82,8 @@ namespace Routers
                 [](std::monostate){},
                 [&produ](auto const& dat)
                 {
+                    std::cout << "writing data of size: " << dat.size() << "\n";
+
                     produ << dat;
                 }
             }, msg.data);

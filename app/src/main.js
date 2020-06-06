@@ -32,6 +32,12 @@ const menuTemplate = [
 				click: async e => {
 					mainWindow.webContents.send('connectBackend');
 				}
+			},
+			{
+				label: dict.translate('$Test', 'menu'),
+				click: async e => {
+					mainWindow.webContents.send('testBackend');
+				}
 			}
 		]
 	}

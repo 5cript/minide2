@@ -59,13 +59,8 @@ function uriFromPath(_path) {
 }
 
 monaco.config({
-    urls: {
-        monacoLoader: uriFromPath(
-            path.join(__dirname, '../public/vs/loader.js')
-        ),
-        monacoBase: uriFromPath(
-            path.join(__dirname, '../public/vs')
-        )
+    paths: {
+        vs: 'vs'
     }
 });
 

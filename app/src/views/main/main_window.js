@@ -10,7 +10,9 @@ import LogsAndOthers from './components/logs_and_term';
 import {connect} from 'react-redux';
 
 // Actions
-import {openWorkspace} from '../../actions/workspace_actions';
+import {setFileTreeBranch} from '../../actions/workspace_actions';
+
+// Other
 import Backend from '../../backend_connector';
 
 // Style
@@ -68,42 +70,91 @@ class CMakeToolbarEvents extends Classes(CommonToolbarEvents, CppDebugToolbarEve
 /**
  * Main Window
  */
-class MainWindow extends React.Component {
-    state = {
-        monacoOptions: {
+class MainWindow extends React.Component 
+{
+    state = 
+    {
+        monacoOptions: 
+        {
             theme: 'dark',
             options: {}
         }
     }
 
-    constructor(props) {
+    handleTreeUpdates(head, data)
+    {
+        if (head.tree.flat === true) {
+            this.props.dispatch(setFileTreeBranch(head.origin, head.tree.files, head.tree.directories));
+        }
+    }
+
+    onDataStream(head, data)
+    {
+        if (head.type === undefined || head.type === null) {
+            console.error("backend didn't send a message type. notify this to the backend dev");
+            return;
+        }
+
+        if (head.type === "file_tree") {
+            this.handleTreeUpdates(head, data);
+            return;
+        }
+        console.log(head);
+    }
+
+    onControlStream(head, data)
+    {
+        console.log(head);
+    }
+
+    onStreamError(err)
+    {
+        console.error(err);
+    }
+
+    constructor(props) 
+    {
         super(props)
         this.registerMenuActions();
 
-        this.backend = new Backend(props.store);
+        this.backend = new Backend
+        (
+            props.store, 
+            // Control Callback
+            (...args) => {this.onControlStream(...args);}, 
+            // Data Callback
+            (...args) => {this.onDataStream(...args);}, 
+            // Error Callback
+            (...args) => {this.onStreamError(...args);}
+        );
     }
 
-    registerMenuActions = () => {
+    registerMenuActions = () => 
+    {
         ipcRenderer.on('openWorkspace', (event, arg) => {
             if (arg.canceled)
                 return;
-            this.props.dispatch(openWorkspace(arg.filePaths[0]))
+            this.backend.workspace().openWorkspace(arg.filePaths[0]);
         })
 
         ipcRenderer.on('connectBackend', (event, arg) => {
-            console.log('connect');
             this.backend.attachToStreams();
+        })
+        
+        ipcRenderer.on('testBackend', (event, arg) => {
+            this.backend.workspace().openWorkspace("D:/Development/IDE2/test-project");
         })
     }
 
-    render = () => {
+    render = () => 
+    {
         return (
             <div id='Content'>
                 <Toolbar cmake={new CMakeToolbarEvents()}/>
                 <div id='SplitterContainer'>
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={60}>
                         <div>
-                            <Explorer/>
+                            <Explorer backend={this.backend}/>
                         </div>
                         <div id='RightOfExplorer'>
                             <SplitterLayout vertical={true} secondaryInitialSize={250}>

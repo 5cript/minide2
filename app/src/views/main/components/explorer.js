@@ -12,9 +12,11 @@ import {
 import FileTree from './file_tree';
 import OpenFilesList from './open_files';
 import ipc from '../../../ipc_core';
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // Styling
 import './styles/explorer.css';
+import 'react-perfect-scrollbar/dist/css/styles.css';
 
 // Actions
 //import { addOpenFile } from '../../../actions/open_file_actions';
@@ -34,7 +36,7 @@ let dict = require('../../../util/localization.js');
 class Explorer extends React.Component {
     render = () => {
         return (
-            <div>
+            <div style={{height: "100%"}}>
                 <div id={'ExplorerHeader'}>
                     <div>Explorer</div>
                     <div className='explorerOpenDir'>{(() => {
@@ -43,18 +45,6 @@ class Explorer extends React.Component {
                             return root.directory;
                     })()}</div>
                 </div>
-                <button onClick={
-                    () => {
-                        /*
-                        let fileName = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
-                        this.props.dispatch(addOpenFile(fileName));
-                        */
-
-                        ipc.get('/api/toolbar/enlist').then(data => {
-                            console.log(data);
-                        });
-                    }
-                }>x</button>
                 <Accordion
                     allowMultipleExpanded={true}
                     allowZeroExpanded={true}
@@ -76,8 +66,10 @@ class Explorer extends React.Component {
                                 {dict.translate('$FileBrowser', 'explorer')}
                             </AccordionItemButton>
                         </AccordionItemHeading>
-                        <AccordionItemPanel>
-                            <FileTree />
+                        <AccordionItemPanel style={{height: "100%", width: "100%", position: "absolute"}}>
+                            <PerfectScrollbar className="scrollbox">
+                                <FileTree backend={this.props.backend} />
+                            </PerfectScrollbar>
                         </AccordionItemPanel>
                     </AccordionItem>
                 </Accordion>

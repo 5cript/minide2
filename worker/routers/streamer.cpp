@@ -198,7 +198,40 @@ namespace Routers
             {
                 produ->wait_for_consumer();
 
-                consumeLoop(id, dataStream_, produ);
+                Streaming::Messages::Welcome welcome;
+                welcome.id = id;
+
+                if (produ->has_consumer_attached())
+                    writeMessage
+                    (
+                        *produ,
+                        Streaming::Message
+                        {
+                            std::make_unique <Streaming::Messages::Welcome>(std::move(welcome))
+                        }
+                    );
+
+                while(produ->has_consumer_attached())
+                {
+                    if (endAllStreams_.load())
+                    {
+                        // this ends the stream.
+                        produ->finish();
+                        return;
+                    }
+
+                    if (dataStream_.queue.consumeableCount(id) == 0)
+                    {
+                        std::this_thread::sleep_for(100ms);
+                        continue;
+                    }
+
+                    auto iter = dataStream_.queue.popMessage(id);
+                    std::cout << "msg pop \n";
+                    writeMessage(*produ, iter->msg);
+                    produ->flush();
+                    dataStream_.queue.unrefMessage(iter);
+                }
             })};
 
             res->send_chunked(*produ, [produ, connectionBasedStreamer, commonCleanup, id, this](auto e)

@@ -1,7 +1,4 @@
-import { pathModifier } from '../util/path_util';
-
-const fs = window.require('fs');
-
+/*
 const loadDirectory = (root) => {
     return new Promise((resolve, reject) => {
         fs.readdir(root, (err, nodes) => {
@@ -14,13 +11,17 @@ const loadDirectory = (root) => {
         })
     });
 }
+*/
 
-export function openWorkspace(directory) {
+/**
+ * Adds items to the file tree
+ */
+export function setFileTreeBranch(directory, files, directories)
+{
     return {
-        type: 'OPEN_WORKSPACE',
-        payload: {
-            directory: directory,
-            tree: loadDirectory(directory)
-        }
-    }
+        type: 'SET_FILE_TREE_BRANCH',
+        origin: directory,
+        files: files,
+        directories: directories
+    };
 }

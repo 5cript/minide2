@@ -1,9 +1,3 @@
-export function fetchOpenFiles() {
-    return {
-        type: 'FETCH_OPEN_FILES'
-    }
-}
-
 export function addOpenFile(file) {
     return {
         type: 'ADD_OPEN_FILE',
