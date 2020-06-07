@@ -3,12 +3,11 @@
 //#####################################################################################################################
 RouterCollection::RouterCollection(attender::tcp_server* server, Config const& config)
     : server_{server}
-    , workspace_{this, *server}
+    , workspace_{this, *server, config}
     , toolbar_{this, *server}
     , streamer_{this, *server, config}
     , terminal_{this, *server}
 {
-
 }
 //---------------------------------------------------------------------------------------------------------------------
 void RouterCollection::endStreaming()

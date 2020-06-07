@@ -1,7 +1,6 @@
 import React from 'react';
 import MainWindow from './views/main/main_window';
 import {Provider} from 'react-redux';
-
 import store from './store';
 
 // styles

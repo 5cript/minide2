@@ -1,18 +1,3 @@
-/*
-const loadDirectory = (root) => {
-    return new Promise((resolve, reject) => {
-        fs.readdir(root, (err, nodes) => {
-            nodes.map(node => {
-                return {
-                    name: pathModifier.concat(root, node),
-                    children: []
-                }
-            })
-        })
-    });
-}
-*/
-
 /**
  * Adds items to the file tree
  */

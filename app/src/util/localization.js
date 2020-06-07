@@ -6,6 +6,35 @@ class Dictionary
     {
         this.load('');
         this.lang = "de_DE";
+
+        this.dicts = {
+            "en_US": {
+                "meta": {
+                    "$LANGUAGE_SELF": "en_US"
+                },
+                "menu": {
+                    "$File": "File",
+                    "$OpenWorkspace": "Open Workspace"
+                },
+                "explorer": {
+                    "$OpenFiles": "Open Files",
+                    "$FileBrowser": "File Browser"
+                }
+            },
+            "de_DE": {
+                "meta": {
+                    "$LANGUAGE_SELF": "de_DE",
+                },
+                "menu": {
+                    "$File": "Datei",
+                    "$OpenWorkspace": "Superprojekt Öffnen"
+                },
+                "explorer": {
+                    "$OpenFiles": "Offene Dateien",
+                    "$FileBrowser": "Datei Browser"
+                }
+            }    
+        }
     }
 
     setLang(lang) 
@@ -38,35 +67,6 @@ class Dictionary
             }
             this.dicts[lang]["merged"] = merged;
         }
-    }
-
-    dicts = {
-        "en_US": {
-            "meta": {
-                "$LANGUAGE_SELF": "en_US"
-            },
-            "menu": {
-                "$File": "File",
-                "$OpenWorkspace": "Open Workspace"
-            },
-            "explorer": {
-                "$OpenFiles": "Open Files",
-                "$FileBrowser": "File Browser"
-            }
-        },
-        "de_DE": {
-            "meta": {
-                "$LANGUAGE_SELF": "de_DE",
-            },
-            "menu": {
-                "$File": "Datei",
-                "$OpenWorkspace": "Superprojekt Öffnen"
-            },
-            "explorer": {
-                "$OpenFiles": "Offene Dateien",
-                "$FileBrowser": "Datei Browser"
-            }
-        }    
     }
 }
 

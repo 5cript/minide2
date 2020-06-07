@@ -22,7 +22,7 @@ class OpenFilesList extends React.Component
                             'alternativeFileItem': i % 2 === 0,
                             'activeFileItem': this.props.activeFile === i
                         })}
-                        key={f}
+                        key={f.path}
                         onClick={() => {
                             console.log(this.props);
                             this.props.dispatch(setActiveFile(i));
@@ -34,9 +34,9 @@ class OpenFilesList extends React.Component
                                 'inactiveXButton': this.props.activeFile !== i
                             })}
                             id='x' 
-                            onClick={(e) => {this.props.dispatch(removeOpenFile(f)); e.stopPropagation()}}></button>
+                            onClick={(e) => {this.props.dispatch(removeOpenFile(f.path)); e.stopPropagation()}}></button>
                         <div className='shortFileItemName'>
-                            {f}
+                            {f.path}
                         </div>
                     </div>
                 )})}

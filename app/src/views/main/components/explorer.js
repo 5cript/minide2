@@ -11,7 +11,6 @@ import {
 
 import FileTree from './file_tree';
 import OpenFilesList from './open_files';
-import ipc from '../../../ipc_core';
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // Styling

@@ -9,7 +9,9 @@ require('electron-reload')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
-dict = require('./util/localization.js');
+let dict = require('./util/localization.js');
+
+let mainWindow;
 
 const menuTemplate = [
 	{
@@ -49,8 +51,11 @@ function registerShortcuts(mainWindow) {
 	});
 }
 
-function createWindow() {
-	menu = new electron.Menu.buildFromTemplate(menuTemplate);
+function createWindow() 
+{
+	console.log(__dirname);
+
+	let menu = new electron.Menu.buildFromTemplate(menuTemplate);
 
 	electron.Menu.setApplicationMenu(menu);
 
@@ -71,17 +76,19 @@ function createWindow() {
 		width: windowWidth,
 		height: windowHeight,
 		webPreferences: {
-			webSecurity: false,
+			webSecurity: true,
 			nodeIntegration: true,
 			allowEval: false
 		},
 	})
 
+	let port = '3000';
+	//let port = '5000';
 	mainWindow.loadURL(
 		isDev
-			? 'http://localhost:3000'
-			: `file://${path.join(__dirname, '../build/index.html')}`,
-	)
+			? 'http://localhost:' + port
+			: `file://${__dirname}/../public/index.html`
+	);
 
 	if (isDev)
 		mainWindow.webContents.openDevTools()

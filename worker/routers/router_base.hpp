@@ -13,7 +13,23 @@ namespace Routers
     inline void enable_cors(attender::response_handler* res)
     {
         res->set("Access-Control-Allow-Origin", "*");
-        res->set("Access-Control-Allow-Methods", "GET,PUT,POST,HEAD");
+        res->set("Access-Control-Allow-Methods", "GET,PUT,POST,HEAD,OPTIONS");
+    }
+
+    /**
+     * @param allow Example "POST, HEAD"
+     **/
+    template <typename T>
+    inline void cors_options(T& server, std::string const& path, std::string const& allow)
+    {
+        server.options(path, [allow](auto req, auto res)
+        {
+            res->set("Allow", allow + ", OPTIONS");
+            res->set("Connection", "keep-alive");
+            res->set("Access-Control-Allow-Headers", "*");
+            enable_cors(res);
+            res->status(204).end();
+        });
     }
 
     template <typename T>

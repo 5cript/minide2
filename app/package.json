@@ -1,5 +1,7 @@
 {
   "name": "electron-react-typescript-app",
+  "authors": "5cript",
+  "description": "A minimal IDE",
   "version": "0.1.0",
   "private": true,
   "main": "src/main.js",
@@ -24,18 +26,22 @@
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "classnames": "^2.2.6",
-    "electron": "^7.3.1",
+    "electron-compile": "^6.4.4",
     "electron-is-dev": "^1.2.0",
     "electron-localshortcut": "^3.2.1",
+    "electron-squirrel-startup": "^1.0.0",
     "extends-classes": "^1.0.5",
     "lodash": "^4.17.15",
     "monaco-editor": "^0.19.3",
+    "monaco-editor-webpack-plugin": "^1.9.0",
     "rc-tree": "^3.3.0",
     "react": "^16.13.1",
     "react-accessible-accordion": "^3.0.1",
     "react-dom": "^16.13.1",
+    "react-monaco-editor": "^0.36.0",
     "react-perfect-scrollbar": "^1.5.8",
     "react-redux": "^7.2.0",
+    "react-resize-detector": "^4.2.3",
     "react-scripts": "^3.4.0",
     "react-scrollbars-custom": "^4.0.25",
     "react-splitter-layout": "^4.0.0",
@@ -48,10 +54,12 @@
   },
   "scripts": {
     "electron": "cross-env NODE_ENV=dev nodemon --exec \"\"electron .\"\"",
-    "react-start": "react-scripts start",
-    "start": "cross-env BROWSER=none npm run react-start",
-    "build": "react-scripts build",
-    "test": "react-scripts test"
+    "react-start": "react-app-rewired start",
+    "start": "electron-forge start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -69,12 +77,48 @@
     ]
   },
   "devDependencies": {
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
     "copy-webpack-plugin": "^6.0.2",
     "cross-env": "^6.0.3",
-    "electron-builder": "^21.2.0",
+    "electron-forge": "^5.2.4",
+    "electron-prebuilt-compile": "8.2.0",
     "electron-reload": "^1.5.0",
     "nodemon": "^2.0.4",
     "react-app-rewired": "^2.1.6",
     "redux-devtools": "^3.5.0"
+  },
+  "config": {
+    "forge": {
+      "make_targets": {
+        "win32": [
+          "squirrel"
+        ],
+        "darwin": [
+          "zip"
+        ],
+        "linux": [
+          "deb",
+          "rpm"
+        ]
+      },
+      "electronPackagerConfig": {
+        "packageManager": "npm"
+      },
+      "electronWinstallerConfig": {
+        "name": "electron_react_typescript_app"
+      },
+      "electronInstallerDebian": {},
+      "electronInstallerRedhat": {},
+      "github_repository": {
+        "owner": "",
+        "name": ""
+      },
+      "windowsStoreConfig": {
+        "packageName": "",
+        "name": "electronreacttypescriptapp"
+      }
+    }
   }
 }

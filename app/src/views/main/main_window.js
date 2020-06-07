@@ -11,6 +11,7 @@ import {connect} from 'react-redux';
 
 // Actions
 import {setFileTreeBranch} from '../../actions/workspace_actions';
+import {addOpenFileWithContent} from '../../actions/open_file_actions';
 
 // Other
 import Backend from '../../backend_connector';
@@ -76,7 +77,7 @@ class MainWindow extends React.Component
     {
         monacoOptions: 
         {
-            theme: 'dark',
+            theme: 'vs-dark',
             options: {}
         }
     }
@@ -97,6 +98,15 @@ class MainWindow extends React.Component
 
         if (head.type === "file_tree") {
             this.handleTreeUpdates(head, data);
+            return;
+        }
+
+        if (head.type === "fileContent") {
+            console.log(head);
+            let data = '';
+            if (head.chunks !== undefined)
+                data = head.chunks.join();
+            this.props.dispatch(addOpenFileWithContent(head.path, data));
             return;
         }
         console.log(head);
@@ -158,7 +168,7 @@ class MainWindow extends React.Component
                         </div>
                         <div id='RightOfExplorer'>
                             <SplitterLayout vertical={true} secondaryInitialSize={250}>
-                                <Editor monacoOptions={this.state.monacoOptions}></Editor>
+                                <Editor className='Editor' monacoOptions={this.state.monacoOptions}></Editor>
                                 <LogsAndOthers className="logsAndOthers"></LogsAndOthers>
                             </SplitterLayout>
                         </div>

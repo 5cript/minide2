@@ -67,3 +67,8 @@
 #SplitterContainer {
     height: 100%;
 }
+
+.Editor {
+    width: 100%;
+    height: 100%;
+}

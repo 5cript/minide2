@@ -76,9 +76,10 @@ class FileView extends PureComponent {
     onNodeDoubleClick = (event) => {
         if (this.hoveredNode === undefined)
             return;
-        console.log(this.hoveredNode.key);
 
-        this.props.dispatch(openFileActions.addOpenFile(this.hoveredNode.key));
+        this.props.backend.workspace().loadFile(this.hoveredNode.key);
+
+        //his.props.dispatch(openFileActions.addOpenFile(this.hoveredNode.key));
     }
 
     onMouseEnter = (v) => {

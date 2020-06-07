@@ -84,6 +84,8 @@ namespace Routers
          */
         auto commonStreamSetup = [this](auto req, auto res, auto& stream) -> int
         {
+            enable_cors(res);
+
             if (stream.idProvider.usedIdCount() >= static_cast <std::size_t> (maxStreamListeners_))
             {
                 res->status(409).send("Too much active listeners");

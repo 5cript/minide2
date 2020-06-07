@@ -1,20 +1,47 @@
-export function addOpenFile(file) {
+export function addOpenFile(file) 
+{
     return {
         type: 'ADD_OPEN_FILE',
-        payload: file
+        file: {
+            path: file,
+            content: '',
+            synchronized: false
+        }
     }
 }
 
-export function removeOpenFile(file) {
+export function addOpenFileWithContent(file, content) 
+{
+    return {
+        type: 'ADD_OPEN_FILE',
+        file: {
+            path: file,
+            content: content,
+            synchronized: true
+        }
+    }
+}
+
+export function removeOpenFile(file) 
+{
     return {
         type: 'REMOVE_OPEN_FILE',
-        payload: file
+        path: file
     }
 }
 
-export function setActiveFile(index) {
+export function setActiveFile(index) 
+{
     return {
         type: 'SET_ACTIVE_FILE',
         payload: index
+    }
+}
+
+export function setActiveFileContent(data) 
+{
+    return {
+        type: 'SET_ACTIVE_FILE_CONTENT',
+        content: data
     }
 }

@@ -29,3 +29,4 @@ internal_docs/*
 public/vs/*
 
 src/terminal-react
+out

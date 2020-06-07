@@ -147,7 +147,7 @@ class Backend extends Router
                         }
                         catch(e) {
                             console.error("oh no " + e);
-                            console.log(e.stack);
+                            console.error(e.stack);
                         }
                     }
                     

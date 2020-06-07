@@ -113,3 +113,5 @@ worker/worker.cscope_file_list
 jstest
 
 build-*
+app_backup
+frontend_
