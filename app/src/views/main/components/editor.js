@@ -5,13 +5,14 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import MonacoEditor from 'react-monaco-editor';
 import ReactResizeDetector from 'react-resize-detector';
+import MessageBox from '../../../elements/message_box';
 
 // Other
 import {pathModifier} from '../../../util/path_util';
 
 // Redux
 import {connect} from 'react-redux';
-import { setActiveFile, removeOpenFile, setActiveFileContent } from '../../../actions/open_file_actions';
+import {setActiveFile, removeOpenFile, setActiveFileContent} from '../../../actions/open_file_actions';
 
 // Style
 import './styles/editor.css';
@@ -37,35 +38,28 @@ const HoverFix = createMuiTheme({
     }
 })
 
-// Tabs:
-// https://github.com/Microsoft/monaco-editor/issues/604
-
-// TODO: Monaco security:
-// https://github.com/suren-atoyan/monaco-react/issues/48#issuecomment-583863391
-
 class MonacoEditorComponent extends React.Component
 {
-    onMount = (editor, monaco) => {
+    onMount = (editor, monaco) => 
+    {
         this.editor = editor;
         editor.focus();
     }
 
-    openFileContent = () => {
+    openFileContent = () => 
+    {
         if (this.props.activeFile > -1)
             return this.props.openFiles[this.props.activeFile].content;
         return "";
     }
 
-    onChange = (value, event) => {
+    onChange = (value, event) =>
+    {
         if (this.props.activeFile > -1)
-        {
             this.props.dispatch(setActiveFileContent(value));
-        }
     }
 
     render() {
-        console.log(this.openFileContent());
-
         return (
             <ReactResizeDetector
                 handleHeight
@@ -89,23 +83,75 @@ class MonacoEditorComponent extends React.Component
     }
 }
 
-class CodeEditor extends React.Component {
-    onTabChange = (index, lastIndex, event) => {
+let ConnectedEditor = connect(state => {
+    return {
+        openFiles: state.openFiles.openFiles,
+        activeFile: state.openFiles.activeFile
+    }
+})(MonacoEditorComponent);
+
+class CodeEditor extends React.Component 
+{
+    state = {
+        yesNoBoxVisible: false,
+        yesNoMessage: 'blubber'
+    }
+
+    onTabChange(index)
+    {
         this.props.dispatch(setActiveFile(index));
         return true;
     }
 
-    render = () => {
+    showYesNoBox(message) 
+    {
+        this.setState({
+            yesNoBoxVisible: true,
+            yesNoMessage: message
+        })
+    }
+
+    onMessageBoxClose(whatButton)
+    {
+        this.setState({
+            yesNoBoxVisible: false
+        });
+        if (whatButton === "Yes")
+            this.yesAction();
+    }
+
+    render() 
+    {
         return (
             <div id='EditorContainer'>
                 <MuiThemeProvider theme={HoverFix}>
-                    <Tabs onSelect={this.onTabChange} selectedIndex={this.props.activeFile}>
+                    <Tabs onSelect={(e) => {this.onTabChange(e)}} selectedIndex={this.props.activeFile}>
                         <TabList>
                             {
                                 this.props.openFiles.map((file, i) => {
                                     return (
                                         <Tab key={file.path}>{pathModifier.shorten(file.path)}
-                                            <button id='x' onClick={(e) => {this.props.dispatch(removeOpenFile(file.path)); e.stopPropagation()}}></button>
+                                            {(() => {
+                                                if (!file.synchronized)
+                                                    return <svg viewBox="0 0 10 10" className="tabModifiedFile" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle cx="5" cy="5" r="5" fill="red"/>
+                                                    </svg>
+                                                else
+                                                    return <div className="tabSpacer"></div>
+                                            })()}
+                                            <button id='x' onClick={(e) => {
+                                                if (!file.synchronized) 
+                                                {
+                                                    this.showYesNoBox(this.props.dict.translate("$CloseUnsavedWarning", "dialog"))
+                                                    this.yesAction = () => {
+                                                        console.log('yes action called');
+                                                        this.props.dispatch(removeOpenFile(file.path));     
+                                                    }
+                                                }
+                                                else
+                                                    this.props.dispatch(removeOpenFile(file.path)); 
+                                                e.stopPropagation();
+                                            }}></button>
                                         </Tab>
                                     );
                                 })
@@ -118,7 +164,8 @@ class CodeEditor extends React.Component {
                         }
                     </Tabs>
                 </MuiThemeProvider>
-                <MonacoEditorComponent openFiles={this.props.openFiles} activeFile={this.props.activeFile} monacoOptions={this.props.monacoOptions} id='MonacoWrap' language="javascript" />
+                <ConnectedEditor monacoOptions={this.props.monacoOptions} id='MonacoWrap' language="javascript" />
+                <MessageBox boxStyle="YesNo" visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </div>
         )
     }

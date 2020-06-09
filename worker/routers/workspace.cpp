@@ -4,16 +4,29 @@
 #include "../workspace/workspace.hpp"
 
 #include "../json.hpp"
+#include "../hybrid_read_sink.hpp"
 #include "../filesystem/directory_cache.hpp"
 
 #include "../streaming/common_messages/binary_data.hpp"
 #include "../workspace/stream_messages/directory_contents.hpp"
 #include "../workspace/stream_messages/file_content.hpp"
+#include "../workspace/hashed_file.hpp"
+
+#include <string>
+#include <fstream>
 
 using namespace std::string_literals;
 
 namespace Routers
 {
+//#####################################################################################################################
+    struct LeakTest
+    {
+        ~LeakTest()
+        {
+            std::cout << "~LeakTest()\n";
+        };
+    };
 //#####################################################################################################################
     struct Workspace::Implementation
     {
@@ -139,7 +152,7 @@ namespace Routers
 
                 auto dir = std::make_unique <Streaming::Messages::DirectoryContent>(veri.second);
                 dir->scan(recursive, "");
-                dir->origin = "/"s + path;
+                dir->origin = path;
                 auto result = collection_->streamer().send
                 (
                     StreamChannel::Data,
@@ -233,9 +246,121 @@ namespace Routers
                 res->status(200).end();
             });
         });
+
+        cors_options(server, "/api/workspace/saveFile", "PUT");
+        server.put("/api/workspace/saveFile", [this](auto req, auto res)
+        {
+            enable_cors(res);
+
+            auto observer = res->observe_conclusion();
+
+            if (impl_->info.root.empty())
+                return res->status(400).send("open a workspace first");
+
+            auto maybeContentLen = req->get_header_field("Content-Length");
+            long long len = 0;
+            if (maybeContentLen)
+            {
+                try
+                {
+                    len = std::stoll(maybeContentLen.value());
+                }
+                catch (std::exception const& exc)
+                {
+                    // conversion failed!
+                    return res->status(400).send(exc.what());
+                }
+            }
+            else
+                return res->status(411).end();
+
+            if (len > impl_->config.maxFileWriteSize)
+                return res->status(413).end();
+
+            if (len < 13)
+                return res->status(400).send("Content-Length is too small to be correct (10 bytes hex json len + | + json + data)");
+
+            std::shared_ptr <HashedFile> file = std::make_shared <HashedFile>();
+            std::shared_ptr <JsonDataHybridSink> sink{std::make_shared <JsonDataHybridSink>(
+                // json complete
+                [file, this, res](json const& jsonPart)
+                {
+                    try
+                    {
+                        if (!jsonPart.contains("path"))
+                            return res->status(400).send("need path in json body part");
+
+                        if (!jsonPart.contains("sha256"))
+                            return res->status(400).send("requires a sha256 in the json body for verification");
+
+                        auto hash = jsonPart["sha256"].get<std::string>();
+
+                        auto const [error, path] = verifyPath(jsonPart["path"].get<std::string>(), false);
+                        if (!error.empty())
+                            return res->status(400).send(error);
+
+                        std::cout << "opening " << path << "\n";
+
+                        // FIXME: dont save in same dir??
+                        file->open(path, hash);
+                        if (!file->good())
+                            return res->status(400).send("cannot open file");
+                    }
+                    catch(std::exception const& exc)
+                    {
+                        res->status(500).send(exc.what());
+                    }
+                },
+                // on data
+                [file, res](char const* data, std::size_t amount)
+                {
+                    try
+                    {
+                        if (!file->good())
+                            return;
+
+                        file->write(data, amount);
+                    }
+                    catch(std::exception const& exc)
+                    {
+                        res->status(500).send(exc.what());
+                    }
+                },
+                // expectation failure
+                [res](std::string const& msg)
+                {
+                    res->status(400).send(msg);
+                },
+                static_cast <std::size_t> (len)
+            )};
+
+            if (observer->has_concluded())
+                return;
+
+            req->read_body(sink).then([sink, file, res, observer]()
+            {
+                try
+                {
+                    auto success = file->testAndMove();
+
+                    // only execute this when no other send exit path was taken
+                    if (observer->has_concluded())
+                        return;
+
+                    if (success)
+                        res->status(204).end();
+                    else
+                        res->status(500).send("transfered file does not match sent hash.");
+                }
+                catch(...)
+                {
+                    res->status(500).end();
+                }
+            });
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::pair <std::string, std::string> Workspace::verifyPath(std::string path)
+    std::pair <std::string, std::string> Workspace::verifyPath(std::string path, bool mustExist)
     {
         if (path.empty())
             return {"path cannot be empty"s, path};
@@ -248,7 +373,7 @@ namespace Routers
 
         auto relativePath = sfs::path{impl_->info.root}.remove_filename() / path;
 
-        if (!sfs::exists(relativePath))
+        if (mustExist && !sfs::exists(relativePath))
             return {"path does not exist"s, path};
 
         return {""s, relativePath.string()};

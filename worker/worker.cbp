@@ -170,6 +170,8 @@
 		<Unit filename="variant.hpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.cpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.hpp" />
+		<Unit filename="workspace/stream_messages/file_content.cpp" />
+		<Unit filename="workspace/stream_messages/file_content.hpp" />
 		<Unit filename="workspace/workspace.cpp" />
 		<Unit filename="workspace/workspace.hpp" />
 		<Extensions>

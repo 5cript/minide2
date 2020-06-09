@@ -20,9 +20,6 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 // Actions
 //import { addOpenFile } from '../../../actions/open_file_actions';
 
-// requires
-let dict = require('../../../util/localization.js');
-
 /* 
 <button onClick={
     () => {
@@ -52,22 +49,22 @@ class Explorer extends React.Component {
                     <AccordionItem uuid={'open_files'}>
                         <AccordionItemHeading>
                             <AccordionItemButton>
-                                {dict.translate('$OpenFiles', 'explorer')}
+                                {this.props.dict.translate('$OpenFiles', 'explorer')}
                             </AccordionItemButton>
                         </AccordionItemHeading>
                         <AccordionItemPanel>
-                            <OpenFilesList></OpenFilesList>
+                            <OpenFilesList dict={this.props.dict}></OpenFilesList>
                         </AccordionItemPanel>
                     </AccordionItem>
                     <AccordionItem uuid={'file_browser'}>
                         <AccordionItemHeading>
                             <AccordionItemButton>
-                                {dict.translate('$FileBrowser', 'explorer')}
+                                {this.props.dict.translate('$FileBrowser', 'explorer')}
                             </AccordionItemButton>
                         </AccordionItemHeading>
                         <AccordionItemPanel style={{height: "100%", width: "100%", position: "absolute"}}>
                             <PerfectScrollbar className="scrollbox">
-                                <FileTree backend={this.props.backend} />
+                                <FileTree dict={this.props.dict} backend={this.props.backend} />
                             </PerfectScrollbar>
                         </AccordionItemPanel>
                     </AccordionItem>

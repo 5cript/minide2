@@ -9,7 +9,8 @@ require('electron-reload')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
-let dict = require('./util/localization.js');
+import Dictionary from './util/localization.js';
+let dict = new Dictionary();
 
 let mainWindow;
 

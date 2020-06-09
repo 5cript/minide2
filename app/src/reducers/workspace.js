@@ -75,6 +75,7 @@ export default function reducer(state = initialState, action)
 
                 for (let depth = 1; depth !== originSplit.length; ++depth) 
                 {
+                    console.log(curNode)
                     let searchResult = binaryChildSearch(curNode, originSplit[depth]);
                     if (searchResult.match === false) 
                         curNode = insertInTree(curNode, searchResult.index, originSplit[depth], catenateOriginSplit(depth));

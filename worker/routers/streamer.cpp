@@ -229,7 +229,6 @@ namespace Routers
                     }
 
                     auto iter = dataStream_.queue.popMessage(id);
-                    std::cout << "msg pop \n";
                     writeMessage(*produ, iter->msg);
                     produ->flush();
                     dataStream_.queue.unrefMessage(iter);

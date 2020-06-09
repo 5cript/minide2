@@ -1,6 +1,7 @@
 import React, {PureComponent} from 'react';
 //import {Treebeard} from 'react-treebeard';
 import Tree from 'rc-tree';
+import MessageBox from '../../../elements/message_box';
 
 import {connect} from 'react-redux';
 import classNames from 'classnames';
@@ -46,19 +47,44 @@ const treeData = [
   ];
 */
 
-class FileView extends PureComponent {
+class FileView extends PureComponent 
+{
+    state = {
+        yesNoBoxVisible: false,
+        yesNoMessage: 'blubber'
+    }
+
     constructor(props){
         super(props);
 
         this.treeRef = React.createRef();
     }
 
-    setTreeRef = tree => {
+    setTreeRef = tree => 
+    {
          this.tree = tree;
     };
 
+    showYesNoBox(message, yesAction) 
+    {
+        this.setState({
+            yesNoBoxVisible: true,
+            yesNoMessage: message
+        });
+        this.yesAction = yesAction;
+    }
 
-    onExpand = expandedKeys => {
+    onMessageBoxClose(whatButton)
+    {
+        this.setState({
+            yesNoBoxVisible: false
+        });
+        if (whatButton === "Yes")
+            this.yesAction();
+    }
+
+    onExpand = expandedKeys => 
+    {
         let path = _.difference(expandedKeys, this.expandedKeys);
         this.expandedKeys = expandedKeys;
 
@@ -69,20 +95,29 @@ class FileView extends PureComponent {
             this.props.backend.workspace().enumDirectory(path[0]);
     };
 
-    onTreeRightClick = event => {
+    onTreeRightClick = event => 
+    {
         console.log('right click: ' + event.node.key);
     }
 
-    onNodeDoubleClick = (event) => {
+    onNodeDoubleClick = (event) => 
+    {
         if (this.hoveredNode === undefined)
             return;
 
-        this.props.backend.workspace().loadFile(this.hoveredNode.key);
-
-        //his.props.dispatch(openFileActions.addOpenFile(this.hoveredNode.key));
+        let file = this.props.openFiles.find(file => file.path === this.hoveredNode.key);
+        if (file === undefined)
+            this.props.backend.workspace().loadFile(this.hoveredNode.key);
+        else
+        {
+            this.showYesNoBox(this.props.dict.translate("$ReloadFileFromServer", "dialog"), () => {
+                this.props.backend.workspace().loadFile(this.hoveredNode.key);
+            });
+        }
     }
 
-    onMouseEnter = (v) => {
+    onMouseEnter = (v) => 
+    {
         this.hoveredNode = v.node;
     }
     
@@ -114,11 +149,16 @@ class FileView extends PureComponent {
                     }}
                 />
                 <div style={{display: 'block', height: '100px'}}></div>
+                <MessageBox boxStyle="YesNo" visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </>
         );
     }
 }
 
 export default connect(state => {
-    return {fileTree: state.workspace.fileTree, root: state.workspace.root}
+    return {
+        fileTree: state.workspace.fileTree, 
+        root: state.workspace.root,
+        openFiles: state.openFiles.openFiles
+    }
 })(FileView);

@@ -14,8 +14,19 @@
     font-size: 14px;
 }
 
+.tabModifiedFile {
+    padding-left: 3px;
+    padding-right: 3px;
+    margin-top: 6px;
+    width: 7px;
+    height: 7px;
+}
+
+.tabSpacer {
+    width: 4px;
+}
+
 #x{
-    margin-left: 8px;
     width: 16px;
     padding: 0;
     height: 16px;

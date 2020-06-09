@@ -115,3 +115,6 @@ jstest
 build-*
 app_backup
 frontend_
+automata
+x
+y

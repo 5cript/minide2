@@ -72,6 +72,28 @@ namespace Routers
         );
     }
 
+    /**
+     *  Only reads size indicated json and then returns without reading the rest.
+     */
+    template <typename ReqT, typename ResT, typename ActionT>
+    void readPartialJson(ReqT req, ResT res, ActionT&& action)
+    {
+        auto data = std::make_shared <std::string>();
+        req->read_body(*data).then(
+            [data, res, action{std::move(action)}]()
+            {
+                try
+                {
+                    action(json::parse(*data));
+                }
+                catch(std::exception const& exc)
+                {
+                    res->status(400).send(exc.what());
+                }
+            }
+        );
+    }
+
     template <typename ReqT, typename ResT, typename ActionT>
     void readTextBody(ReqT req, ResT res, ActionT&& action)
     {

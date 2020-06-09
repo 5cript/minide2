@@ -19,6 +19,10 @@ class Dictionary
                 "explorer": {
                     "$OpenFiles": "Open Files",
                     "$FileBrowser": "File Browser"
+                },
+                "dialog": {
+                    "$CloseUnsavedWarning": "Do you really want to close this file without saving?",
+                    "$ReloadFileFromServer": "Discard changes and reload file?"
                 }
             },
             "de_DE": {
@@ -32,6 +36,10 @@ class Dictionary
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
                     "$FileBrowser": "Datei Browser"
+                },
+                "dialog": {
+                    "$CloseUnsavedWarning": "Datei hat ungespeicherte Änderungen, wirklich ohne speichern schließen?",
+                    "$ReloadFileFromServer": "Änderungen verwerfen und Datei neu laden?"
                 }
             }    
         }
@@ -70,6 +78,4 @@ class Dictionary
     }
 }
 
-let dict = new Dictionary();
-
-module.exports = dict;
+export default Dictionary;

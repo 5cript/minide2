@@ -4,6 +4,13 @@
     border-bottom: 1px solid black;
 }
 
+.modifiedFile {
+    padding-right: 5px;
+    margin-top: 3px;
+    width: 10px;
+    height: 10px;
+}
+
 .openFileItem {
     display: flex;
     border: none;
@@ -18,8 +25,13 @@
     cursor: pointer;
 }
 
+.openFileXButton {
+    top: -1px;
+}
+
 .shortFileItemName {
     padding-left: 8px;
+    display: flex;
 }
 
 .inactiveXButton {

@@ -18,7 +18,8 @@ export function addOpenFileWithContent(file, content)
             path: file,
             content: content,
             synchronized: true
-        }
+        },
+        focus: true
     }
 }
 
@@ -44,4 +45,11 @@ export function setActiveFileContent(data)
         type: 'SET_ACTIVE_FILE_CONTENT',
         content: data
     }
+}
+
+export function activeFileWasSynchronized()
+{
+    return {
+        type: 'ACTIVE_FILE_WAS_SYNCHRONIZED'
+    };
 }

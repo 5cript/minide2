@@ -1,5 +1,8 @@
 import Router from './router'
 
+import sha256 from 'crypto-js/sha256';
+import CryptoJS from 'crypto-js';
+
 class Workspace extends Router
 {
     constructor(state, errorCallback)
@@ -31,6 +34,33 @@ class Workspace extends Router
                 });
                 return;
             }
+        });
+    }    
+
+    saveFile(path, content, onSuccess)
+    {
+        let hash = sha256(content);
+        let json = JSON.stringify({path: path, sha256: hash.toString(CryptoJS.enc.Hex)});
+        let jsonLen = json.length.toString(16).toUpperCase();
+        jsonLen = "0x" + ("0000000" + jsonLen).slice(-8);
+        let payload = jsonLen + '|' + json + content;
+        
+        let url = this.url("/api/workspace/saveFile");
+        fetch(
+            url,
+            {
+                method: 'PUT',
+                body: payload
+            }
+        ).then(res => {
+            if (res.status >= 300) {
+                res.text().then((value) => {
+                    this.errorCallback(value);
+                });
+                return;
+            }
+            if (res.status === 200 || res.status === 204)
+                onSuccess();
         });
     }
 

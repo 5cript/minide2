@@ -8,6 +8,9 @@
 #include "config.hpp"
 #include "streaming/common_messages/server_time.hpp"
 
+// FIXME REMOVE
+#include "hybrid_read_sink.hpp"
+
 #include <attender/attender.hpp>
 
 #include <iostream>
@@ -15,6 +18,7 @@
 #include <chrono>
 
 using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 int main(int argc, char** argv)
 {
