@@ -9,6 +9,7 @@ import MessageBox from '../../../elements/message_box';
 
 // Other
 import {pathModifier} from '../../../util/path_util';
+import extensionToLanguage from '../../../util/extension_to_lang';
 
 // Redux
 import {connect} from 'react-redux';
@@ -53,8 +54,29 @@ class MonacoEditorComponent extends React.Component
         return "";
     }
 
+    languageFromExtension = () => 
+    {
+        let path = '';
+        if (this.props.activeFile > -1)
+            path = this.props.openFiles[this.props.activeFile].path;
+        const filename = path.substring(path.lastIndexOf("/") + 1, path.length);
+
+        const dotPosFirst = filename.indexOf('.');
+        const dotPosLast = filename.lastIndexOf('.');
+        if (dotPosFirst === dotPosLast)
+            return extensionToLanguage(filename.substring(dotPosLast + 1, filename.length), filename, [], true);
+        else
+        {
+            let res = extensionToLanguage(filename.substring(dotPosLast + 1, filename.length), filename, [], false);
+            if (res === false)
+                return extensionToLanguage(filename.substring(dotPosFirst + 1, filename.length), filename, [], true);
+            return res;
+        }
+    }
+
     onChange = (value, event) =>
     {
+        console.log(this.editor.getSelection());
         if (this.props.activeFile > -1)
             this.props.dispatch(setActiveFileContent(value));
     }
@@ -71,7 +93,7 @@ class MonacoEditorComponent extends React.Component
             >
                 <MonacoEditor
                     disabled={true}
-                    language="cpp"
+                    language={this.languageFromExtension()}
                     theme={this.props.monacoOptions.theme}
                     onChange={(v, e) => {this.onChange(v, e)}}
                     value={this.openFileContent()}
