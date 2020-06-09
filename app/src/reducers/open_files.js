@@ -52,6 +52,19 @@ export default function reducer(state={
                 openFiles: openFiles
             }
         }
+        case 'FILE_WAS_SYNCHRONIZED': {
+            let openFiles = _.clone(state.openFiles);
+            let fileIndex = openFiles.findIndex(file => file.path === action.path);
+            if (fileIndex === -1)
+                console.log('tried to synchronize unopened file');
+            else
+                openFiles[fileIndex].synchronized = true;
+
+            return {
+                ...state,
+                openFiles: openFiles
+            }
+        }
         case 'REMOVE_OPEN_FILE': {
             return {
                 ...state, 

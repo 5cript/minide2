@@ -8,10 +8,11 @@ import SplitterLayout from 'react-splitter-layout';
 import Editor from './components/editor';
 import LogsAndOthers from './components/logs_and_term';
 import {connect} from 'react-redux';
+import MessageBox from '../../elements/message_box';
 
 // Actions
 import {setFileTreeBranch} from '../../actions/workspace_actions';
-import {addOpenFileWithContent, activeFileWasSynchronized} from '../../actions/open_file_actions';
+import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
 
 // Other
 import Backend from '../../backend_connector';
@@ -81,7 +82,9 @@ class MainWindow extends React.Component
         {
             theme: 'vs-dark',
             options: {}
-        }
+        },
+        yesNoBoxVisible: false,
+        yesNoMessage: 'blubber'
     }
 
     isShortcut(event, shortcutDefinition)
@@ -124,7 +127,8 @@ class MainWindow extends React.Component
                 if (this.props.activeFile >= 0) 
                 {
                     let file = this.props.openFiles[this.props.activeFile];
-                    this.backend.workspace().saveFile(file.path, file.content, () => {
+                    this.backend.workspace().saveFile(file.path, file.content, () => 
+                    {
                         this.props.dispatch(activeFileWasSynchronized());
                     });
                 }
@@ -140,8 +144,9 @@ class MainWindow extends React.Component
                     console.log(file);
                     if (!file.synchronized)
                     {
-                        this.backend.workspace().saveFile(file.path, file.content, () => {
-                            this.props.dispatch(activeFileWasSynchronized());
+                        this.backend.workspace().saveFile(file.path, file.content, () => 
+                        {
+                            this.props.dispatch(fileWasSynchronized(file.path));
                         });
                     }
                 })
@@ -233,6 +238,44 @@ class MainWindow extends React.Component
         {
             this.backend.workspace().openWorkspace("D:/Development/IDE2/test-project");
         })
+        
+        ipcRenderer.on('closeIssued', (event, arg) => 
+        {
+            // any unchanged files?
+            let anyFound = false;
+            for (let i in this.props.openFiles)
+            {
+                const file = this.props.openFiles[i];
+                if (!file.synchronized)
+                {
+                    this.showYesNoBox(this.dict.translate('$CloseWithUnsavedChanges', 'dialog'), () => {
+                        ipcRenderer.sendSync('closeNow', '');
+                    })
+                    anyFound = true;
+                    break;
+                }
+            }
+            if (!anyFound)
+                ipcRenderer.sendSync('closeNow', '');
+        })
+    }
+
+    showYesNoBox(message, yesAction) 
+    {
+        this.setState({
+            yesNoBoxVisible: true,
+            yesNoMessage: message
+        })
+        this.yesAction = yesAction;
+    }
+
+    onMessageBoxClose(whatButton)
+    {
+        this.setState({
+            yesNoBoxVisible: false
+        });
+        if (whatButton === "Yes")
+            this.yesAction();
     }
 
     render = () => 
@@ -252,6 +295,7 @@ class MainWindow extends React.Component
                             </SplitterLayout>
                         </div>
                     </SplitterLayout>
+                    <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
                 </div>
             </div>
         )

@@ -73,9 +73,6 @@ bool HashedFile::testAndMove()
     std::transform(std::begin(digest), std::end(digest), std::begin(digest), [](char c){return std::tolower(c);});
     if (hash_ != digest)
     {
-        std::cout << "Hash check failed on file " << originalName_ << "\n";
-        std::cout << hash_ << "\n";
-        std::cout << digest << "\n";
         return false;
     }
     else

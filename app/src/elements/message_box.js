@@ -35,6 +35,11 @@ class MessageBox extends React.Component
     {
         super(props)
 
+        if (this.props.dict === undefined)
+            this.dict = {translate: (x) => {return x;}}
+        else
+            this.dict = this.props.dict;
+
         if (this.props.boxStyle === undefined)
             this.boxStyle = "Ok";
         else
@@ -78,8 +83,8 @@ class MessageBox extends React.Component
                     {
                         return (
                             <div className="buttonBox">
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Yes")}}>Yes</RodalButton>
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("No")}}>No</RodalButton>
+                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Yes")}}>{this.dict.translate("$Yes", 'dialog')}</RodalButton>
+                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("No")}}>{this.dict.translate("$No", 'dialog')}</RodalButton>
                             </div>
                         )
                     }
@@ -87,7 +92,7 @@ class MessageBox extends React.Component
                     {
                         return (
                             <div className="buttonBox">
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>Ok</RodalButton>
+                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</RodalButton>
                             </div>
                         )
                     }
@@ -95,8 +100,8 @@ class MessageBox extends React.Component
                     {
                         return (
                             <div className="buttonBox">
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>Ok</RodalButton>
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Cancel")}}>Cancel</RodalButton>
+                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</RodalButton>
+                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Cancel")}}>{this.dict.translate("$Cancel", 'dialog')}</RodalButton>
                             </div>
                         )
                     }

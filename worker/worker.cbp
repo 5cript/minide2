@@ -38,10 +38,10 @@
 		<Linker>
 			<Add option="-ltiny-process-library" />
 			<Add option="-lSimpleJSON" />
+			<Add option="-lautomata" />
 			<Add option="-lboost_filesystem-mt" />
 			<Add option="-lboost_system-mt" />
 			<Add option="-lssl" />
-			<Add option="-lcrypto" />
 			<Add option="-lpthread" />
 			<Add option="-latomic" />
 			<Add option="-lws2_32" />
@@ -49,13 +49,17 @@
 			<Add option="-lbrotlienc" />
 			<Add option="-lbrotlicommon" />
 			<Add option="-lbcrypt" />
+			<Add option="-lcryptopp" />
+			<Add option="-lcrypto" />
 			<Add directory="../attender/build" />
 			<Add directory="../SimpleJSON/build" />
 			<Add directory="../tiny-process-library/build" />
+			<Add directory="../automata/build" />
 		</Linker>
 		<Unit filename="../attender/attender.hpp" />
 		<Unit filename="../attender/attender/callback_wrapper.cpp" />
 		<Unit filename="../attender/attender/callback_wrapper.hpp" />
+		<Unit filename="../attender/attender/conclusion_observer.hpp" />
 		<Unit filename="../attender/attender/connection_manager.cpp" />
 		<Unit filename="../attender/attender/connection_manager.hpp" />
 		<Unit filename="../attender/attender/cookie.cpp" />
@@ -134,6 +138,8 @@
 		<Unit filename="filesystem/directory_cache.cpp" />
 		<Unit filename="filesystem/directory_cache.hpp" />
 		<Unit filename="filesystem/filesystem.hpp" />
+		<Unit filename="hybrid_read_sink.cpp" />
+		<Unit filename="hybrid_read_sink.hpp" />
 		<Unit filename="json.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="routers.cpp" />
@@ -160,7 +166,6 @@
 		<Unit filename="streaming/stream_message.hpp" />
 		<Unit filename="streaming/stream_queue.cpp" />
 		<Unit filename="streaming/stream_queue.hpp" />
-		<Unit filename="tcp_server.hpp" />
 		<Unit filename="terminal/terminal.cpp" />
 		<Unit filename="terminal/terminal.hpp" />
 		<Unit filename="toolbars/basic_toolbar.cpp" />
@@ -168,6 +173,8 @@
 		<Unit filename="toolbars/cmake_toolbar.cpp" />
 		<Unit filename="toolbars/cmake_toolbar.hpp" />
 		<Unit filename="variant.hpp" />
+		<Unit filename="workspace/hashed_file.cpp" />
+		<Unit filename="workspace/hashed_file.hpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.cpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.hpp" />
 		<Unit filename="workspace/stream_messages/file_content.cpp" />

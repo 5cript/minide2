@@ -222,6 +222,9 @@ namespace Routers
                 if (!veri.first.empty())
                     return res->status(400).send(veri.first);
 
+                if (!sfs::is_regular_file(veri.second))
+                    return res->status(400).send("is not a regular file");
+
                 auto fc = std::make_unique <Streaming::Messages::FileContent>();
                 fc->load
                 (
@@ -299,8 +302,6 @@ namespace Routers
                         if (!error.empty())
                             return res->status(400).send(error);
 
-                        std::cout << "opening " << path << "\n";
-
                         // FIXME: dont save in same dir??
                         file->open(path, hash);
                         if (!file->good())
@@ -334,26 +335,39 @@ namespace Routers
                 static_cast <std::size_t> (len)
             )};
 
+            //std::cout.put('a');
+
             if (observer->has_concluded())
                 return;
 
             req->read_body(sink).then([sink, file, res, observer]()
             {
+                //std::cout.put('b');
                 try
                 {
                     auto success = file->testAndMove();
+
+                    //std::cout.put('c');
 
                     // only execute this when no other send exit path was taken
                     if (observer->has_concluded())
                         return;
 
+                    //std::cout.put('d');
+
                     if (success)
                         res->status(204).end();
                     else
                         res->status(500).send("transfered file does not match sent hash.");
+
+                    //std::cout.put('e');
                 }
                 catch(...)
                 {
+                    //std::cout.put('f');
+                    if (observer->has_concluded())
+                        return;
+                    //std::cout.put('g');
                     res->status(500).end();
                 }
             });

@@ -53,3 +53,11 @@ export function activeFileWasSynchronized()
         type: 'ACTIVE_FILE_WAS_SYNCHRONIZED'
     };
 }
+
+export function fileWasSynchronized(path)
+{
+    return {
+        type: 'FILE_WAS_SYNCHRONIZED',
+        path: path
+    }
+}

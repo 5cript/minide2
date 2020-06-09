@@ -89,7 +89,7 @@ class OpenFilesList extends React.Component
                         </div>
                     )})}
                 </div>
-                <MessageBox boxStyle="YesNo" visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
+                <MessageBox boxStyle="YesNo" dict={this.props.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </div>
         )
     }

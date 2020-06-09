@@ -22,7 +22,12 @@ class Dictionary
                 },
                 "dialog": {
                     "$CloseUnsavedWarning": "Do you really want to close this file without saving?",
-                    "$ReloadFileFromServer": "Discard changes and reload file?"
+                    "$ReloadFileFromServer": "Discard changes and reload file?",
+                    "$CloseWithUnsavedChanges": "There are unsaved changes, close anyway?",
+                    "$Yes": "Yes",
+                    "$No": "No",
+                    "$Ok": "Ok",
+                    "$Cancel": "Cancel"
                 }
             },
             "de_DE": {
@@ -39,7 +44,12 @@ class Dictionary
                 },
                 "dialog": {
                     "$CloseUnsavedWarning": "Datei hat ungespeicherte Änderungen, wirklich ohne speichern schließen?",
-                    "$ReloadFileFromServer": "Änderungen verwerfen und Datei neu laden?"
+                    "$ReloadFileFromServer": "Änderungen verwerfen und Datei neu laden?",
+                    "$CloseWithUnsavedChanges": "Es gibt noch ungespeicherte Änderungen, trotzdem schließen?",
+                    "$Yes": "Ja",
+                    "$No": "Nein",
+                    "$Ok": "Ok",
+                    "$Cancel": "Abbrechen"
                 }
             }    
         }

@@ -6,6 +6,7 @@ const shortcut = require('electron-localshortcut');
 const BrowserWindow = electron.BrowserWindow
 
 require('electron-reload')
+const { ipcMain } = require('electron')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
@@ -13,6 +14,8 @@ import Dictionary from './util/localization.js';
 let dict = new Dictionary();
 
 let mainWindow;
+
+let forceQuit = false;
 
 const menuTemplate = [
 	{
@@ -46,8 +49,10 @@ const menuTemplate = [
 	}
 ]
 
-function registerShortcuts(mainWindow) {
-	shortcut.register(mainWindow, 'F12', () => {
+function registerShortcuts(mainWindow) 
+{
+	shortcut.register(mainWindow, 'F12', () => 
+	{
 		mainWindow.webContents.toggleDevTools();
 	});
 }
@@ -65,7 +70,8 @@ function createWindow()
 	
 	let x = undefined;
 	let y = undefined;
-	if (isDev) {
+	if (isDev)
+	{
 		let bounds = electron.screen.getAllDisplays()[1].bounds;
 		x = bounds.x + bounds.width / 2 - windowWidth / 2;
 		y = bounds.y + bounds.height / 2 - windowHeight / 2;
@@ -94,23 +100,41 @@ function createWindow()
 	if (isDev)
 		mainWindow.webContents.openDevTools()
 
-	mainWindow.on('closed', () => {
+	mainWindow.on('closed', () => 
+	{
 		mainWindow = null
 	})
+
+	mainWindow.on('close', (e) => 
+	{
+		if (!forceQuit) 
+		{
+			mainWindow.webContents.send('closeIssued');
+			e.preventDefault();
+		}
+	});
+
+	ipcMain.on('closeNow', (event, arg) => 
+	{
+		forceQuit = true;
+		mainWindow.close();
+	});
 
 	registerShortcuts(mainWindow);
 }
 
 app.on('ready', createWindow)
 
-app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin') {
+app.on('window-all-closed', () => 
+{
+	if (process.platform !== 'darwin') 
 		app.quit()
-	}
 })
 
-app.on('activate', () => {
-	if (mainWindow === null) {
+app.on('activate', () => 
+{
+	if (mainWindow === null) 
+	{
 		createWindow()
 	}
 })

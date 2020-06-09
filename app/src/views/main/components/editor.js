@@ -165,7 +165,7 @@ class CodeEditor extends React.Component
                     </Tabs>
                 </MuiThemeProvider>
                 <ConnectedEditor monacoOptions={this.props.monacoOptions} id='MonacoWrap' language="javascript" />
-                <MessageBox boxStyle="YesNo" visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
+                <MessageBox boxStyle="YesNo" dict={this.props.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </div>
         )
     }
