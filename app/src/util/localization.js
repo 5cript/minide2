@@ -20,6 +20,11 @@ class Dictionary
                     "$OpenFiles": "Open Files",
                     "$FileBrowser": "File Browser"
                 },
+                "main_window": {
+                    "$ConnectingToBackend": "Connecting to Backend",
+                    "$ConnectionLost": "Connection Lost",
+                    "$ConnectionFailed": "Connection Failed"
+                },
                 "dialog": {
                     "$CloseUnsavedWarning": "Do you really want to close this file without saving?",
                     "$ReloadFileFromServer": "Discard changes and reload file?",
@@ -41,6 +46,11 @@ class Dictionary
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
                     "$FileBrowser": "Datei Browser"
+                },
+                "main_window": {
+                    "$ConnectingToBackend": "Verbinde mit Backend",
+                    "$ConnectionLost": "Verbindung Verloren",
+                    "$ConnectionFailed": "Verbinden Fehlgeschlagen"
                 },
                 "dialog": {
                     "$CloseUnsavedWarning": "Datei hat ungespeicherte Änderungen, wirklich ohne speichern schließen?",

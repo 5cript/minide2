@@ -3,7 +3,7 @@ import Router from './backend/router';
 
 class Backend extends Router
 {
-    constructor(store, controlCallback, dataCallback, errorCallback)
+    constructor(store, controlCallback, dataCallback, errorCallback, onConnectionLoss)
     {
         super(store);
         this.controlBuffer = '';
@@ -11,6 +11,7 @@ class Backend extends Router
         this.controlCallback = controlCallback;
         this.dataCallback = dataCallback;
         this.errorCallback = errorCallback;
+        this.onConnectionLoss = onConnectionLoss;
 
         this.workspaceRoutes = new Workspace(store, errorCallback);
         this.routers = [
@@ -34,6 +35,11 @@ class Backend extends Router
                 console.error(msg);
             }
         }
+        if (!this.onConnectionLoss) {
+            this.connectionLoss = () => {
+                console.error('connection lost');
+            }
+        }
     }
 
     workspace()
@@ -53,7 +59,6 @@ class Backend extends Router
             this.setControlId(json.id);
             for (let i in this.routers)
                 this.routers[i].setControlId(this.controlId);
-            return;
         }
         this.controlCallback(json);
     }
@@ -64,7 +69,6 @@ class Backend extends Router
             this.setDataId(json.id);
             for (let i in this.routers)
                 this.routers[i].setDataId(this.dataId);
-            return;
         }
         this.dataCallback(json);
     }
@@ -82,10 +86,12 @@ class Backend extends Router
             }
             let reader = res.body.getReader();
             let decoder = new TextDecoder();
-            let read = () => {
-                return reader.read().then(({value, done}) => {
+            let read = () => 
+            {
+                return reader.read().then(({value, done}) => 
+                {
                     if (done) {
-                        console.log('stream ended');
+                        this.onConnectionLoss('control');
                         return;
                     }
                     if (value)
@@ -107,10 +113,13 @@ class Backend extends Router
                     }
                     
                     return read();
-                });
+                })
             };
             return read();
-        })
+        }).catch(reason => 
+        {
+            this.onConnectionLoss('control_error');
+        });
     }
 
     readData()
@@ -129,7 +138,7 @@ class Backend extends Router
             let read = () => {
                 return reader.read().then(({value, done}) => {
                     if (done) {
-                        console.log('stream ended');
+                        this.onConnectionLoss('data');
                         return;
                     }
                     if (value)
@@ -152,10 +161,13 @@ class Backend extends Router
                     }
                     
                     return read();
-                });
+                })
             };
             return read();
-        });
+        }).catch(reason => 
+        {
+            this.onConnectionLoss('data_error');
+        });;
     }
 }
 

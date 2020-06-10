@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 
 // Components
 import Toolbar from './components/toolbar';
@@ -9,10 +9,13 @@ import Editor from './components/editor';
 import LogsAndOthers from './components/logs_and_term';
 import {connect} from 'react-redux';
 import MessageBox from '../../elements/message_box';
+import Blocker from './components/toolbar_blocker';
+import Slide from 'react-reveal/Slide';
 
 // Actions
 import {setFileTreeBranch} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
+import {setConnected, setConnectMessage, setTryingToConnect} from '../../actions/backend_actions';
 
 // Other
 import Backend from '../../backend_connector';
@@ -149,6 +152,7 @@ class MainWindow extends React.Component
                             this.props.dispatch(fileWasSynchronized(file.path));
                         });
                     }
+                    return file;
                 })
             }
         }, true);
@@ -186,12 +190,12 @@ class MainWindow extends React.Component
             this.props.dispatch(addOpenFileWithContent(head.path, data));
             return;
         }
-        console.log(head);
     }
 
     onControlStream(head, data)
     {
-        console.log(head);
+        if (head.type === "welcome")
+            this.props.dispatch(setConnected(true));
     }
 
     onStreamError(err)
@@ -202,11 +206,13 @@ class MainWindow extends React.Component
     constructor(props) 
     {
         super(props)
+        this.dict = new Dictionary();
+        this.dict.setLang(this.props.locale.language);
+
         this.registerMenuActions();
         this.installSaveShortcuts();
 
-        this.dict = new Dictionary();
-        this.dict.setLang(this.props.locale.language);
+        this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectingToBackend", "main_window")));
 
         this.backend = new Backend
         (
@@ -216,8 +222,20 @@ class MainWindow extends React.Component
             // Data Callback
             (...args) => {this.onDataStream(...args);}, 
             // Error Callback
-            (...args) => {this.onStreamError(...args);}
+            (...args) => {this.onStreamError(...args);},
+            // on Connection Loss
+            (...args) => {this.onConnectionLoss(...args);}
         );
+    }
+
+    onConnectionLoss(which)
+    {
+        if (which === "control_error" || which === "data_error")
+            this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectionFailed", "main_window")))
+        else
+            this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectionLost", "main_window")))
+        this.props.dispatch(setConnected(false));
+        this.props.dispatch(setTryingToConnect(false));
     }
 
     registerMenuActions = () => 
@@ -232,6 +250,7 @@ class MainWindow extends React.Component
         ipcRenderer.on('connectBackend', (event, arg) => 
         {
             this.backend.attachToStreams();
+            this.props.dispatch(setTryingToConnect(true));
         })
         
         ipcRenderer.on('testBackend', (event, arg) => 
@@ -282,7 +301,12 @@ class MainWindow extends React.Component
     {
         return (
             <div id='Content'>
-                <Toolbar cmake={new CMakeToolbarEvents()}/>
+                <div id='BlockerOrToolbar'>
+                    <Slide left when={!this.props.backend.connected}>
+                        <Blocker></Blocker>
+                    </Slide>
+                    <Toolbar cmake={new CMakeToolbarEvents()}/>
+                </div>
                 <div id='SplitterContainer'>
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={60}>
                         <div>
@@ -307,6 +331,7 @@ export default connect(state => {
         openFiles: state.openFiles.openFiles,
         activeFile: state.openFiles.activeFile,
         shortcuts: state.shortcuts,
-        locale: state.locale
+        locale: state.locale,
+        backend: state.backend
     }
 })(MainWindow);

@@ -1,0 +1,39 @@
+#ToolbarBlocker
+{
+    position: absolute;
+    background-color: rgb(0, 0, 0);
+    z-index: 10;
+    height: var(--toolbar-height);
+    width: 100%;
+    color: var(--foreground);
+}
+
+#Stripes
+{
+    width: 20px;
+    height: var(--toolbar-height);
+    background: repeating-linear-gradient(
+        45deg,
+        #ffe600,
+        #ffe600cb 5px,
+        #000000 5px,
+        #000000 10px
+    );
+}
+
+#ConnectSign
+{
+    position: relative;
+    left: 50px;
+    top: calc(calc(calc(var(--toolbar-height) - 30px) / 2) - 8px);
+    font-size: 30px;
+}
+
+#ConnectArea
+{
+    display: flex;
+    position: absolute;
+    height: var(--toolbar-height);
+    width: 100%;
+    top: 0px;
+}

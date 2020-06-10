@@ -8,9 +8,6 @@ import classNames from 'classnames';
 
 import _ from 'lodash';
 
-//import { setActiveFile, removeOpenFile } from '../../../actions/open_file_actions';
-import * as openFileActions from '../../../actions/open_file_actions';
-
 // Styles
 import './styles/file_tree.css';
 

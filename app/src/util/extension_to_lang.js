@@ -34,7 +34,7 @@ const extensionToLanguage = (ext, filename, extraDefinitions, guess) =>
         return 'cpp';
     if (isAnyOf('.cs'))
         return 'csharp';
-    if (isAnyOf('.ts'))
+    if (isAnyOf('.ts', '.tsx'))
         return 'typescript';
     if (isAnyOf('.js', '.jsx'))
         return 'javascript';
