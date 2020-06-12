@@ -4,6 +4,7 @@
 #include "routers/terminal.hpp"
 #include "routers/toolbar.hpp"
 #include "routers/workspace.hpp"
+#include "routers/settings_provider.hpp"
 
 #include "config.hpp"
 
@@ -28,4 +29,5 @@ private:
     Routers::Toolbar toolbar_;
     Routers::DataStreamer streamer_;
     Routers::Terminal terminal_;
+    Routers::SettingsProvider settingsProvider_;
 };

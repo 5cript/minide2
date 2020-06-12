@@ -14,7 +14,9 @@ class Dictionary
                 },
                 "menu": {
                     "$File": "File",
-                    "$OpenWorkspace": "Open Workspace"
+                    "$OpenWorkspace": "Open Workspace",
+                    "$Settings": "Settings",
+                    "$Environment": "Environment"
                 },
                 "explorer": {
                     "$OpenFiles": "Open Files",
@@ -23,7 +25,7 @@ class Dictionary
                 "main_window": {
                     "$ConnectingToBackend": "Connecting to Backend",
                     "$ConnectionLost": "Connection Lost",
-                    "$ConnectionFailed": "Connection Failed"
+                    "$ConnectionFailed": "Connection Interupted / Failed"
                 },
                 "dialog": {
                     "$CloseUnsavedWarning": "Do you really want to close this file without saving?",
@@ -33,6 +35,13 @@ class Dictionary
                     "$No": "No",
                     "$Ok": "Ok",
                     "$Cancel": "Cancel"
+                },
+                "file_tree": {
+                    "$SetAsActiveProject": "Set as Active Project",
+                    "$OpenFile": "Open",
+                    "$DeleteFile": "Delete",
+                    "$OpenToTheSide": "Open in Split View",
+                    "$RenameFile": "Rename File"
                 }
             },
             "de_DE": {
@@ -41,16 +50,18 @@ class Dictionary
                 },
                 "menu": {
                     "$File": "Datei",
-                    "$OpenWorkspace": "Superprojekt Öffnen"
+                    "$OpenWorkspace": "Arbeitsraum Öffnen",
+                    "$Settings": "Einstellungen",
+                    "$Environment": "Ausführumgebung"
                 },
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
                     "$FileBrowser": "Datei Browser"
                 },
                 "main_window": {
-                    "$ConnectingToBackend": "Verbinde mit Backend",
+                    "$ConnectingToBackend": "Verbinde mit Server",
                     "$ConnectionLost": "Verbindung Verloren",
-                    "$ConnectionFailed": "Verbinden Fehlgeschlagen"
+                    "$ConnectionFailed": "Verbindung Unterbrochen / Fehlgeschlagen"
                 },
                 "dialog": {
                     "$CloseUnsavedWarning": "Datei hat ungespeicherte Änderungen, wirklich ohne speichern schließen?",
@@ -60,6 +71,13 @@ class Dictionary
                     "$No": "Nein",
                     "$Ok": "Ok",
                     "$Cancel": "Abbrechen"
+                },
+                "file_tree": {
+                    "$SetAsActiveProject": "Als aktives Projekt wählen",
+                    "$OpenFile": "Öffnen",
+                    "$DeleteFile": "Löschen",
+                    "$OpenToTheSide": "Parallel Öffnen",
+                    "$RenameFile": "Datei Umbennen"
                 }
             }    
         }

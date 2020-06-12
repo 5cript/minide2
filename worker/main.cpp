@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     );
 
     // start server on port 80. Numbers are also valid
-    server.start(std::to_string(43255));
+    server.start(std::to_string(config.port));
 
     // Routings
     using namespace Routers;

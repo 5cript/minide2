@@ -297,6 +297,14 @@ class MainWindow extends React.Component
             this.yesAction();
     }
 
+    componentDidMount()
+    {
+        console.log('mounted');
+        setTimeout(() => {
+            this.backend.attachToStreams();
+        }, 500);
+    }
+
     render = () => 
     {
         return (
@@ -305,7 +313,9 @@ class MainWindow extends React.Component
                     <Slide left when={!this.props.backend.connected}>
                         <Blocker></Blocker>
                     </Slide>
-                    <Toolbar cmake={new CMakeToolbarEvents()}/>
+                    <Slide right when={this.props.backend.connected}>
+                        <Toolbar cmake={new CMakeToolbarEvents()}/>
+                    </Slide>
                 </div>
                 <div id='SplitterContainer'>
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={60}>

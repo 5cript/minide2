@@ -38,6 +38,7 @@
 		<Linker>
 			<Add option="-ltiny-process-library" />
 			<Add option="-lSimpleJSON" />
+			<Add option="-lspecial_paths" />
 			<Add option="-lautomata" />
 			<Add option="-lboost_filesystem-mt" />
 			<Add option="-lboost_system-mt" />
@@ -55,6 +56,7 @@
 			<Add directory="../SimpleJSON/build" />
 			<Add directory="../tiny-process-library/build" />
 			<Add directory="../automata/build" />
+			<Add directory="../special-paths/build" />
 		</Linker>
 		<Unit filename="../attender/attender.hpp" />
 		<Unit filename="../attender/attender/callback_wrapper.cpp" />
@@ -142,10 +144,14 @@
 		<Unit filename="hybrid_read_sink.hpp" />
 		<Unit filename="json.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="public_settings.cpp" />
+		<Unit filename="public_settings.hpp" />
 		<Unit filename="routers.cpp" />
 		<Unit filename="routers.hpp" />
 		<Unit filename="routers/router_base.cpp" />
 		<Unit filename="routers/router_base.hpp" />
+		<Unit filename="routers/settings_provider.cpp" />
+		<Unit filename="routers/settings_provider.hpp" />
 		<Unit filename="routers/streamer.cpp" />
 		<Unit filename="routers/streamer.hpp" />
 		<Unit filename="routers/terminal.cpp" />
@@ -155,6 +161,8 @@
 		<Unit filename="routers/workspace.cpp" />
 		<Unit filename="routers/workspace.hpp" />
 		<Unit filename="routers_fwd.hpp" />
+		<Unit filename="settings/environment.cpp" />
+		<Unit filename="settings/environment.hpp" />
 		<Unit filename="streaming/common_messages/binary_data.cpp" />
 		<Unit filename="streaming/common_messages/binary_data.hpp" />
 		<Unit filename="streaming/common_messages/server_time.cpp" />

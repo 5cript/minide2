@@ -72,6 +72,12 @@ namespace Routers
         );
     }
 
+    template <typename ResT>
+    void sendJson(ResT res, json const& j)
+    {
+        res->status(200).type(".json").send(j.dump());
+    }
+
     /**
      *  Only reads size indicated json and then returns without reading the rest.
      */

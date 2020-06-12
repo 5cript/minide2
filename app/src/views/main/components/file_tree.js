@@ -1,12 +1,17 @@
 import React, {PureComponent} from 'react';
-//import {Treebeard} from 'react-treebeard';
+import {connect} from 'react-redux';
+
+// Components
 import Tree from 'rc-tree';
 import MessageBox from '../../../elements/message_box';
+import ContextMenu from '../../../elements/context_menu';
 
-import {connect} from 'react-redux';
+// Utility
 import classNames from 'classnames';
-
 import _ from 'lodash';
+
+// Actions
+import {setActiveProject} from '../../../actions/workspace_actions';
 
 // Styles
 import './styles/file_tree.css';
@@ -16,30 +21,15 @@ const Icon = ({ selected }) => (
 );
   
 /*
+Example
+
 const treeData = [
     {
       key: '0-0',
       title: 'parent 1',
       children: [
-        { key: '0-0-0', title: 'parent 1-1', children: [{ key: '0-0-0-0', title: 'parent 1-1-0' }] },
-        {
-          key: '0-0-1',
-          title: 'parent 1-2',
-          children: [
-            { key: '0-0-1-0', title: 'parent 1-2-0', disableCheckbox: true },
-            { key: '0-0-1-1', title: 'parent 1-2-1' },
-            { key: '0-0-1-2', title: 'parent 1-2-2' },
-            { key: '0-0-1-3', title: 'parent 1-2-3' },
-            { key: '0-0-1-4', title: 'parent 1-2-4' },
-            { key: '0-0-1-5', title: 'parent 1-2-5' },
-            { key: '0-0-1-6', title: 'parent 1-2-6' },
-            { key: '0-0-1-7', title: 'parent 1-2-7', children:[{ key: 1123, title: 1123 }] },
-            { key: '0-0-1-8', title: 'parent 1-2-8' },
-            { key: '0-0-1-9', title: 'parent 1-2-9' },
-            { key: 1128, title: 1128 },
-          ],
-        },
-      ],
+        { key: '0-0-0', title: 'parent 1-1', children: [{ key: '0-0-0-0', title: 'parent 1-1-0' }] }
+      ]
     },
   ];
 */
@@ -94,7 +84,6 @@ class FileView extends PureComponent
 
     onTreeRightClick = event => 
     {
-        console.log('right click: ' + event.node.key);
     }
 
     onNodeDoubleClick = (event) => 
@@ -113,14 +102,54 @@ class FileView extends PureComponent
         }
     }
 
-    onMouseEnter = (v) => 
+    onMouseEnter(v)
     {
         this.hoveredNode = v.node;
+    }
+
+    onMouseLeave(v)
+    {
+        this.hoveredNode = undefined;
+    }
+
+    onFileContextOpen(xOffset, yOffset)
+    {
+        const doShow = this.hoveredNode && (this.hoveredNode.isLeaf !== false);
+        if (doShow)
+            this.contextItem = this.hoveredNode;
+        return {
+            xOffset: 10,
+            yOffset: -110,
+            doShow: doShow
+        }
+    }
+
+    onDirectoryContextOpen(xOffset, yOffset)
+    {
+        const doShow = this.hoveredNode && (this.hoveredNode.isLeaf === false);
+        if (doShow)
+            this.contextItem = this.hoveredNode;
+        return {
+            xOffset: 10,
+            yOffset: -110,
+            doShow: doShow
+        }
+    }
+
+    setActiveProject()
+    {
+        if (this.contextItem === undefined)
+            console.error('context item undefined when setting active project')
+        let contextItem = _.clone(this.contextItem);
+
+        this.props.backend.workspace().setActiveProject(contextItem.key, () => {
+            this.props.dispatch(setActiveProject(contextItem.key))
+        });
     }
     
     render(){
         return (
-            <>
+            <div id="FileTreeContainer">
                 <Tree
                     className={"main-tree"}
                     ref={this.setTreeRef}
@@ -134,6 +163,7 @@ class FileView extends PureComponent
                     onRightClick={e => this.onTreeRightClick(e)}
                     onDoubleClick={e => this.onNodeDoubleClick(e)}
                     onMouseEnter={pair => this.onMouseEnter(pair)}
+                    onMouseLeave={pair => this.onMouseLeave(pair)}
                     switcherIcon={obj => {
                         if (obj.isLeaf) {
                             return <></>;
@@ -147,7 +177,50 @@ class FileView extends PureComponent
                 />
                 <div style={{display: 'block', height: '100px'}}></div>
                 <MessageBox boxStyle="YesNo" visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
-            </>
+                <ContextMenu
+                    contextId={'FileTreeContainer'}
+                    menuId={'contextMenuForFiles'}
+                    closeOnClickOut={true}
+                    onOpen={(...args) => {return this.onFileContextOpen(...args);}}
+                    otherMenus={["contextMenuForDirectories"]}
+                    items={[
+                        {
+                            label: this.props.dict.translate("$OpenFile", "file_tree"),
+                            onClick: () => {console.log('configure')}
+                        },
+                        {
+                            label: this.props.dict.translate("$OpenToTheSide", "file_tree"),
+                            onClick: () => {console.log('delete')},
+                        },
+                        {
+                            line: true
+                        },
+                        {
+                            label: this.props.dict.translate("$RenameFile", "file_tree"),
+                        },
+                        {
+                            line: true
+                        },
+                        {
+                            label: this.props.dict.translate("$DeleteFile", "file_tree"),
+                            onClick: () => {console.log('delete')},
+                        }
+                    ]}
+                />
+                <ContextMenu
+                    contextId={'FileTreeContainer'}
+                    menuId={'contextMenuForDirectories'}
+                    closeOnClickOut={true}
+                    onOpen={(...args) => {return this.onDirectoryContextOpen(...args);}}
+                    otherMenus={["contextMenuForFiles"]}
+                    items={[
+                        {
+                            label: this.props.dict.translate("$SetAsActiveProject", "file_tree"),
+                            onClick: (e) => {this.setActiveProject(e)}
+                        }
+                    ]}
+                />
+            </div>
         );
     }
 }

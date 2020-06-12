@@ -111,10 +111,11 @@ test-project
 filewatch
 worker/worker.cscope_file_list
 jstest
+special-paths
+automata
 
 build-*
 app_backup
 frontend_
-automata
 x
 y

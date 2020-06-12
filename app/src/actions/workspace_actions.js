@@ -10,3 +10,11 @@ export function setFileTreeBranch(directory, files, directories)
         directories: directories
     };
 }
+
+export function setActiveProject(path)
+{
+    return {
+        type: 'SET_ACTIVE_PROJECT',
+        path: path
+    };
+}

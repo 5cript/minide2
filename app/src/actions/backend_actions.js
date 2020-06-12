@@ -37,7 +37,7 @@ export function setConnectMessage(msg)
 export function setTryingToConnect(connecting) 
 {
     return {
-        type: 'SET_CONNECT_MESSAGE',
+        type: 'SET_TRY_TO_CONNECT',
         connecting: connecting
     }
 }

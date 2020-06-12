@@ -10,7 +10,8 @@ const initialState =
         title: '',
         typeSplitIndex: 0, // the position where the data goes from directories to files.
         children: []
-    }
+    },
+    activeProject: undefined
 };
 
 export default function reducer(state = initialState, action) 
@@ -21,6 +22,37 @@ export default function reducer(state = initialState, action)
         {
             return {...state, root: action.payload}
         }
+        case 'SET_ACTIVE_PROJECT':
+        {
+            let res = _.cloneDeep(state.fileTree);
+
+            const findNodeAndSetStyle = (path, style) =>
+            {
+                let originSplit = path.split('/');
+                originSplit.shift();
+
+                let curNode = res;
+                for (let depth = 1; depth !== originSplit.length; ++depth) 
+                {
+                    let searchResult = binaryChildSearch(curNode, originSplit[depth]);
+                    if (searchResult.match === false) 
+                        console.error('path not found in tree', curNode, originSplit[depth]);
+                    else 
+                        curNode = curNode.children[searchResult.index];
+                }
+                curNode.style = style;
+            };
+
+            if (state.activeProject !== undefined)
+                findNodeAndSetStyle(state.activeProject, undefined);
+
+            findNodeAndSetStyle(action.path, {
+                fontWeight: 'bold',
+                color: 'var(--theme-color)'
+            });
+
+            return {...state, activeProject: action.path, fileTree: res};   
+        }
         case 'SET_FILE_TREE_BRANCH': 
         {
             if (action.directories === undefined)
@@ -28,7 +60,7 @@ export default function reducer(state = initialState, action)
             if (action.files === undefined)
                 action.files = [];
 
-            let lexiSortCompare = (lhs, rhs) => {
+            const lexiSortCompare = (lhs, rhs) => {
                 return lhs.localeCompare(rhs);
             }
 
@@ -38,7 +70,7 @@ export default function reducer(state = initialState, action)
             let originSplit = action.origin.split('/');
             originSplit.shift();
             
-            let insertInTree = (node, index, title, key) => 
+            const insertInTree = (node, index, title, key) => 
             {
                 node.children.splice(index, 0, {
                     title: title, key: key, typeSplitIndex: 0
@@ -47,7 +79,7 @@ export default function reducer(state = initialState, action)
                 return node.children[index];
             }
 
-            let catenateOriginSplit = (depth) => 
+            const catenateOriginSplit = (depth) => 
             {
                 let cat = '/';
                 for (let i = 0; i !== depth; ++i)
@@ -55,13 +87,21 @@ export default function reducer(state = initialState, action)
                 return cat;
             }
 
-            let setChildren = (node) => {
+            const setChildren = (node) => 
+            {
                 node.children = [];
                 for (let i of action.directories) 
                     node.children.push({key: action.origin + "/" + i, title: i, isLeaf: false});
                 node.typeSplitIndex = action.directories.length;
                 for (let i of action.files) 
-                    node.children.push({key: action.origin + "/" + i, title: i});
+                {
+                    if (i[0] !== '.')
+                        node.children.push({key: action.origin + "/" + i, title: i});
+                    else
+                        node.children.push({key: action.origin + "/" + i, title: i, style: {
+                            color: 'var(--invisible-file)'
+                        }});
+                }
             }
 
             // is not root?
@@ -75,7 +115,6 @@ export default function reducer(state = initialState, action)
 
                 for (let depth = 1; depth !== originSplit.length; ++depth) 
                 {
-                    console.log(curNode)
                     let searchResult = binaryChildSearch(curNode, originSplit[depth]);
                     if (searchResult.match === false) 
                         curNode = insertInTree(curNode, searchResult.index, originSplit[depth], catenateOriginSplit(depth));
@@ -87,6 +126,7 @@ export default function reducer(state = initialState, action)
             else 
             {            
                 res = _.cloneDeep(initialState.fileTree);    
+                res.isLeaf = false;
                 setChildren(res);
                 res.key = action.origin;
                 res.title = originSplit[0];

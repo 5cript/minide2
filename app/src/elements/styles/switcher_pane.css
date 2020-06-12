@@ -1,0 +1,22 @@
+.leftSlideContent
+{
+    display: flex;
+}
+
+.rightSlideContent
+{
+    display: flex;    
+}
+
+.switchButtonLeft
+{
+    width: 10px;
+    height: 100%;
+    background-color: yellowgreen;
+}
+
+.switchButtonRight
+{
+    width: 10px;
+    background-color: teal;
+}

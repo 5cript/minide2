@@ -15,4 +15,6 @@ struct Config
 
     // maybe make this user dependent in the future.
     long long maxFileWriteSize = 10 * 1024 * 1024;
+
+    unsigned short port = 43255;
 };

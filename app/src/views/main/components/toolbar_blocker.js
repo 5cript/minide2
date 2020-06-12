@@ -31,7 +31,7 @@ class Blocker extends React.Component
                         css={override}
                         className='loader'
                         color={"var(--theme-color)"}
-                        loading={this.props.backend.connecting}
+                        loading={this.props.backend.tryingToConnect}
                     />
                     <div id='ConnectSign'>{this.props.backend.connectMessage}</div>
                 </div>

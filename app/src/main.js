@@ -10,12 +10,15 @@ const { ipcMain } = require('electron')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
+import createEnvironmentWindow from './environment_settings';
+
 import Dictionary from './util/localization.js';
 let dict = new Dictionary();
 
 let mainWindow;
 
 let forceQuit = false;
+let port = '3000';
 
 const menuTemplate = [
 	{
@@ -23,9 +26,31 @@ const menuTemplate = [
 		submenu: [
 			{
 				label: dict.translate('$OpenWorkspace', 'menu'),
-				click: async e => {
+				click: async e => 
+				{
 					let folder = await electron.dialog.showOpenDialog(mainWindow, {properties: ['openDirectory']});
 					mainWindow.webContents.send('openWorkspace', folder);
+				}
+			}
+		]
+	},
+	{
+		label: dict.translate('$Settings', 'menu'),
+		submenu: [
+			{
+				label: dict.translate('$Environment', 'menu'),
+				click: async e => 
+				{
+					const path = isDev
+						? `http://localhost:${port}?environments`
+						: `file://${__dirname}/../public/index.html?environments`
+					
+					const pos = mainWindow.getPosition();
+					const size = mainWindow.getSize();
+					createEnvironmentWindow(path, {
+						x: pos[0] + size[0] / 2,
+						y: pos[1] + size[1] / 2
+					});
 				}
 			}
 		]
@@ -35,15 +60,11 @@ const menuTemplate = [
 		submenu: [
 			{
 				label: dict.translate('$Connect', 'menu'),
-				click: async e => {
-					mainWindow.webContents.send('connectBackend');
-				}
+				click: async e => mainWindow.webContents.send('connectBackend')
 			},
 			{
 				label: dict.translate('$Test', 'menu'),
-				click: async e => {
-					mainWindow.webContents.send('testBackend');
-				}
+				click: async e => mainWindow.webContents.send('testBackend')
 			}
 		]
 	}
@@ -59,8 +80,6 @@ function registerShortcuts(mainWindow)
 
 function createWindow() 
 {
-	console.log(__dirname);
-
 	let menu = new electron.Menu.buildFromTemplate(menuTemplate);
 
 	electron.Menu.setApplicationMenu(menu);
@@ -89,12 +108,10 @@ function createWindow()
 		},
 	})
 
-	let port = '3000';
-	//let port = '5000';
 	mainWindow.loadURL(
 		isDev
-			? 'http://localhost:' + port
-			: `file://${__dirname}/../public/index.html`
+			? `http://localhost:${port}?main`
+			: `file://${__dirname}/../public/index.html?main`
 	);
 
 	if (isDev)

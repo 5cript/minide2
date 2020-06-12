@@ -22,7 +22,7 @@ class Router
     {
         this.dataId = dataId;
     }
-    postJson(url, id, data)
+    postJson(url, id, data, onSuccess, onFailure)
     {
         let body = {
             "id": id,
@@ -38,14 +38,26 @@ class Router
                 },
                 body: JSON.stringify(body)
             }
-        ).then(res => {
-            if (res.status >= 300) {
-                res.text().then((value) => {
-                    this.errorCallback(value);
-                });
+        ).then(res => 
+        {
+            if (res.status >= 400) 
+            {
+                if (onFailure !== undefined)
+                    onFailure(res);
+                else
+                    res.text().then((value) => {
+                        this.errorCallback(value);
+                    });
                 return;
             }
-        }).catch(e => {
+            if (res.status >= 200 && res.status <= 299) 
+            {
+                if (onSuccess !== undefined)
+                    onSuccess(res);
+                return;
+            }
+        }).catch(e => 
+        {
             console.error(e);
         });
     }

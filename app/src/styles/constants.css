@@ -6,5 +6,9 @@
     --theme-color: #43b14c;
     --theme-darker: #318038;
 
+    /*--theme-color: rgb(209, 61, 61);*/
+    /*--theme-color-darker: rgb(134, 40, 40);*/
+
     --toolbar-height: 51px;
+    --invisible-file: #aff5f3;
 }

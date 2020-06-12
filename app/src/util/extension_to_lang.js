@@ -48,8 +48,10 @@ const extensionToLanguage = (ext, filename, extraDefinitions, guess) =>
         return 'markup';
     if (isAnyOf('.yml'))
         return 'yaml';
-    if (isAnyOf('.sh'))
+    if (isAnyOf('.sh', '.gitignore'))
         return 'shell';
+    if (isAnyOf('.html'))
+        return 'html';
 
     // workaround for cmake
     if (isAnyOf('.cmake'))

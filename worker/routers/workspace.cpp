@@ -372,6 +372,34 @@ namespace Routers
                 }
             });
         });
+
+        cors_options(server, "/api/workspace/setActiveProject", "POST");
+        server.post("/api/workspace/setActiveProject", [this](auto req, auto res)
+        {
+            enable_cors(res);
+
+            if (impl_->info.root.empty())
+                return res->status(400).send("open a workspace first");
+
+            readJsonBody(req, res, [this, req, res](json const& body)
+            {
+                if (!body.contains("path"))
+                    return res->status(400).send("need path in json body");
+
+                std::string path = body["path"].get<std::string>();
+
+                auto veri = verifyPath(path);
+                if (!veri.first.empty())
+                    return res->status(400).send(veri.first);
+
+                if (!sfs::is_directory(veri.second))
+                    return res->status(400).send("is not a directory");
+
+                impl_->info.activeProject = veri.second;
+
+                res->status(200).end();
+            });
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::pair <std::string, std::string> Workspace::verifyPath(std::string path, bool mustExist)

@@ -7,6 +7,7 @@ RouterCollection::RouterCollection(attender::tcp_server* server, Config const& c
     , toolbar_{this, *server}
     , streamer_{this, *server, config}
     , terminal_{this, *server}
+    , settingsProvider_{this, *server, config}
 {
 }
 //---------------------------------------------------------------------------------------------------------------------

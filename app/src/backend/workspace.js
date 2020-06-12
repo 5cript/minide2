@@ -78,6 +78,13 @@ class Workspace extends Router
         });
     }
 
+    setActiveProject(path, onSuccess)
+    {
+        this.postJson(this.url("/api/workspace/setActiveProject"), this.controlId, {
+            path: path
+        }, onSuccess);
+    }
+
 }
 
 export default Workspace;
