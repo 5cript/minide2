@@ -1,22 +1,95 @@
-.leftSlideContent
+.sliderContainer
 {
-    display: flex;
-}
-
-.rightSlideContent
-{
-    display: flex;    
-}
-
-.switchButtonLeft
-{
-    width: 10px;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
     height: 100%;
-    background-color: yellowgreen;
+    -webkit-transition: .4s;
+    transition: .4s;
+    display: flex;
+    transition: width 2s;
 }
 
-.switchButtonRight
+.offsetter
 {
-    width: 10px;
-    background-color: teal;
+    position: relative;
+    top: calc(49% - 13px);
+}
+
+.arrow 
+{
+    border: solid var(--foreground-color);
+    border-width: 0 3px 3px 0;
+    opacity: 0.7;
+    display: inline-block;
+    padding: 3px;
+    color: var(--foreground-color);
+}
+
+.right 
+{
+    transform: translateX(4px) rotate(-45deg);
+}
+
+.left 
+{
+    transform: translateX(8px) rotate(135deg);
+}
+
+.paneButton
+{
+    height: 100%;
+    background-color: var(--background-color-darker);
+    width: 20px;
+}
+
+.rightPaneButton
+{
+    position: absolute;
+    right: 0px;
+}
+
+.leftPaneRetracted
+{
+    transform: translate(100%);
+    transition: all .3s;
+}
+
+.leftPaneReversal
+{
+    transform: translate(0px);
+    transition: all .3s;
+}
+
+.rightPaneRetracted
+{
+    transform: translate(-100%);
+    transition: all .3s;
+}
+
+.rightPaneReversal
+{
+    transform: translate(0px);
+    transition: all .3s;
+}
+
+.leftPane
+{
+    position: absolute;
+    display: flex;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-color);
+}
+
+.rightPane
+{
+    position: absolute;
+    display: flex;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--background-color);
 }

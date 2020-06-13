@@ -22,6 +22,10 @@ class Dictionary
                     "$OpenFiles": "Open Files",
                     "$FileBrowser": "File Browser"
                 },
+                "json_options": {
+                    "$JsonRepresentation": "JSON Representation",
+                    "$JsonBrokenDiscard": "JSON is incorrect, discard invalid changes?"
+                },
                 "main_window": {
                     "$ConnectingToBackend": "Connecting to Backend",
                     "$ConnectionLost": "Connection Lost",
@@ -57,6 +61,10 @@ class Dictionary
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
                     "$FileBrowser": "Datei Browser"
+                },
+                "json_options": {
+                    "$JsonRepresentation": "JSON Repräsentation",
+                    "$JsonBrokenDiscard": "JSON ist inkorrekt, Änderungen verwerfen?"
                 },
                 "main_window": {
                     "$ConnectingToBackend": "Verbinde mit Server",

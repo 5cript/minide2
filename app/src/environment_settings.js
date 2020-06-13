@@ -18,7 +18,9 @@ export default function createEnvironmentWindow(path, parentCenter)
 		}
     })
     
-    envWindow.removeMenu();
+	envWindow.removeMenu();
+	
+	envWindow.webContents.openDevTools()
 
 	envWindow.loadURL(path);
 }
