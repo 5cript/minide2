@@ -1,0 +1,17 @@
+.sneakInput 
+{
+    background-color: var(--background-color-darker);
+    border: none;
+    color: var(--foreground-accent);
+    outline-width: 0;
+    font-size: 17px;
+}
+
+.styledInput
+{
+    background-color: var(--background-color-darker);
+    color: var(--foreground-color);
+    border: solid 1px var(--foreground-color);
+    outline-width: 0;
+    font-size: 17px;
+}

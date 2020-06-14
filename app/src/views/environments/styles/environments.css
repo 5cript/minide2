@@ -5,6 +5,87 @@
     width: 100%;
 }
 
+.envSettingsContainer
+{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.pickerGroup
+{
+    padding: 10px;
+    top: 10px;
+    left: 10px;
+    display: flex;
+}
+
+.lineSep
+{
+    height: 1px;
+    width: calc(100% - 30px);
+    border-bottom: 1px solid var(--foreground-color);
+    margin-left: 5px;
+    position: relative;
+}
+
+#pathLabel
+{
+    padding-left: 10px;
+    padding-top: 5px;
+}
+
+#variablesLabel
+{
+    padding-left: 10px;
+    padding-top: 5px;
+}
+
+.pathBox
+{
+    position: relative;
+    left: 10px;
+    width: calc(100% - 38px);
+    background-color: var(--background-color-darker);
+    overflow: auto;
+    height: calc(50% - 50px);
+}
+
+.variables
+{
+    position: relative;
+    left: 10px;
+    width: calc(100% - 38px);
+    background-color: var(--background-color-darker);
+    overflow: auto;
+    height: calc(50% - 50px);
+}
+
+#addPathLineSection
+{
+    display: flex;
+    position: relative;
+    left: 10px;
+    padding-top: 3px;
+    width: 100%;
+}
+
+.pathInput
+{
+    width: calc(100% - 146px);
+}
+
+.envPicker
+{
+    align-self: center;
+}
+
+.singleEnvironment
+{
+    height: 100%;
+}
+
 .fancyRepresentationContainer
 {
     height: 100%;

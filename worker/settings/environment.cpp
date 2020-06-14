@@ -79,6 +79,7 @@ namespace SettingParts
         {
             {"path", env.path},
             {"variables", env.variables}
+            {"inherits", env.inherits}
         };
     }
 //---------------------------------------------------------------------------------------------------------------------
@@ -86,6 +87,7 @@ namespace SettingParts
     {
         j.at("path").get_to(env.path);
         j.at("variables").get_to(env.variables);
+        j.at("inherits").get_to(env.inherits);
     }
 //#####################################################################################################################
 }

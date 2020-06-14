@@ -22,6 +22,12 @@ class Dictionary
                     "$OpenFiles": "Open Files",
                     "$FileBrowser": "File Browser"
                 },
+                "environments": {
+                    "$Add": "Add",
+                    "$Delete": "Delete",
+                    "$PathLabel": "Path Variable",
+                    "$VariablesLabel": "Other Environment Variables"
+                },
                 "json_options": {
                     "$JsonRepresentation": "JSON Representation",
                     "$JsonBrokenDiscard": "JSON is incorrect, discard invalid changes?"
@@ -61,6 +67,12 @@ class Dictionary
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
                     "$FileBrowser": "Datei Browser"
+                },
+                "environments": {
+                    "$Add": "Hinzufügen",
+                    "$Delete": "Löschen",
+                    "$PathLabel": "Pfad Variable",
+                    "$VariablesLabel": "Sonstige Umgebungsvariablen"
                 },
                 "json_options": {
                     "$JsonRepresentation": "JSON Repräsentation",

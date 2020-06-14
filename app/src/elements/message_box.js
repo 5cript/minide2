@@ -1,21 +1,11 @@
 import React from 'react';
+
+// Components
 import Rodal from 'rodal';
+import StyledButton from './button';
 
-import Button from '@material-ui/core/Button';
-import { styled } from '@material-ui/core/styles';
-
+// Styles
 import './styles/message_box.css';
-
-const RodalButton = styled(Button)({
-    borderRadius: '0px',
-    padding: '5px',
-    marginLeft: '3px',
-    background: 'var(--theme-darker)',
-    color: 'var(--foreground-color)',
-    '&:hover': {
-        background: 'var(--theme-color)'
-    }
-});
 
 /**
  * Props:
@@ -83,8 +73,8 @@ class MessageBox extends React.Component
                     {
                         return (
                             <div className="buttonBox">
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Yes")}}>{this.dict.translate("$Yes", 'dialog')}</RodalButton>
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("No")}}>{this.dict.translate("$No", 'dialog')}</RodalButton>
+                                <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Yes")}}>{this.dict.translate("$Yes", 'dialog')}</StyledButton>
+                                <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("No")}}>{this.dict.translate("$No", 'dialog')}</StyledButton>
                             </div>
                         )
                     }
@@ -92,7 +82,7 @@ class MessageBox extends React.Component
                     {
                         return (
                             <div className="buttonBox">
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</RodalButton>
+                                <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</StyledButton>
                             </div>
                         )
                     }
@@ -100,8 +90,8 @@ class MessageBox extends React.Component
                     {
                         return (
                             <div className="buttonBox">
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</RodalButton>
-                                <RodalButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Cancel")}}>{this.dict.translate("$Cancel", 'dialog')}</RodalButton>
+                                <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</StyledButton>
+                                <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Cancel")}}>{this.dict.translate("$Cancel", 'dialog')}</StyledButton>
                             </div>
                         )
                     }

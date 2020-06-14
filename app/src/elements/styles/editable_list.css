@@ -1,0 +1,12 @@
+.editableListBox {
+    border: solid 1px var(--foreground-color);
+}
+
+.removeButton {
+    width: 16px;
+    margin-top: 4px;
+    height: 16px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--foreground-color);
+}

@@ -41,11 +41,14 @@ class JsonOptions extends React.Component
     onSwitch(to)
     {
         if (to !== "toLeft")
+        {
+            this.setState({editorText: this.props.json});
             return true;
+        }
         try
         {
             const cpy = _.clone(this.state.editorText);
-            const j = JSON.parse(cpy);
+            JSON.parse(cpy);
             this.onJsonUpdate(cpy);
             return true;
         }
