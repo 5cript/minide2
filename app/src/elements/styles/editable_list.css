@@ -2,11 +2,21 @@
     border: solid 1px var(--foreground-color);
 }
 
-.removeButton {
+.disabledListBox {
+    background-color: var(--background-disabled) !important;
+    background: var(--background-disabled) !important;
+    color: var(--foreground-disabled) !important;
+}
+
+.listRemoveButton {
     width: 16px;
     margin-top: 4px;
     height: 16px;
     text-align: center;
     font-size: 10px;
     color: var(--foreground-color);
+}
+
+.disabledListItem {
+    color: var(--foreground-disabled);
 }

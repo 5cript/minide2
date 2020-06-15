@@ -78,7 +78,7 @@ namespace SettingParts
         j = json
         {
             {"path", env.path},
-            {"variables", env.variables}
+            {"variables", env.variables},
             {"inherits", env.inherits}
         };
     }

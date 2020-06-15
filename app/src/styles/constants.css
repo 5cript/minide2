@@ -7,6 +7,9 @@
     --theme-color: #43b14c;
     --theme-darker: #318038;
 
+    --foreground-disabled: #BBBBBB;
+    --background-disabled: #707070;
+
     /*--theme-color: rgb(209, 61, 61);*/
     /*--theme-color-darker: rgb(134, 40, 40);*/
 

@@ -52,7 +52,7 @@
     height: calc(50% - 50px);
 }
 
-.variables
+.envVariables
 {
     position: relative;
     left: 10px;
@@ -74,6 +74,20 @@
 .pathInput
 {
     width: calc(100% - 146px);
+}
+
+.disabledPathInput
+{
+    background-color: var(--background-disabled) !important;
+    background: var(--background-disabled) !important;
+    color: var(--foreground-disabled) !important;
+}
+
+.disabledEnvVariables
+{
+    background-color: var(--background-disabled) !important;
+    background: var(--background-disabled) !important;
+    color: var(--foreground-disabled) !important;
 }
 
 .envPicker

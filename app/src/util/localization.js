@@ -26,7 +26,12 @@ class Dictionary
                     "$Add": "Add",
                     "$Delete": "Delete",
                     "$PathLabel": "Path Variable",
-                    "$VariablesLabel": "Other Environment Variables"
+                    "$VariablesLabel": "Other Environment Variables",
+                    "$Key": "Key",
+                    "$Value": "Value",
+                    "$ConfirmProfileRemove": "Do you really want to delete this environment profile?",
+                    "$ProfileName": "Profile Name",
+                    "$ProfileAlreadyExists": "Profile with that name already exists"
                 },
                 "json_options": {
                     "$JsonRepresentation": "JSON Representation",
@@ -44,7 +49,10 @@ class Dictionary
                     "$Yes": "Yes",
                     "$No": "No",
                     "$Ok": "Ok",
-                    "$Cancel": "Cancel"
+                    "$Cancel": "Cancel",
+                    "$UnknownSchemeType": "Unknown Type for Form",
+                    "$UnfitRequirements": "Bedingungen für Eingabe nicht eingehalten",
+                    "$MayNotBeEmpty": "Darf nicht leer sein"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Set as Active Project",
@@ -72,7 +80,12 @@ class Dictionary
                     "$Add": "Hinzufügen",
                     "$Delete": "Löschen",
                     "$PathLabel": "Pfad Variable",
-                    "$VariablesLabel": "Sonstige Umgebungsvariablen"
+                    "$VariablesLabel": "Sonstige Umgebungsvariablen",
+                    "$Key": "Schlüssel",
+                    "$Value": "Wert",
+                    "$ConfirmProfileRemove": "Wollen sie dieses Profil wirklich löschen?",
+                    "$ProfileName": "Profilname",
+                    "$ProfileAlreadyExists": "Profil mit diesem Namen existiert bereits"
                 },
                 "json_options": {
                     "$JsonRepresentation": "JSON Repräsentation",
@@ -90,7 +103,10 @@ class Dictionary
                     "$Yes": "Ja",
                     "$No": "Nein",
                     "$Ok": "Ok",
-                    "$Cancel": "Abbrechen"
+                    "$Cancel": "Abbrechen",
+                    "$UnknownSchemeType": "Unbekannter Typ für Formular",
+                    "$UnfitRequirements": "Bedingungen für Eingabe nicht eingehalten",
+                    "$MayNotBeEmpty": "Darf nicht leer sein"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Als aktives Projekt wählen",

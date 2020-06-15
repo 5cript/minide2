@@ -31,10 +31,20 @@ class EditableList extends React.Component
         this.inputRef = node;
     }
 
+    isEnabled = () => 
+    {
+        return this.props.enabled !== false;
+    }
+
+    isDisabled = () => 
+    {
+        return !this.isEnabled();
+    }
+
     render()
     {
         return (
-            <div className={classNames("editableListBox", this.props.className)}>
+            <div className={classNames("editableListBox", this.props.className, !this.isEnabled() ? 'disabledListBox' : '')}>
                 {(()=>
                 {
                     let inc = -1;
@@ -42,9 +52,20 @@ class EditableList extends React.Component
                         this.props.items.map(item => {
                             let localInc = _.clone(++inc);
                             if (this.props.onChange === undefined || inc !== this.state.editingIndex)
-                                return <div style={{display: "flex"}}>
-                                    <div key={inc} onDoubleClick={() => {this.setState({editingIndex: localInc});}}>{item}</div>
-                                    <div className="removeButton" onClick={e => this.props.onRemove(localInc)}>{"\u274C"}</div>
+                                return <div key={inc} style={{display: "flex"}}>
+                                    <div 
+                                        className={classNames(!this.isEnabled() ? 'disabledListItem' : '')}
+                                        onDoubleClick={() => {
+                                            if (this.isDisabled())
+                                                return;
+                                            this.setState({editingIndex: localInc});
+                                        }
+                                    }>{item}</div>
+                                    <div className="listRemoveButton" onClick={e => {
+                                        if (this.isDisabled())
+                                            return;
+                                        this.props.onRemove(localInc)
+                                    }}>{"\u274C"}</div>
                                 </div>
                             else
                                 return (
@@ -54,13 +75,19 @@ class EditableList extends React.Component
                                         key={inc} 
                                         autoFocus
                                         value={item === undefined ? '' : item} 
-                                        onChange={
-                                            (e) => {this.props.onChange(localInc, e.target.value)}
-                                        }
-                                        onKeyPress={
-                                            (e) => {if (e.key === "Enter") this.defocus();}
-                                        }
+                                        onChange={e => {
+                                            if (this.isDisabled())
+                                                return;
+                                            this.props.onChange(localInc, e.target.value)
+                                        }}
+                                        onKeyPress={e => {
+                                            if (this.isDisabled())
+                                                return;
+                                            if (e.key === "Enter") this.defocus();
+                                        }}
                                         onFocus={e => {
+                                            if (this.isDisabled())
+                                                return;
                                             let val = e.target.value;
                                             e.target.value = '';
                                             e.target.value = val;

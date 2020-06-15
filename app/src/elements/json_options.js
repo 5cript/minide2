@@ -55,7 +55,7 @@ class JsonOptions extends React.Component
         catch(e)
         {
             let res = false;
-            this.showBox(this.props.dict.translate("$JsonBrokenDiscard", "json_options"), () => {
+            this.showBox(this.props.dict.translate("$JsonBrokenDiscard", "json_options") + " -> " + e.message, () => {
                 this.setState({
                     editorText: this.state.lastKnownCorrect
                 });

@@ -1,0 +1,32 @@
+.formInputField
+{
+
+}
+
+.formLabel
+{
+
+}
+
+.formInputGroup
+{
+    display: flex;
+}
+
+.formInput
+{
+    background-color: var(--background-color-darker);
+    color: var(--foreground-color);
+    outline-width: 0;
+    border: 0;
+    border-bottom: solid 1px var(--foreground-color);
+    font-size: 15px;
+    width: 100%;
+}
+
+.formInputBadRequirements
+{
+    width: calc(100% - 20px);
+    margin-right: 10px;
+    background-color: rgb(189, 58, 58);
+}

@@ -1,4 +1,4 @@
-#include "filesystem/directory_cache.hpp"
+#include "filesystem/filesystem.hpp"
 
 // routers
 #include "routers/workspace.hpp"
@@ -6,11 +6,14 @@
 #include "routers.hpp"
 
 #include "config.hpp"
+#include "log.hpp"
+#include "termination_handler.hpp"
 #include "streaming/common_messages/server_time.hpp"
 
 // FIXME REMOVE
 #include "hybrid_read_sink.hpp"
 
+#include <special-paths/special_paths.hpp>
 #include <attender/attender.hpp>
 
 #include <iostream>
@@ -20,8 +23,14 @@
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
+void setupLog();
+void setupCrashHandler();
+
 int main(int argc, char** argv)
 {
+    setupLog();
+    setupCrashHandler();
+
     using namespace attender;
 
     // Load Config
@@ -58,4 +67,37 @@ int main(int argc, char** argv)
 
     routers.streamer().shutdownAll();
     std::this_thread::sleep_for(100ms);
+}
+
+void setupLog()
+{
+    auto logPath = []()
+    {
+        auto home = sfs::path{SpecialPaths::getHome()};
+        if (!sfs::exists(home / ".minIDE"))
+            sfs::create_directory(home / ".minIDE");
+        if (!sfs::exists(home / ".minIDE" / "logs"))
+            sfs::create_directory(home / ".minIDE" / "logs");
+        return (home / ".minIDE" / "logs" / "log").string();
+    };
+
+    // Logging
+    auto& log = LOG().log();
+    log.configureProjectMainFile(__FILE__);
+    log.setTerminalEnabled(true);
+    log.open(
+        logPath(),
+        10
+    );
+    LOG() << "Build Time and Date: " << __DATE__ << " " << __TIME__ << '\n';
+}
+
+void setupCrashHandler()
+{
+    std::set_terminate(&onTerminate);
+
+    signal(SIGABRT, &onBadSignal);
+    signal(SIGFPE, &onBadSignal);
+    signal(SIGILL, &onBadSignal);
+    signal(SIGSEGV, &onBadSignal);
 }

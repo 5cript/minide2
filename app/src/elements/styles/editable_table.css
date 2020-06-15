@@ -2,3 +2,34 @@
 {
     border: 1px solid var(--foreground-color);
 }
+
+.tableCell
+{
+    width: 100%;
+}
+
+.tableAddButton
+{
+    position: relative;
+    transform: translateX(-4px) translateY(-1px);
+    border: 0;
+    width: calc(100% + 4px);
+    height: calc(100% + 2px);
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    color: lime;
+    background-color: black;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAI0lEQVQokWNgoDZQ2ujzHx0PN83YFBPCI1rzwEXV4NFMLAAA7+veT4sGGocAAAAASUVORK5CYII=');
+    background-position: top 4px left 5px;
+    background-repeat: no-repeat;
+}
+
+.tableRemoveButton {
+    width: 16px;
+    margin-top: 4px;
+    height: 16px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--foreground-color);
+}

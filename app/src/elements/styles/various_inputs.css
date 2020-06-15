@@ -15,3 +15,12 @@
     outline-width: 0;
     font-size: 17px;
 }
+
+.minimalInput
+{
+    background-color: var(--background-color-darker);
+    color: var(--foreground-color);
+    outline-width: 0;
+    border: 0;
+    font-size: 15px;
+}
