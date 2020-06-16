@@ -42,8 +42,13 @@ class Router
         {
             if (res.status >= 400) 
             {
-                if (onFailure !== undefined)
-                    onFailure(res);
+                if (onFailure !== undefined) {
+                    res.text().then(body => {
+                        onFailure(body);   
+                    }).catch(r => {
+                        onFailure(res);
+                    })
+                }
                 else
                     res.text().then((value) => {
                         this.errorCallback(value);
@@ -58,7 +63,35 @@ class Router
             }
         }).catch(e => 
         {
-            console.error(e);
+            if (onFailure !== undefined)
+                onFailure(e.message);
+            else
+                console.error(e);
+        });
+    }
+    getJsonWithCallbacks(urlPart, onSuccess, onError)
+    {        
+        let url = this.url(urlPart);
+        fetch(
+            url,
+            {
+                method: 'GET'
+            }
+        ).then(res => {
+            if (res.status >= 300) {
+                res.text().then((value) => {
+                    onError(value);
+                });
+                return;
+            }
+            res.json().then(json => {
+                onSuccess(json);
+            })
+        }).catch(e => {
+            if (onError !== undefined)
+                onError(e.message);
+            else
+                console.error(e);
         });
     }
 }

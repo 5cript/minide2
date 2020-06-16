@@ -25,7 +25,7 @@ namespace SettingParts
         /// A list (map, because integer indicates order because guarantees for arrays might be tricky to hold)
         /// of other environments to inherit from.
         /// Avoid usage, unless you really think its right for your case.
-        std::map <int, std::string> inherits;
+        std::map <std::string, std::string> inherits;
 
         std::map <std::string, std::string> compile(char pathSplit) const;
         std::string mergePath(char pathSplit) const;

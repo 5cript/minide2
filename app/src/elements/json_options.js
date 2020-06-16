@@ -4,6 +4,7 @@ import React from 'react';
 import AceEditor from "react-ace";
 import SwitcherPane from './switcher_pane';
 import MessageBox from "./message_box";
+import {SlimButton} from './button';
 
 // Other
 import _ from 'lodash';
@@ -12,6 +13,8 @@ import _ from 'lodash';
 import "ace-builds/webpack-resolver";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-clouds_midnight";
+
+import "./styles/json_options.css";
 
 class JsonOptions extends React.Component 
 {
@@ -102,8 +105,9 @@ class JsonOptions extends React.Component
             children.push(<div />);
 
         return (
-            <div className="switcher">
+            <div className="jsonSwitcher">
                 <SwitcherPane 
+                    className="jsonSwitcherArea"
                     onSwitch={to=>{return this.onSwitch(to)}}
                     ref={this.setSwitchRef}
                 >
@@ -126,6 +130,17 @@ class JsonOptions extends React.Component
                         />
                     </div>
                 </SwitcherPane>
+                <div className="jsonOptionsButtonArea">
+                    <div></div>
+                    <SlimButton onClick={e => {
+                        if (this.props.onSave)
+                            this.props.onSave();
+                    }}>{this.props.dict.translate("$Save", "dialog")}</SlimButton>
+                    <SlimButton onClick={e => {
+                        if (this.props.onCancel)
+                            this.props.onCancel();
+                    }}>{this.props.dict.translate("$Cancel", "dialog")}</SlimButton>
+                </div>
                 <MessageBox boxStyle="YesNo" dict={this.props.dict} visible={this.state.boxVisible} message={this.state.boxMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </div>
         )

@@ -41,6 +41,12 @@
     height: 100%;
     background-color: var(--background-color-darker);
     width: 20px;
+    animation: flashColor 1s;
+}
+
+@keyframes flashColor {
+	from { background-color: var(--background-disabled); }
+	to { background-color: var(--background-color-darker); }
 }
 
 .rightPaneButton

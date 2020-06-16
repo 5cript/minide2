@@ -31,7 +31,11 @@ class Dictionary
                     "$Value": "Value",
                     "$ConfirmProfileRemove": "Do you really want to delete this environment profile?",
                     "$ProfileName": "Profile Name",
-                    "$ProfileAlreadyExists": "Profile with that name already exists"
+                    "$ProfileAlreadyExists": "Profile with that name already exists",
+                    "$CommunicatingWithServer": "Communicating with server",
+                    "$FetchFailed": "Server communication failed",
+                    "$SaveChanges": "Save unsaved changes?",
+                    "$CloseAnyway": "Saveing failed, close regardless?"
                 },
                 "json_options": {
                     "$JsonRepresentation": "JSON Representation",
@@ -51,8 +55,9 @@ class Dictionary
                     "$Ok": "Ok",
                     "$Cancel": "Cancel",
                     "$UnknownSchemeType": "Unknown Type for Form",
-                    "$UnfitRequirements": "Bedingungen für Eingabe nicht eingehalten",
-                    "$MayNotBeEmpty": "Darf nicht leer sein"
+                    "$UnfitRequirements": "Requirements not met",
+                    "$MayNotBeEmpty": "May not be empty",
+                    "$Save": "Save"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Set as Active Project",
@@ -85,7 +90,11 @@ class Dictionary
                     "$Value": "Wert",
                     "$ConfirmProfileRemove": "Wollen sie dieses Profil wirklich löschen?",
                     "$ProfileName": "Profilname",
-                    "$ProfileAlreadyExists": "Profil mit diesem Namen existiert bereits"
+                    "$ProfileAlreadyExists": "Profil mit diesem Namen existiert bereits",
+                    "$CommunicatingWithServer": "Kommuniziere mit Server",
+                    "$FetchFailed": "Serverkommunikation fehlgeschlagen",
+                    "$SaveChanges": "Ungespeicherte Änderungen speichern?",
+                    "$CloseAnyway": "Speichern fehlgeschlage, trotzdem schließen?"
                 },
                 "json_options": {
                     "$JsonRepresentation": "JSON Repräsentation",
@@ -106,7 +115,8 @@ class Dictionary
                     "$Cancel": "Abbrechen",
                     "$UnknownSchemeType": "Unbekannter Typ für Formular",
                     "$UnfitRequirements": "Bedingungen für Eingabe nicht eingehalten",
-                    "$MayNotBeEmpty": "Darf nicht leer sein"
+                    "$MayNotBeEmpty": "Darf nicht leer sein",
+                    "$Save": "Speichern"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Als aktives Projekt wählen",

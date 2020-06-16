@@ -1,0 +1,40 @@
+.jsonSwitcher
+{
+    overflow: hidden;
+    height: 100vh;
+    width: 100%;
+}
+
+.jsonHolder
+{
+    height: 100%;
+    width: 100%;
+    background-color: black;
+}
+
+.jsonEditor
+{
+    height: 100%;
+    width: 100%;
+}
+
+.fancyRepresentationContainer
+{
+    height: 100%;
+    width: 100%;
+}
+
+.jsonOptionsButtonArea
+{
+    display: flex;
+    align-items: right;
+    justify-content: flex-end;
+    padding: 5px;
+    border-top: 3px groove var(--foreground-color);
+    height: 50px;
+}
+
+.jsonSwitcherArea
+{
+    height: calc(100% - 50px);
+}

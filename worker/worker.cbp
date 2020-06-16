@@ -52,6 +52,7 @@
 			<Add option="-lbcrypt" />
 			<Add option="-lcryptopp" />
 			<Add option="-lcrypto" />
+			<Add option="-lbacktrace" />
 			<Add directory="../attender/build" />
 			<Add directory="../SimpleJSON/build" />
 			<Add directory="../tiny-process-library/build" />
@@ -143,6 +144,8 @@
 		<Unit filename="hybrid_read_sink.cpp" />
 		<Unit filename="hybrid_read_sink.hpp" />
 		<Unit filename="json.hpp" />
+		<Unit filename="log.cpp" />
+		<Unit filename="log.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="public_settings.cpp" />
 		<Unit filename="public_settings.hpp" />
@@ -176,6 +179,8 @@
 		<Unit filename="streaming/stream_queue.hpp" />
 		<Unit filename="terminal/terminal.cpp" />
 		<Unit filename="terminal/terminal.hpp" />
+		<Unit filename="termination_handler.cpp" />
+		<Unit filename="termination_handler.hpp" />
 		<Unit filename="toolbars/basic_toolbar.cpp" />
 		<Unit filename="toolbars/basic_toolbar.hpp" />
 		<Unit filename="toolbars/cmake_toolbar.cpp" />

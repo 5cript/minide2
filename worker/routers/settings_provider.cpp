@@ -47,6 +47,52 @@ namespace Routers
 
             sendJson(res, j);
         });
+
+        cors_options(server, "/api/settings/environment/load", "GET");
+        server.get("/api/settings/environment/load", [this](auto req, auto res)
+        {
+            enable_cors(res);
+
+            json j;
+            auto&& envs = impl_->settings.environments();
+
+            j["environments"] = envs;
+
+            sendJson(res, j);
+        });
+
+        cors_options(server, "/api/settings/environment/save", "POST");
+        server.post("/api/settings/environment/save", [this](auto req, auto res)
+        {
+            enable_cors(res);
+
+            readJsonBody(req, res, [this, req, res](json const& body)
+            {
+                try
+                {
+                    if (!body.contains("environments"))
+                        return res->status(400).send("need environments in json body");
+
+                    std::unordered_map <std::string, SettingParts::Environment> envs;
+                    envs = body["environments"].get<decltype(envs)>();
+                    impl_->settings.setEnvironments(envs);
+
+                    res->status(204).end();
+                }
+                catch(json::exception const& exc)
+                {
+                    res->status(400).send(exc.what());
+                }
+                catch(std::exception const& exc)
+                {
+                    res->status(400).send(exc.what());
+                }
+                catch(...)
+                {
+                    res->status(400).send("something went wrong while reading from the json");
+                }
+            });
+        });
     }
 //#####################################################################################################################
 }

@@ -51,6 +51,12 @@ std::unordered_map <std::string, SettingParts::Environment> PublicSettings::envi
     return environments_;
 }
 //---------------------------------------------------------------------------------------------------------------------
+void PublicSettings::setEnvironments(std::unordered_map <std::string, SettingParts::Environment> const& envs)
+{
+    environments_ = envs;
+    save();
+}
+//---------------------------------------------------------------------------------------------------------------------
 PublicSettings::PublicSettings() = default;
 //---------------------------------------------------------------------------------------------------------------------
 PublicSettings::~PublicSettings() = default;

@@ -27,6 +27,7 @@ public:
     sfs::path getFileName() const;
 
     std::unordered_map <std::string, SettingParts::Environment> environments() const;
+    void setEnvironments(std::unordered_map <std::string, SettingParts::Environment> const& envs);
 
     friend void to_json(json& j, PublicSettings const& settings);
     friend void from_json(json const& j, PublicSettings& settings);

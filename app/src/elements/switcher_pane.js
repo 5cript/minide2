@@ -41,7 +41,7 @@ class SwitcherPane extends React.Component
             children.push(<div />);
 
         return (
-            <div className="sliderContainer">
+            <div className={classNames("sliderContainer", this.props.className ? this.props.className : '')}>
                 <div 
                     className={classNames("leftPane", this.state.switchState ? "leftPaneRetracted" : "leftPaneReversal")}
                 >

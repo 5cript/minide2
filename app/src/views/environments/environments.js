@@ -8,11 +8,13 @@ import EditableList from '../../elements/editable_list';
 import EditableTable from '../../elements/editable_table';
 import MessageBox from '../../elements/message_box';
 import InputBox from '../../elements/input_box';
+import LoadBlocker from '../../elements/load_blocker';
 
 // Other
 import Dictionary from '../../util/localization';
 import _ from 'lodash';
 import classNames from 'classnames';
+import Environment from '../../backend/environment';
 //import "../../util/ace_sane_theme";
 // https://github.com/securingsincity/react-ace/issues/126#issuecomment-345151567
 
@@ -21,6 +23,7 @@ import './styles/environments.css';
 import '../../styles/react-widgets.css';
 
 // Requires
+const {ipcRenderer} = window.require('electron');
 
 class Environments extends React.Component 
 {
@@ -50,9 +53,44 @@ class Environments extends React.Component
         yesNoMessage: 'You should never see this',
         okBoxVisible: false,
         okMessage: 'You should never see this',
-        profileInputVisible: false
+        profileInputVisible: false,
+        loading: true,
+        origEnvironments: {}
     }
 
+    constructor(props)
+    {
+        super(props);
+        this.fakeStore = {
+            getState: () =>
+            {
+                return {
+                    backend: {
+                        ip: "[::1]",
+                        port: 43255
+                    }
+                }
+            }
+        }
+        this.backendWorker = new Environment(this.fakeStore);
+
+        ipcRenderer.on('closeIssued', (event, arg) => 
+        {
+            // any unchanged files?
+            if (_.isEqual(this.state.environments, this.state.origEnvironments))
+                this.cancel();
+            else
+            {
+                this.showYesNoBox(this.dict.translate('$SaveChanges', 'environments'), () => {
+                    this.save(() => {
+                        this.cancel();
+                    })
+                }, () => {
+                    this.cancel();
+                })
+            }
+        });
+    }
 
     environmentList = () =>
     {
@@ -268,7 +306,7 @@ class Environments extends React.Component
     /**
      * Transform forced representation by table view to actual representation
      */
-    toJson = () => 
+    toJson = (notAsString) => 
     {
         let envs = _.cloneDeep(this.state.environments);
         for (let envKey in envs)
@@ -286,18 +324,26 @@ class Environments extends React.Component
             delete env.variables;
             env.variables = vars;
         }
-        return JSON.stringify(envs, null, 4);
+        if (notAsString === true)
+            return envs
+        else
+            return JSON.stringify(envs, null, 4);
     }
 
     /**
      * Transform actual representation to enforced representation by table.
      */
-    fromJson = (jsonString) => 
+    fromJson = (json, initial) => 
     {
-        if (jsonString === undefined)
+        if (json === undefined)
             return;
 
-        let envs = JSON.parse(jsonString);
+        let envs;
+
+        if (typeof json === 'string')        
+            envs = JSON.parse(json);
+        else
+            envs = json;
 
         for (let envKey in envs)
         {
@@ -313,19 +359,25 @@ class Environments extends React.Component
             delete env.variables;
             env.variables = vars;
         }
-        this.setState({
-            environments: envs
-        });
-
+        if (initial === true)
+            this.setState({
+                environments: envs,
+                origEnvironments: envs
+            });
+        else
+            this.setState({
+                environments: envs
+            });
     }
 
-    showYesNoBox(message, yesAction) 
+    showYesNoBox(message, yesAction, noAction) 
     {
         this.setState({
             yesNoBoxVisible: true,
             yesNoMessage: message
         })
         this.yesAction = yesAction;
+        this.noAction = noAction;
     }
 
     onYesNoBoxClose(whatButton)
@@ -333,8 +385,10 @@ class Environments extends React.Component
         this.setState({
             yesNoBoxVisible: false
         });
-        if (whatButton === "Yes")
+        if (whatButton === "Yes" && this.yesAction !== undefined)
             this.yesAction();
+        if (whatButton === "No" && this.noAction !== undefined)
+            this.noAction();
     }
 
     showOkBox(message, okAction) 
@@ -351,8 +405,8 @@ class Environments extends React.Component
         this.setState({
             okBoxVisible: false
         });
-        if (whatButton === "Yes")
-            this.yesAction();
+        if (whatButton === "Ok" && this.okAction !== undefined)
+            this.okAction();
     }
 
     onProfileFormButtonPress(whatButton, input)
@@ -375,7 +429,7 @@ class Environments extends React.Component
         envCopy[profileName] = {
             path: [],
             variables: [],
-            inherits: []
+            inherits: {}
         };
 
         this.setState({
@@ -391,6 +445,61 @@ class Environments extends React.Component
         this.inputBox = node;
     }
 
+    save = (successAction) => 
+    {
+        this.setState({
+            loading: true
+        });
+        this.backendWorker.saveAll(
+            this.toJson(true),
+            (json) => {
+                this.setState({
+                    loading: false
+                });
+                if (successAction !== undefined)
+                    successAction();
+            }, 
+            msg => {
+                this.setState({
+                    loading: false
+                });
+                if (successAction !== undefined)
+                    this.showYesNoBox(this.dict.translate("$CloseAnyway", 'environments'), () => {
+                        this.cancel();
+                    })
+                else
+                    this.showOkBox(this.dict.translate("$FetchFailed", "environments") + ': ' + msg, () => {});
+            }
+        )
+    }
+
+    cancel = () => 
+    {
+        ipcRenderer.sendSync('closeEnvWindow', '');
+    }
+
+    load = () => 
+    {
+        this.backendWorker.loadAll((json) => {
+            this.setState({
+                loading: false
+            });
+            this.fromJson(json.environments, true);
+        }, msg => {
+            this.setState({
+                loading: false
+            });
+            this.showOkBox(this.dict.translate("$FetchFailed", "environments") + ': ' + msg, () => {
+                this.cancel();
+            });
+        })
+    }
+
+    componentDidMount = () => 
+    {
+        this.load();
+    }
+
     render()
     {
         return (
@@ -399,6 +508,8 @@ class Environments extends React.Component
                     dict={this.dict} 
                     json={this.toJson()}
                     onJsonUpdate={j => this.fromJson(j)}
+                    onSave={() => {this.save()}}
+                    onCancel={() => {this.cancel()}}
                 >
                     {this.uiComponents()}
                 </JsonOptions>
@@ -422,6 +533,9 @@ class Environments extends React.Component
                         ]
                     }}
                 ></InputBox>
+                <LoadBlocker visible={this.state.loading} progressMessage={
+                    this.dict.translate("$CommunicatingWithServer", "environments")
+                }></LoadBlocker>
             </div>
         );
     }
