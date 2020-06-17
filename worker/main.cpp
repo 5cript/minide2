@@ -157,7 +157,7 @@ void testLua()
         sol::state lua;
 
         commonStateSetup(lua, true);
-        auto processStore = loadProcessUtility(lua);
+        loadProcessUtility(lua);
 
         lua["debugging"] = false;
 
@@ -166,7 +166,7 @@ void testLua()
 
         std::cout << cmakeScript.string() << "\n";
 
-        lua.script(Script{cmakeScript}.script());
+        lua.safe_script(Script{cmakeScript}.script());
 
         sol::protected_function runAction = lua["runAction"];
         if (!runAction.valid())
