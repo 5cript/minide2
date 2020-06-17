@@ -33,9 +33,8 @@ namespace Routers
     }
 
     template <typename T>
-    void json_response(attender::response_handler* res, T&& resp)
+    void jsonResponse(attender::response_handler* res, T&& resp)
     {
-        enable_cors(res);
         res->type("application/json").send(resp.dump());
     }
 
@@ -46,7 +45,7 @@ namespace Routers
         ~BasicRouter() = default;
 
     protected:
-        void respondWithError(attender::response_handler* res, char const* msg);
+        void respondWithError(attender::response_handler* res, int status, char const* msg);
         void readExcept(boost::system::error_code ec);
 
         RouterCollection* collection_;
@@ -75,7 +74,8 @@ namespace Routers
     template <typename ResT>
     void sendJson(ResT res, json const& j)
     {
-        res->status(200).type(".json").send(j.dump());
+        res->status(200);
+        jsonResponse(res, j);
     }
 
     /**

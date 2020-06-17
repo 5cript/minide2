@@ -34,6 +34,7 @@
 			<Add option="-fexceptions" />
 			<Add directory=".." />
 			<Add directory="../attender" />
+			<Add directory="../sol2/include" />
 		</Compiler>
 		<Linker>
 			<Add option="-ltiny-process-library" />
@@ -147,6 +148,7 @@
 		<Unit filename="log.cpp" />
 		<Unit filename="log.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="main.hpp" />
 		<Unit filename="public_settings.cpp" />
 		<Unit filename="public_settings.hpp" />
 		<Unit filename="routers.cpp" />
@@ -164,6 +166,14 @@
 		<Unit filename="routers/workspace.cpp" />
 		<Unit filename="routers/workspace.hpp" />
 		<Unit filename="routers_fwd.hpp" />
+		<Unit filename="scripting_engine/common_state_setup.cpp" />
+		<Unit filename="scripting_engine/common_state_setup.hpp" />
+		<Unit filename="scripting_engine/process.cpp" />
+		<Unit filename="scripting_engine/process.hpp" />
+		<Unit filename="scripting_engine/script.cpp" />
+		<Unit filename="scripting_engine/script.hpp" />
+		<Unit filename="scripting_engine/script_view.cpp" />
+		<Unit filename="scripting_engine/script_view.hpp" />
 		<Unit filename="settings/environment.cpp" />
 		<Unit filename="settings/environment.hpp" />
 		<Unit filename="streaming/common_messages/binary_data.cpp" />
@@ -185,6 +195,8 @@
 		<Unit filename="toolbars/basic_toolbar.hpp" />
 		<Unit filename="toolbars/cmake_toolbar.cpp" />
 		<Unit filename="toolbars/cmake_toolbar.hpp" />
+		<Unit filename="toolbars/scripted_toolbar.cpp" />
+		<Unit filename="toolbars/scripted_toolbar.hpp" />
 		<Unit filename="variant.hpp" />
 		<Unit filename="workspace/hashed_file.cpp" />
 		<Unit filename="workspace/hashed_file.hpp" />

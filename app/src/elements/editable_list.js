@@ -70,7 +70,7 @@ class EditableList extends React.Component
                             else
                                 return (
                                     <input 
-                                        className="sneakInput" 
+                                        className={classNames("sneakInput", "editableListInput")}
                                         ref={this.setInputRef} 
                                         key={inc} 
                                         autoFocus

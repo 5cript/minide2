@@ -10,9 +10,10 @@ namespace Routers
     {
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void BasicRouter::respondWithError(attender::response_handler* res, char const* msg)
+    void BasicRouter::respondWithError(attender::response_handler* res, int status, char const* msg)
     {
-        json_response(res, json {
+        res->status(status);
+        jsonResponse(res, json {
             {"error", true},
             {"message", msg}
         });

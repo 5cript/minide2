@@ -70,6 +70,8 @@ namespace Toolbars
 
         virtual void onClick(int id) = 0;
 
+        void name(std::string const& name);
+
         std::string name() const;
         std::string uuid() const;
 

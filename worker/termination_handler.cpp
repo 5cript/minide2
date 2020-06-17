@@ -1,9 +1,12 @@
 #include "termination_handler.hpp"
 #include "log.hpp"
+#include "filesystem/filesystem.hpp"
 
 #include <cxxabi.h>
 #include <thread>
 #include <chrono>
+#include <fstream>
+#include <sstream>
 
 #ifndef WINDOWS
 #   include <signal.h>
@@ -48,6 +51,8 @@
 //---------------------------------------------------------------------------------------------------------------------
 [[noreturn]] void onBadSignal(int signal) noexcept
 {
+    boost::stacktrace::safe_dump_to("./backtrace.dump");
+
     LOG() << "handling signal: ";
     switch (signal)
     {
@@ -72,5 +77,22 @@
     LOGEX(false) << "-------------\n";
 
     std::_Exit(EXIT_FAILURE);
+}
+//---------------------------------------------------------------------------------------------------------------------
+void parseAndLogPreviousDump()
+{
+    if (sfs::exists("./backtrace.dump"))
+    {
+        std::ifstream ifs("./backtrace.dump");
+
+        boost::stacktrace::stacktrace st = boost::stacktrace::stacktrace::from_dump(ifs);
+        std::stringstream sstr;
+        sstr << "Previous run crashed:\n" << st << std::endl;
+        LOG() << sstr.str();
+
+        // cleaning up
+        ifs.close();
+        sfs::remove("./backtrace.dump");
+    }
 }
 //#####################################################################################################################

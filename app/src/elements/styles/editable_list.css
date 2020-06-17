@@ -20,3 +20,7 @@
 .disabledListItem {
     color: var(--foreground-disabled);
 }
+
+.editableListInput {
+    width: 100%;
+}

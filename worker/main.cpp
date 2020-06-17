@@ -1,4 +1,9 @@
+#include "main.hpp"
+
 #include "filesystem/filesystem.hpp"
+#include "scripting_engine/process.hpp"
+#include "scripting_engine/common_state_setup.hpp"
+#include "scripting_engine/script.hpp"
 
 // routers
 #include "routers/workspace.hpp"
@@ -19,26 +24,42 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <sstream>
 
 using namespace std::chrono_literals;
 using namespace std::string_literals;
-
-void setupLog();
-void setupCrashHandler();
+using namespace attender;
 
 int main(int argc, char** argv)
 {
     setupLog();
     setupCrashHandler();
+    buildDirectoryStructure();
 
-    using namespace attender;
+    // TODO: REMOVE ME
+    testLua();
+    return 0;
+
 
     // Load Config
     Config config;
 
     // an io_service wrapper for boost::asio::io_service.
     // you can provide your own implementation, by subclassing "attender::async_model".
-    managed_io_context <thread_pooler> context;
+    managed_io_context <thread_pooler> context
+    {
+        static_cast <std::size_t> (config.httpThreadCount),
+        []()
+        {
+            setupSignalHandler();
+        },
+        [](std::exception const& exc)
+        {
+            std::stringstream sstr;
+            sstr << std::this_thread::get_id();
+            LOG() << "Uncaught exception in thread " << sstr.str() << ": " << exc.what() << "\n";
+        }
+    };
 
     // create a server
     tcp_server server(context.get_io_service(),
@@ -92,12 +113,71 @@ void setupLog()
     LOG() << "Build Time and Date: " << __DATE__ << " " << __TIME__ << '\n';
 }
 
-void setupCrashHandler()
+void setupSignalHandler()
 {
-    std::set_terminate(&onTerminate);
-
     signal(SIGABRT, &onBadSignal);
     signal(SIGFPE, &onBadSignal);
     signal(SIGILL, &onBadSignal);
     signal(SIGSEGV, &onBadSignal);
+}
+
+void setupCrashHandler()
+{
+    std::set_terminate(&onTerminate);
+    setupSignalHandler();
+}
+
+void buildDirectoryStructure()
+{
+    auto createAndRecheck = [](sfs::path const& where)
+    {
+        if (!sfs::exists(where))
+            sfs::create_directory(where);
+
+        if (!sfs::exists(where))
+            throw std::runtime_error("Cannot create path: "s + where.string());
+    };
+
+    auto home = sfs::path{SpecialPaths::getHome()};
+    auto minIdeUser = home / ".minIDE";
+
+    createAndRecheck(minIdeUser);
+    createAndRecheck(minIdeUser / "logs");
+    createAndRecheck(minIdeUser / "lua");
+    createAndRecheck(minIdeUser / "lua" / "lib");
+    createAndRecheck(minIdeUser / "toolbars");
+}
+
+void testLua()
+{
+    using namespace MinIDE::Scripting;
+
+    try
+    {
+        sol::state lua;
+
+        commonStateSetup(lua, true);
+        auto processStore = loadProcessUtility(lua);
+
+        lua["debugging"] = false;
+
+        auto home = sfs::path{SpecialPaths::getHome()};
+        auto cmakeScript = home / ".minIDE" / "toolbars" / "cmake" / "main.lua";
+
+        std::cout << cmakeScript.string() << "\n";
+
+        lua.script(Script{cmakeScript}.script());
+
+        sol::protected_function runAction = lua["runAction"];
+        if (!runAction.valid())
+            throw std::runtime_error("script does not have 'runAction' function");
+
+        runAction(0);
+    }
+    catch(std::exception const& exc)
+    {
+        std::cout << exc.what() << "\n";
+    }
+
+    std::cin.get();
 }

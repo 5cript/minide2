@@ -47,7 +47,7 @@ namespace Routers
         }
         catch(std::exception const& exc)
         {
-            respondWithError(res, "could not extract path parameters, toolbar id or component id");
+            respondWithError(res, 400, "could not extract path parameters, toolbar id or component id");
             return false;
         }
 
@@ -57,13 +57,13 @@ namespace Routers
         }
         catch(std::exception const& exc)
         {
-            respondWithError(res, "the toolbar id is not convertible to a number");
+            respondWithError(res, 400, "the toolbar id is not convertible to a number");
             return false;
         }
 
         if (tid >= toolbars.size() || tid < 0)
         {
-            respondWithError(res, "toolbar id is out of range");
+            respondWithError(res, 400, "toolbar id is out of range");
             return false;
         }
 
@@ -76,7 +76,7 @@ namespace Routers
             auto id = toolbars[tid]->actorIndexById(cidStr);
             if (id == -1)
             {
-                respondWithError(res, "Component id is either not a number or not a (string) id of this toolbar");
+                respondWithError(res, 400, "Component id is either not a number or not a (string) id of this toolbar");
                 return false;
             }
             cid = static_cast <std::decay_t <decltype(cid)>> (id);
@@ -86,13 +86,13 @@ namespace Routers
         {
             if (cid >= toolbars[tid]->getActors().size() || cid < 0)
             {
-                respondWithError(res, "component id is out of range");
+                respondWithError(res, 400, "component id is out of range");
                 return false;
             }
         }
         catch(std::exception const& exc)
         {
-            respondWithError(res, exc.what());
+            respondWithError(res, 500, exc.what());
             return false;
         }
         return true;
@@ -102,8 +102,10 @@ namespace Routers
     {
         using namespace Toolbars::Types;
 
+        cors_options(server, "/api/toolbar/enlist", "GET");
         server.get("/api/toolbar/enlist", [this](auto req, auto res)
         {
+            enable_cors(res);
             std::vector <decltype(json::object())> bars(toolbars.size());
             std::transform(std::begin(toolbars), std::end(toolbars), std::begin(bars), [](auto const& bar)
             {
@@ -114,21 +116,22 @@ namespace Routers
             });
 
             json response = {
-                {"error", false},
                 {"toolbars", bars}
             };
 
-            json_response(res, response);
+            return sendJson(res, response);
         });
 
+        cors_options(server, "/api/toolbar/:id/get", "GET");
         server.get("/api/toolbar/:id/get", [this](auto req, auto res)
         {
+            enable_cors(res);
             try
             {
                 std::size_t id = std::stol(req->param("id"));
                 if (id >= toolbars.size() || id < 0)
                 {
-                    return respondWithError(res, "invalid toolbar id");
+                    return respondWithError(res, 400, "invalid toolbar id");
                 }
 
                 auto& bar = toolbars[id];
@@ -156,16 +159,18 @@ namespace Routers
                     response["components"].push_back(obj);
                 }
 
-                return json_response(res, response);
+                return sendJson(res, response);
             }
             catch(std::exception const& exc)
             {
-                return respondWithError(res, exc.what());
+                return respondWithError(res, 500, exc.what());
             }
         });
 
+        cors_options(server, "/api/toolbar/:tid/:cid/click", "GET");
         server.get("/api/toolbar/:tid/:cid/click", [this](auto req, auto res)
         {
+            enable_cors(res);
             std::size_t tid{0};
             std::size_t cid{0};
 
@@ -184,21 +189,23 @@ namespace Routers
                     },
                     [&](ComboBox const&)
                     {
-                        return respondWithError(res, "component does not have a click action");
+                        return respondWithError(res, 400, "component does not have a click action");
                     }
                 }, actor);
 
                 if (!res->has_concluded())
-                    return json_response(res, json{{"error", false}});
+                    return sendJson(res, json{{"error", false}});
             }
             catch(std::exception const& exc)
             {
-                return respondWithError(res, exc.what());
+                return respondWithError(res, 500, exc.what());
             }
         });
 
+        cors_options(server, "/api/toolbar/:tid/:cid/setSelected", "POST");
         server.post("/api/toolbar/:tid/:cid/setSelected", [this](auto req, auto res)
         {
+            enable_cors(res);
             std::size_t tid{0};
             std::size_t cid{0};
 
@@ -210,7 +217,7 @@ namespace Routers
                 std::visit(overloaded{
                     [&](IconButton const&)
                     {
-                        return respondWithError(res, "component does not have a setSelected action");
+                        return respondWithError(res, 400, "component does not have a setSelected action");
                     },
                     [&](ComboBox& box)
                     {
@@ -220,27 +227,27 @@ namespace Routers
 
                             auto index = req->query("i");
                             if (!index)
-                                return respondWithError(res, "Requires a query value called i");
+                                return respondWithError(res, 400, "Requires a query value called i");
 
                             int i = std::stol(index.value());
                             if (i < -1 || i >= static_cast <int> (box.options.size()))
-                                return respondWithError(res, "selection index out of range");
+                                return respondWithError(res, 400, "selection index out of range");
 
                             box.selected = i;
                         }
                         catch(std::exception const& exc)
                         {
-                            return respondWithError(res, exc.what());
+                            return respondWithError(res, 500, exc.what());
                         }
                     }
                 }, toolbars[tid]->getActors()[cid]);
 
                 if (!res->has_concluded())
-                    return json_response(res, json{{"error", false}});
+                    return jsonResponse(res, json{{"error", false}});
             }
             catch(std::exception const& exc)
             {
-                return respondWithError(res, exc.what());
+                return respondWithError(res, 400, exc.what());
             }
         });
     }

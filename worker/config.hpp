@@ -17,4 +17,6 @@ struct Config
     long long maxFileWriteSize = 10 * 1024 * 1024;
 
     unsigned short port = 43255;
+
+    unsigned short httpThreadCount = 4;
 };
