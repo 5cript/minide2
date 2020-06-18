@@ -6,41 +6,11 @@
 #include <chrono>
 #include <mutex>
 
-template <typename SessionT>
-struct timed_session_wrapper : public SessionT
-{
-    std::chrono::system_clock::time_point last_access;
-
-    timed_session_wrapper()
-        : SessionT{}
-        , last_access{std::chrono::system_clock::now()}
-    {
-    }
-
-    template <typename Id>
-    timed_session_wrapper(Id const& id)
-        : SessionT{id}
-        , last_access{std::chrono::system_clock::now()}
-    {
-    }
-
-    timed_session_wrapper(timed_session_wrapper const&) = default;
-
-    timed_session_wrapper& operator=(SessionT const& other)
-    {
-        *this = other;
-        last_access = std::chrono::system_clock::now();
-        return *this;
-    }
-    timed_session_wrapper& operator=(timed_session_wrapper const& other) = default;
-    timed_session_wrapper& operator=(timed_session_wrapper&& other) = default;
-};
-
 template <typename IdGenerator, typename SessionT>
 class timed_memory_session_storage : public attender::session_storage_interface
 {
 public:
-    using session_type = timed_session_wrapper <SessionT>;
+    using session_type = SessionT;
     using derived_session_type = SessionT;
 
 public:
@@ -83,18 +53,10 @@ public:
         if (iter == std::end(sessions_))
             return false;
 
-        // timeout
-        auto now = std::chrono::system_clock::now();
-        if (now - iter->second.last_access > timeout_)
-        {
-            delete_session(id);
-            return false;
-        }
-        else
-            iter->second.last_access = std::chrono::system_clock::now();
+        // timeout TODO
 
         if (session != nullptr)
-            *session = iter->second;
+            *static_cast <session_type*> (session) = iter->second;
         return true;
     }
     bool set_session(std::string const& id, attender::session const& session) override
@@ -104,7 +66,8 @@ public:
         auto iter = sessions_.find(id);
         if (iter == std::end(sessions_))
             return false;
-        iter->second = *static_cast <session_type const*> (&session);
+        session_type const* sess = static_cast <session_type const*> (&session);
+        iter->second = *sess;
         return true;
     }
     void remove_timed_out()

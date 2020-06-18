@@ -159,7 +159,7 @@ namespace Routers
                 connectionBasedStreamer->detach();
         };
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        server.get("/api/streamer/control", [this, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
+        server.get("/api/streamer/control", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
         {
             auto id = commonStreamSetup(req, res, controlStream_);
             if (id == -1) return;
@@ -193,17 +193,22 @@ namespace Routers
                 consumeLoop(id, controlStream_, produ);
             })};
 
+            auto session = getSession(server, req);
+            if (session)
+            {
+                session.value().controlId = id;
+                setSession(server, session.value());
+            }
+
             res->send_chunked(*produ, [produ, connectionBasedStreamer, id, commonCleanup, this](auto e)
             {
                 commonCleanup(controlStream_, id, connectionBasedStreamer);
                 if (e)
-                    std::cout << e << "\n";
-                else
-                    std::cout << "on finish serverside\n";
+                    std::cout << "control: " << e << "\n";
             });
         });
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        server.get("/api/streamer/data", [this, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
+        server.get("/api/streamer/data", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
         {
             auto id = commonStreamSetup(req, res, dataStream_);
             if (id == -1) return;
@@ -211,7 +216,7 @@ namespace Routers
             std::shared_ptr <brotli_encoder> produ;
             produ.reset(new brotli_encoder);
 
-            std::shared_ptr <std::thread> connectionBasedStreamer{new std::thread([produ, id, consumeLoop, this]()
+            std::shared_ptr <std::thread> connectionBasedStreamer{new std::thread([produ, &server, id, consumeLoop, this]()
             {
                 produ->wait_for_consumer();
 
@@ -261,9 +266,18 @@ namespace Routers
                 }
             })};
 
+            auto session = getSession(server, req);
+            if (session)
+            {
+                session.value().dataId = id;
+                setSession(server, session.value());
+            }
+
             res->send_chunked(*produ, [produ, connectionBasedStreamer, commonCleanup, id, this](auto e)
             {
                 commonCleanup(dataStream_, id, connectionBasedStreamer);
+                if (e)
+                    std::cout << "data: " << e << "\n";
             });
         });
     }

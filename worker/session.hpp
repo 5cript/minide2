@@ -12,6 +12,8 @@ struct Session : public attender::session
     Session(std::string id = "")
         : attender::session{std::move(id)}
         , dummy{}
+        , dataId{-1}
+        , controlId{-1}
     {
     }
 };

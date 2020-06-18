@@ -2,11 +2,13 @@
 
 #include "../routers_fwd.hpp"
 #include "../json.hpp"
+#include "../session.hpp"
 
 #include <attender/attender.hpp>
 
 #include <memory>
 #include <string>
+#include <optional>
 
 namespace Routers
 {
@@ -69,6 +71,32 @@ namespace Routers
                 }
             }
         );
+    }
+
+    template <typename ServerT, typename ReqT>
+    std::optional <Session> getSession(ServerT& server, ReqT* req)
+    {
+        auto* manager = server.get_session_manager();
+        Session s;
+        if (manager != nullptr)
+        {
+            auto status = manager->load_session("aSID", &s, req);
+            if (status != attender::session_state::live)
+                return std::nullopt;
+        }
+        else
+            throw std::runtime_error("session control not installed");
+        return s;
+    }
+
+    template <typename ServerT>
+    void setSession(ServerT& server, Session const& s)
+    {
+        auto* manager = server.get_session_manager();
+        if (manager != nullptr)
+            manager->save_session(s);
+        else
+            throw std::runtime_error("session control not installed");
     }
 
     template <typename ResT>

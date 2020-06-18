@@ -190,11 +190,16 @@ namespace Routers
          *  Get Information about the workspace.
          */
         cors_options(server, "/api/workspace/info", "GET");
-        server.get("/api/workspace/info", [this](auto req, auto res)
+        server.get("/api/workspace/info", [this, &server](auto req, auto res)
         {
             enable_cors(res);
 
-            res->send("thank you");
+            auto sess = getSession(server, req).value();
+            std::cout << sess.controlId << "\n";
+            std::cout << sess.dataId << "\n";
+            std::cout << "---\n";
+
+            res->status(200).send("ok dokey");
         });
 
         cors_options(server, "/api/workspace/loadFile", "POST");
