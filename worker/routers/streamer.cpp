@@ -2,6 +2,7 @@
 
 #include "../streaming/common_messages/welcome.hpp"
 #include "../streaming/common_messages/binary_data.hpp"
+#include "../streaming/common_messages/keep_alive.hpp"
 
 #include <attender/encoding/streaming_producer.hpp>
 #include <attender/encoding/brotli.hpp>
@@ -108,7 +109,7 @@ namespace Routers
          */
         auto consumeLoop = [this](auto id, auto& stream, auto& produ)
         {
-            while(produ->has_consumer_attached())
+            for(int idleCounter = 0; produ->has_consumer_attached(); ++idleCounter)
             {
                 if (endAllStreams_.load())
                 {
@@ -119,10 +120,20 @@ namespace Routers
 
                 if (stream.queue.consumeableCount(id) == 0)
                 {
-                    produ->test_alive();
-                    std::this_thread::sleep_for(100ms);
+                    ++idleCounter;
+                    if (idleCounter > 100)
+                    {
+                        idleCounter = 0;
+                        writeMessage
+                        (
+                            *produ,
+                            Streaming::Message{std::make_unique <Streaming::Messages::KeepAlive>()}
+                        );
+                    }
+                    std::this_thread::sleep_for(200ms);
                     continue;
                 }
+                idleCounter = 0;
 
                 auto iter = stream.queue.popMessage(id);
                 writeMessage(*produ, iter->msg);
@@ -145,12 +156,7 @@ namespace Routers
 
             // on end
             if (connectionBasedStreamer->joinable())
-            {
-                if (connectionBasedStreamer->get_id() == std::this_thread::get_id())
-                    connectionBasedStreamer->detach();
-                else
-                    connectionBasedStreamer->join();
-            }
+                connectionBasedStreamer->detach();
         };
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         server.get("/api/streamer/control", [this, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
@@ -190,7 +196,10 @@ namespace Routers
             res->send_chunked(*produ, [produ, connectionBasedStreamer, id, commonCleanup, this](auto e)
             {
                 commonCleanup(controlStream_, id, connectionBasedStreamer);
-                std::cout << "on finish\n";
+                if (e)
+                    std::cout << e << "\n";
+                else
+                    std::cout << "on finish serverside\n";
             });
         });
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -219,7 +228,7 @@ namespace Routers
                         }
                     );
 
-                while(produ->has_consumer_attached())
+                for(int idleCounter = 0; produ->has_consumer_attached(); ++idleCounter)
                 {
                     if (endAllStreams_.load())
                     {
@@ -230,9 +239,20 @@ namespace Routers
 
                     if (dataStream_.queue.consumeableCount(id) == 0)
                     {
-                        std::this_thread::sleep_for(100ms);
+                        ++idleCounter;
+                        if (idleCounter > 100)
+                        {
+                            idleCounter = 0;
+                            writeMessage
+                            (
+                                *produ,
+                                Streaming::Message{std::make_unique <Streaming::Messages::KeepAlive>()}
+                            );
+                        }
+                        std::this_thread::sleep_for(200ms);
                         continue;
                     }
+                    idleCounter = 0;
 
                     auto iter = dataStream_.queue.popMessage(id);
                     writeMessage(*produ, iter->msg);

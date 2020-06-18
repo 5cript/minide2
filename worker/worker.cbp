@@ -73,6 +73,7 @@
 		<Unit filename="../attender/attender/date.hpp" />
 		<Unit filename="../attender/attender/debug.cpp" />
 		<Unit filename="../attender/attender/debug.hpp" />
+		<Unit filename="../attender/attender/encoding/base64.hpp" />
 		<Unit filename="../attender/attender/encoding/brotli.cpp" />
 		<Unit filename="../attender/attender/encoding/brotli.hpp" />
 		<Unit filename="../attender/attender/encoding/producer.cpp" />
@@ -108,6 +109,9 @@
 		<Unit filename="../attender/attender/response_header.hpp" />
 		<Unit filename="../attender/attender/router.cpp" />
 		<Unit filename="../attender/attender/router.hpp" />
+		<Unit filename="../attender/attender/session/authorizer_interface.hpp" />
+		<Unit filename="../attender/attender/session/basic_authorizer.cpp" />
+		<Unit filename="../attender/attender/session/basic_authorizer.hpp" />
 		<Unit filename="../attender/attender/session/memory_session_storage.hpp" />
 		<Unit filename="../attender/attender/session/session.cpp" />
 		<Unit filename="../attender/attender/session/session.hpp" />
