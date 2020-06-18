@@ -1,7 +1,8 @@
 #pragma once
 
-#include <sol/sol.hpp>
+#include "../filesystem/filesystem.hpp"
 
+#include <sol/sol.hpp>
 #include <unordered_map>
 
 namespace MinIDE::Scripting
@@ -12,4 +13,11 @@ namespace MinIDE::Scripting
      *  @param enableOS Load lua OS libraries (DONT, its not useful anyway and a security risk)
      */
     void commonStateSetup(sol::state& state, bool enableIo, bool enableOs = false);
+
+    /**
+     *  Ads a search path for lua packages
+     */
+    void addToPackagePath(sol::state& state, sfs::path const& toAdd);
+
+    void loadLibrariesFromHome(sol::state& state);
 }

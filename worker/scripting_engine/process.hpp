@@ -1,6 +1,7 @@
 #pragma once
 
-#include <sol/sol.hpp>
+#include "state.hpp"
+
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -14,13 +15,23 @@ namespace MinIDE::Scripting
     class LuaProcess
     {
     public:
-        LuaProcess();
+        LuaProcess(std::weak_ptr <StateCollection> weakStateRef);
+        ~LuaProcess();
+
+        int executeShort
+        (
+            std::string const& command,
+            std::string const& execDir,
+            sol::table environment
+        );
 
         int execute
         (
             std::string const& command,
             std::string const& execDir,
-            sol::table environment
+            sol::table environment,
+            sol::function const& onStdOut,
+            sol::function const& onStdErr
         );
 
         /**
@@ -43,5 +54,5 @@ namespace MinIDE::Scripting
      *  These processes are then handled in the returned process store.
      *  You can observe and handle these processes from there and get their I/O which is not exposed to the script (?).
      */
-    void loadProcessUtility(sol::state& lua);
+    void loadProcessUtility(std::weak_ptr <StateCollection> lua);
 }

@@ -4,15 +4,18 @@
 #include "scripting_engine/process.hpp"
 #include "scripting_engine/common_state_setup.hpp"
 #include "scripting_engine/script.hpp"
+#include "scripting_engine/state.hpp"
 
 // routers
 #include "routers/workspace.hpp"
 #include "routers/toolbar.hpp"
 #include "routers.hpp"
 
+#include "session.hpp"
 #include "config.hpp"
 #include "log.hpp"
 #include "termination_handler.hpp"
+#include "session_storage.hpp"
 #include "streaming/common_messages/server_time.hpp"
 
 // FIXME REMOVE
@@ -20,6 +23,8 @@
 
 #include <special-paths/special_paths.hpp>
 #include <attender/attender.hpp>
+#include <attender/attender/session/session_manager.hpp>
+#include <attender/attender/session/uuid_session_cookie_generator.hpp>
 
 #include <iostream>
 #include <thread>
@@ -35,11 +40,6 @@ int main(int argc, char** argv)
     setupLog();
     setupCrashHandler();
     buildDirectoryStructure();
-
-    // TODO: REMOVE ME
-    testLua();
-    return 0;
-
 
     // Load Config
     Config config;
@@ -73,6 +73,12 @@ int main(int argc, char** argv)
             }
             std::cerr << ec << " " << exc.what() << "\n";
         }
+    );
+
+    server.install_session_control
+    (
+        std::make_unique <timed_memory_session_storage <uuid_generator, session>>(2h),
+        "aSID"
     );
 
     // start server on port 80. Numbers are also valid
@@ -146,38 +152,41 @@ void buildDirectoryStructure()
     createAndRecheck(minIdeUser / "lua");
     createAndRecheck(minIdeUser / "lua" / "lib");
     createAndRecheck(minIdeUser / "toolbars");
+    createAndRecheck(minIdeUser / "toolbar_persistence");
 }
 
 void testLua()
 {
+/*
     using namespace MinIDE::Scripting;
 
     try
     {
-        sol::state lua;
+        auto state = std::make_shared<StateCollection>();
+        sol::state& lua = state->lua;
 
         commonStateSetup(lua, true);
-        loadProcessUtility(lua);
-
-        lua["debugging"] = false;
+        loadProcessUtility(state);
 
         auto home = sfs::path{SpecialPaths::getHome()};
         auto cmakeScript = home / ".minIDE" / "toolbars" / "cmake" / "main.lua";
-
         std::cout << cmakeScript.string() << "\n";
 
-        lua.safe_script(Script{cmakeScript}.script());
+        std::lock_guard <StateCollection::mutex_type> {state->globalMutex};
 
+        lua["debugging"] = false;
+        lua.safe_script(Script{cmakeScript}.script());
         sol::protected_function runAction = lua["runAction"];
         if (!runAction.valid())
             throw std::runtime_error("script does not have 'runAction' function");
 
         runAction(0);
+
+        std::cin.get();
     }
     catch(std::exception const& exc)
     {
         std::cout << exc.what() << "\n";
     }
-
-    std::cin.get();
+*/
 }
