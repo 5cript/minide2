@@ -119,6 +119,7 @@ namespace Routers
 
                 if (stream.queue.consumeableCount(id) == 0)
                 {
+                    produ->test_alive();
                     std::this_thread::sleep_for(100ms);
                     continue;
                 }
@@ -144,7 +145,12 @@ namespace Routers
 
             // on end
             if (connectionBasedStreamer->joinable())
-                connectionBasedStreamer->join();
+            {
+                if (connectionBasedStreamer->get_id() == std::this_thread::get_id())
+                    connectionBasedStreamer->detach();
+                else
+                    connectionBasedStreamer->join();
+            }
         };
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         server.get("/api/streamer/control", [this, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)

@@ -24,6 +24,8 @@ struct timed_session_wrapper : public SessionT
     {
     }
 
+    timed_session_wrapper(timed_session_wrapper const&) = default;
+
     timed_session_wrapper& operator=(SessionT const& other)
     {
         *this = other;
@@ -102,7 +104,7 @@ public:
         auto iter = sessions_.find(id);
         if (iter == std::end(sessions_))
             return false;
-        iter->second = session;
+        iter->second = *static_cast <session_type const*> (&session);
         return true;
     }
     void remove_timed_out()

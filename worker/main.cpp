@@ -22,9 +22,6 @@
 #include "hybrid_read_sink.hpp"
 
 #include <special-paths/special_paths.hpp>
-#include <attender/attender.hpp>
-#include <attender/attender/session/session_manager.hpp>
-#include <attender/attender/session/uuid_session_cookie_generator.hpp>
 
 #include <iostream>
 #include <thread>
@@ -75,11 +72,7 @@ int main(int argc, char** argv)
         }
     );
 
-    server.install_session_control
-    (
-        std::make_unique <timed_memory_session_storage <uuid_generator, session>>(2h),
-        "aSID"
-    );
+    intallSessionHandler <timed_memory_session_storage <uuid_generator, Session>> (server, 2h);
 
     // start server on port 80. Numbers are also valid
     server.start(std::to_string(config.port));

@@ -143,6 +143,8 @@
 		<Unit filename="../tiny-process-library/process.hpp" />
 		<Unit filename="../tiny-process-library/process_win.cpp" />
 		<Unit filename="config.hpp" />
+		<Unit filename="environment_lock.cpp" />
+		<Unit filename="environment_lock.hpp" />
 		<Unit filename="filesystem/directory_cache.cpp" />
 		<Unit filename="filesystem/directory_cache.hpp" />
 		<Unit filename="filesystem/filesystem.hpp" />
@@ -170,6 +172,7 @@
 		<Unit filename="routers/workspace.cpp" />
 		<Unit filename="routers/workspace.hpp" />
 		<Unit filename="routers_fwd.hpp" />
+		<Unit filename="scripting_engine/api/toolbar/toolbar_settings.hpp" />
 		<Unit filename="scripting_engine/common_state_setup.cpp" />
 		<Unit filename="scripting_engine/common_state_setup.hpp" />
 		<Unit filename="scripting_engine/process.cpp" />
@@ -178,6 +181,9 @@
 		<Unit filename="scripting_engine/script.hpp" />
 		<Unit filename="scripting_engine/script_view.cpp" />
 		<Unit filename="scripting_engine/script_view.hpp" />
+		<Unit filename="scripting_engine/state.hpp" />
+		<Unit filename="session.hpp" />
+		<Unit filename="session_storage.hpp" />
 		<Unit filename="settings/environment.cpp" />
 		<Unit filename="settings/environment.hpp" />
 		<Unit filename="streaming/common_messages/binary_data.cpp" />
