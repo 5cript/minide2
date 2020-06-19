@@ -25,6 +25,7 @@ namespace Toolbars
             ~BaseElement() = default;
         };
 
+        /*
         struct IconButton : BaseElement
         {
             std::string pngbase64;
@@ -50,16 +51,28 @@ namespace Toolbars
             {
             }
         };
+
+        struct Splitter : BaseElement
+        {
+            Splitter(std::string type, std::string id, std::string helpText, int selected, std::vector <std::string> options)
+                : BaseElement(std::move(type), std::move(id), std::move(helpText))
+            {
+            }
+        };
+
+        struct MenuButton : BaseElement
+        {
+            MenuButton(std::string type, std::string id, std::string helpText, int selected, std::vector <std::string> options)
+                : BaseElement(std::move(type), std::move(id), std::move(helpText))
+            {
+            }
+        };
+        */
     }
 
     class BasicToolbar
     {
     public:
-        using ActorType = std::variant <
-            Types::IconButton,
-            Types::ComboBox
-        >;
-
         BasicToolbar(std::string name)
             : name_{std::move(name)}
         {
@@ -72,21 +85,6 @@ namespace Toolbars
         void name(std::string const& name);
 
         std::string name() const;
-
-        /**
-         *  Returns nullptr if not found.
-         */
-        ActorType* actorById(std::string const& id);
-
-        /**
-         *  Returns -1 if not found.
-         */
-        long actorIndexById(std::string const& id);
-
-        std::vector <ActorType>& getActors();
-
-    protected:
-        std::vector <ActorType> actors_;
 
     private:
         std::string name_;

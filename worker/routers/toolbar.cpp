@@ -60,7 +60,14 @@ namespace Routers
             //sess.toolbarStore.scriptedToolbars
 
             loadToolbars(sess);
-            res->status(200).end();
+
+            json toolbars = json::object();
+            toolbars["toolbars"] = json::array();
+            for (auto const& toolbar : sess.toolbarStore.scriptedToolbars)
+            {
+                toolbars["toolbars"].push_back(toolbar->getJson());
+            }
+            sendJson(res, toolbars);
         });
     }
 //---------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "basic_toolbar.hpp"
+
+#include "../json.hpp"
 #include "../filesystem/filesystem.hpp"
 
 #include <string>
@@ -15,6 +17,8 @@ namespace Toolbars
         ~ScriptedToolbar();
 
         void onClick(int id) override;
+
+        json getJson() const;
 
     private:
         void initialize();
