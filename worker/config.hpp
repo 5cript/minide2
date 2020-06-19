@@ -19,4 +19,7 @@ struct Config
     unsigned short port = 43255;
 
     unsigned short httpThreadCount = 4;
+
+    // regex to verify Origin
+    std::string corsOption = ".*";
 };

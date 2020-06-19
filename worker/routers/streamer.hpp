@@ -98,5 +98,6 @@ namespace Routers
         Queues <StreamChannel::Data> dataStream_;
         int maxStreamListeners_;
         bool safeIdChecks_;
+        Config config_;
     };
 }

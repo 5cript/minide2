@@ -4,9 +4,9 @@
 RouterCollection::RouterCollection(attender::tcp_server* server, Config const& config)
     : server_{server}
     , workspace_{this, *server, config}
-    , toolbar_{this, *server}
+    , toolbar_{this, *server, config}
     , streamer_{this, *server, config}
-    , terminal_{this, *server}
+    , terminal_{this, *server, config}
     , settingsProvider_{this, *server, config}
 {
 }

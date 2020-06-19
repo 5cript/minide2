@@ -57,6 +57,9 @@ class Environments extends React.Component
         loading: true,
         origEnvironments: {}
     }
+    
+    backend = {
+    };
 
     constructor(props)
     {
@@ -65,10 +68,7 @@ class Environments extends React.Component
             getState: () =>
             {
                 return {
-                    backend: {
-                        ip: "[::1]",
-                        port: 43255
-                    }
+                    backend: this.backend
                 }
             }
         }
@@ -76,6 +76,9 @@ class Environments extends React.Component
 
         ipcRenderer.on('closeIssued', (event, arg) => 
         {
+            if (this.state.yesNoBoxVisible)
+                this.cancel();
+
             // any unchanged files?
             if (_.isEqual(this.state.environments, this.state.origEnvironments))
                 this.cancel();
@@ -89,6 +92,14 @@ class Environments extends React.Component
                     this.cancel();
                 })
             }
+        });
+
+        ipcRenderer.on('loadEnvironment', (event, arg) => 
+        {
+            this.backend = arg;
+            console.log(arg);
+            console.log('load', this.backend);
+            this.load();
         });
     }
 
@@ -497,7 +508,7 @@ class Environments extends React.Component
 
     componentDidMount = () => 
     {
-        this.load();
+        //this.load();
     }
 
     render()

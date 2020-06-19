@@ -72,7 +72,7 @@ int main(int argc, char** argv)
         }
     );
 
-    intallSessionHandler <timed_memory_session_storage <uuid_generator, Session>> (server, 2h);
+    installSessionHandler <timed_memory_session_storage <uuid_generator, Session>> (server, config.corsOption, 2h);
 
     // start server on port 80. Numbers are also valid
     server.start(std::to_string(config.port));

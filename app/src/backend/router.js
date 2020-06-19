@@ -9,6 +9,23 @@ class Router
     {
         return this.getHost() + url;
     }
+    authFetch(url, obj)
+    {
+        if (obj === undefined)
+            obj = {}
+        
+        if (obj.headers === undefined)
+            obj.headers = {}
+
+        const backend = this.store.getState().backend;
+        console.log(backend.sessionId);
+        if (backend.sessionId.length > 0)
+            obj.headers["cookie"] = "aSID=" + backend.sessionId;
+        else
+            obj.headers["Authorization"] = "Basic " + btoa("admin:dummy");
+        obj.credentials = 'include';
+        return fetch(url, obj)
+    }
     getHost()
     {
         let state = this.store.getState();
@@ -28,7 +45,7 @@ class Router
             "id": id,
             ...data
         };
-        fetch(
+        this.authFetch(
             url, 
             {
                 method: 'POST',
@@ -72,7 +89,7 @@ class Router
     getJsonWithCallbacks(urlPart, onSuccess, onError)
     {        
         let url = this.url(urlPart);
-        fetch(
+        this.authFetch(
             url,
             {
                 method: 'GET'

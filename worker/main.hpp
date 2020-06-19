@@ -1,6 +1,9 @@
 #pragma once
 
 #include "session.hpp"
+#include "routers/router_base.hpp"
+
+#include <iostream>
 
 #include <attender/attender.hpp>
 #include <attender/attender/session/session_manager.hpp>
@@ -29,13 +32,24 @@ class AuthenticateEveryone : public attender::basic_authorizer
 };
 
 template <typename SessionStoreT, typename ServerT, typename... StoreConstruct>
-void intallSessionHandler(ServerT& server, StoreConstruct&&... constructionArgs)
+void installSessionHandler(ServerT& server, std::string const& corsOrigin, StoreConstruct&&... constructionArgs)
 {
     server.install_session_control
     (
         std::make_unique <SessionStoreT>(std::forward <StoreConstruct&&>(constructionArgs)...),
         std::make_unique <AuthenticateEveryone>(),
-        "aSID"
+        "aSID",
+        true,
+        []()
+        {
+            attender::cookie c;
+            c.set_same_site("None");
+            return c;
+        }(),
+        [corsOrigin](auto req, auto res)
+        {
+            Routers::enable_cors(req, res, corsOrigin);
+        }
     );
 }
 

@@ -1,5 +1,7 @@
 #include "scripted_toolbar.hpp"
 #include "../scripting_engine/common_state_setup.hpp"
+#include "../scripting_engine/script.hpp"
+#include "../scripting_engine/process.hpp"
 
 #include <sol/sol.hpp>
 
@@ -10,23 +12,42 @@ namespace Toolbars
 //#####################################################################################################################
     struct ScriptedToolbar::Implementation
     {
-        sol::state lua;
+        sfs::path toolbarRoot;
+        std::shared_ptr <StateCollection> engine;
+
+        Implementation(sfs::path const& toolbarRoot)
+            : toolbarRoot{toolbarRoot}
+            , engine{new StateCollection}
+        {
+        }
     };
 //#####################################################################################################################
-    ScriptedToolbar::ScriptedToolbar(std::string uuid)
-        : BasicToolbar{std::move(uuid), ""}
-        , impl_{new ScriptedToolbar::Implementation}
+    ScriptedToolbar::ScriptedToolbar(sfs::path const& root)
+        : BasicToolbar{""}
+        , impl_{new ScriptedToolbar::Implementation(root)}
     {
+        initialize();
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void ScriptedToolbar::setupFromScript(MinIDE::Scripting::Script const& script)
+    ScriptedToolbar::~ScriptedToolbar() = default;
+//---------------------------------------------------------------------------------------------------------------------
+    void ScriptedToolbar::initialize()
     {
-        auto& lua = impl_->lua;
+        auto mainScript = MinIDE::Scripting::Script{impl_->toolbarRoot / "main.lua"};
 
-        commonStateSetup(lua, true);
-        lua["debugging"] = false;
+        auto& lua = impl_->engine->lua;
 
-        lua.script(script.script());
+        loadProcessUtility(impl_->engine);
+
+        {
+            std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+            commonStateSetup(lua, true);
+            addToPackagePath(lua, impl_->toolbarRoot);
+
+            lua["debugging"] = false;
+            lua.script(mainScript.script());
+            lua["make_interface"]();
+        }
     }
 //---------------------------------------------------------------------------------------------------------------------
     void ScriptedToolbar::onClick(int id)

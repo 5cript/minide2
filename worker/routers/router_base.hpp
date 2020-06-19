@@ -12,24 +12,32 @@
 
 namespace Routers
 {
-    inline void enable_cors(attender::response_handler* res)
+    /**
+     *  Allow CORS on everything.
+     */
+    inline void enable_cors(attender::request_handler* req, attender::response_handler* res, std::string const& originString)
     {
-        res->set("Access-Control-Allow-Origin", "*");
-        res->set("Access-Control-Allow-Methods", "GET,PUT,POST,HEAD,OPTIONS");
+        auto origin = req->get_header_field("Origin");
+        if (origin)
+        {
+            res->set("Access-Control-Allow-Origin", origin.value());
+            res->set("Access-Control-Allow-Methods", "GET,PUT,POST,HEAD,OPTIONS");
+            res->set("Access-Control-Allow-Credentials", "true");
+            res->set("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        }
     }
 
     /**
      * @param allow Example "POST, HEAD"
      **/
     template <typename T>
-    inline void cors_options(T& server, std::string const& path, std::string const& allow)
+    inline void cors_options(T& server, std::string const& path, std::string const& allow, std::string const& originString)
     {
-        server.options(path, [allow](auto req, auto res)
+        server.options(path, [allow, originString](auto req, auto res)
         {
             res->set("Allow", allow + ", OPTIONS");
             res->set("Connection", "keep-alive");
-            res->set("Access-Control-Allow-Headers", "*");
-            enable_cors(res);
+            enable_cors(req, res, originString);
             res->status(204).end();
         });
     }
@@ -40,17 +48,47 @@ namespace Routers
         res->type("application/json").send(resp.dump());
     }
 
+
+    /**
+     *  A session that when dying, will save itself.
+     */
+    class TemporarySession : public Session
+    {
+    public:
+        using server_type = attender::tcp_server;
+
+    public:
+        explicit TemporarySession(server_type* server, Session const& sess);
+        TemporarySession(TemporarySession const&) = delete;
+        TemporarySession& operator=(TemporarySession const&) = delete;
+        TemporarySession(TemporarySession&&) = default;
+        TemporarySession& operator=(TemporarySession&&) = default;
+
+        ~TemporarySession();
+
+    private:
+        server_type* server_;
+    };
+
+    /**
+     *  Every router has this as a base class.
+     */
     class BasicRouter
     {
     public:
-        BasicRouter(RouterCollection* collection);
+        using server_type = attender::tcp_server;
+
+    public:
+        BasicRouter(RouterCollection* collection, server_type* server);
         ~BasicRouter() = default;
 
     protected:
         void respondWithError(attender::response_handler* res, int status, char const* msg);
         void readExcept(boost::system::error_code ec);
+        TemporarySession this_session(attender::request_handler* req);
 
         RouterCollection* collection_;
+        server_type* server_;
     };
 
     // helpers

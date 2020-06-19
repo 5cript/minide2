@@ -13,11 +13,6 @@ namespace Toolbars
         name_ = name;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::string BasicToolbar::uuid() const
-    {
-        return uuid_;
-    }
-//---------------------------------------------------------------------------------------------------------------------
     BasicToolbar::ActorType* BasicToolbar::actorById(std::string const& id)
     {
         auto index = actorIndexById(id);

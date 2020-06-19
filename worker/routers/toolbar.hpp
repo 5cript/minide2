@@ -3,6 +3,7 @@
 #include "router_base.hpp"
 
 #include "../toolbars/basic_toolbar.hpp"
+#include "../config.hpp"
 
 #include <memory>
 
@@ -11,13 +12,15 @@ namespace Routers
     class Toolbar : public BasicRouter
     {
     public:
-        Toolbar(RouterCollection* collection, attender::tcp_server& server);
+        Toolbar(RouterCollection* collection, attender::tcp_server& server, Config const& config);
+        ~Toolbar();
 
     private:
         void registerRoutes(attender::tcp_server& server);
-        bool parseIds(attender::request_handler* req, attender::response_handler* res, std::size_t& tid, std::size_t& cid);
+        void loadToolbars(Session& session);
 
     private:
-        std::vector <std::unique_ptr <Toolbars::BasicToolbar>> toolbars;
+        struct Implementation;
+        std::unique_ptr <Implementation> impl_;
     };
 }

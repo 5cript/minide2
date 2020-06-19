@@ -30,18 +30,16 @@ namespace Routers
 //#####################################################################################################################
     struct Workspace::Implementation
     {
-        WorkspaceInfo info;
         Config config;
 
         Implementation(Config config)
-            : info{}
-            , config{std::move(config)}
+            : config{std::move(config)}
         {
         }
     };
 //#####################################################################################################################
     Workspace::Workspace(RouterCollection* collection, attender::tcp_server& server, Config const& config)
-        : BasicRouter{collection}
+        : BasicRouter{collection, &server}
         , impl_{new Workspace::Implementation(config)}
     {
         registerRoutes(server);
@@ -54,13 +52,19 @@ namespace Routers
         /**
          *  Opens the workspace and makes a flat scan
          */
-        cors_options(server, "/api/workspace/open", "POST");
+        cors_options(server, "/api/workspace/open", "POST", impl_->config.corsOption);
         server.post("/api/workspace/open", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
+
+            std::cout << req->get_cookie_value("aSID").value();
+            auto sess = this_session(req);
+            sess.dump();
 
             readJsonBody(req, res, [this, res, req](json const& body)
             {
+                auto sess = this_session(req);
+
                 if (!body.contains("path"))
                     return res->status(400).send("need path in json body");
 
@@ -69,8 +73,9 @@ namespace Routers
                 if (!sfs::exists(root))
                     return res->status(400).send("directory does not exist");
 
-                if (!body.contains("id"))
-                    return res->status(400).send("body requires listener id");
+                auto id = sess.dataId;
+                if (id == -1)
+                    return res->status(400).send("please listen to the data stream before this request");
 
                 auto dir = std::make_unique <Streaming::Messages::DirectoryContent>(root);
                 dir->scan(false, "");
@@ -79,14 +84,14 @@ namespace Routers
                 (
                     StreamChannel::Data,
                     req->ip(),
-                    body["id"].get<int>(),
+                    id,
                     dir.release()
                 );
 
                 if (result != 0)
                     return res->status(400).send("please first listen to the data stream or provide correct listener id");
 
-                impl_->info.root = root;
+                sess.workspace.root = root;
                 res->status(204).end();
             });
         });
@@ -94,10 +99,10 @@ namespace Routers
         /**
          *  Observe workspace directory
          */
-        cors_options(server, "/api/workspace/observe", "POST");
+        cors_options(server, "/api/workspace/observe", "POST", impl_->config.corsOption);
         server.post("/api/workspace/observe", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
             readJsonBody(req, res, [this, req, res](json const& body)
             {
@@ -109,10 +114,10 @@ namespace Routers
         /**
          *  Unobserve workspace directory
          */
-        cors_options(server, "/api/workspace/unobserve", "POST");
+        cors_options(server, "/api/workspace/unobserve", "POST", impl_->config.corsOption);
         server.post("/api/workspace/unobserve", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
             readJsonBody(req, res, [=](json const& body)
             {
@@ -124,13 +129,15 @@ namespace Routers
         /**
          *  List directories and files in a relative directory
          */
-        cors_options(server, "/api/workspace/enlist", "POST");
+        cors_options(server, "/api/workspace/enlist", "POST", impl_->config.corsOption);
         server.post("/api/workspace/enlist", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
             readJsonBody(req, res, [this, req, res](json const& body)
             {
+                auto sess = this_session(req);
+
                 if (!body.contains("path"))
                     return res->status(400).send("need path in json body");
 
@@ -138,15 +145,16 @@ namespace Routers
                 if (body.contains("recursive") && body["recursive"].get<bool>())
                     recursive = true;
 
-                if (impl_->info.root.empty())
+                if (sess.workspace.root.empty())
                     return res->status(400).send("first open a workspace");
 
-                if (!body.contains("id"))
-                    return res->status(400).send("body requires listener id");
+                auto id = sess.dataId;
+                if (id == -1)
+                    return res->status(400).send("please listen to the data stream before this request");
 
                 std::string path = body["path"].get<std::string>();
 
-                auto veri = verifyPath(path);
+                auto veri = verifyPath(path, sess.workspace.root);
                 if (!veri.first.empty())
                     return res->status(400).send(veri.first);
 
@@ -157,7 +165,7 @@ namespace Routers
                 (
                     StreamChannel::Data,
                     req->ip(),
-                    body["id"].get<int>(),
+                    id,
                     dir.release()
                 );
 
@@ -167,12 +175,13 @@ namespace Routers
             });
         });
 
-        cors_options(server, "/api/workspace/project/activate", "POST");
+        cors_options(server, "/api/workspace/project/activate", "POST", impl_->config.corsOption);
         server.post("/api/workspace/project/activate", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
-            if (impl_->info.root.empty())
+            auto sess = this_session(req);
+            if (sess.workspace.root.empty())
                 return res->status(400).send("open a workspace first");
 
             readJsonBody(req, res, [this, req, res](json const& body)
@@ -180,7 +189,8 @@ namespace Routers
                 if (!body.contains("project"))
                     return res->status(400).send("need 'project' in json body.");
 
-                impl_->info.activeProject = body["project"].get<std::string>();
+                auto sess = this_session(req);
+                sess.workspace.activeProject = body["project"].get<std::string>();
 
                 res->status(500).end();
             });
@@ -189,25 +199,27 @@ namespace Routers
         /**
          *  Get Information about the workspace.
          */
-        cors_options(server, "/api/workspace/info", "GET");
+        cors_options(server, "/api/workspace/info", "GET", impl_->config.corsOption);
         server.get("/api/workspace/info", [this, &server](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
-            auto sess = getSession(server, req).value();
+            auto sess = this_session(req);
             std::cout << sess.controlId << "\n";
             std::cout << sess.dataId << "\n";
+            std::cout << sess.workspace.root << "\n";
             std::cout << "---\n";
 
             res->status(200).send("ok dokey");
         });
 
-        cors_options(server, "/api/workspace/loadFile", "POST");
+        cors_options(server, "/api/workspace/loadFile", "POST", impl_->config.corsOption);
         server.post("/api/workspace/loadFile", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
-            if (impl_->info.root.empty())
+            auto sess = this_session(req);
+            if (sess.workspace.root.empty())
                 return res->status(400).send("open a workspace first");
 
             readJsonBody(req, res, [this, req, res](json const& body)
@@ -215,15 +227,18 @@ namespace Routers
                 if (!body.contains("path"))
                     return res->status(400).send("need path in json body");
 
-                if (!body.contains("id"))
-                    return res->status(400).send("body requires listener id");
+                auto sess = this_session(req);
+                auto id = sess.dataId;
+                if (id == -1)
+                    return res->status(400).send("please listen to the data stream before this request");
+
                 std::string path = body["path"].get<std::string>();
 
                 bool force = false;
                 if (body.contains("force"))
                     force = body["force"].get<bool>();
 
-                auto veri = verifyPath(path);
+                auto veri = verifyPath(path, sess.workspace.root);
                 if (!veri.first.empty())
                     return res->status(400).send(veri.first);
 
@@ -245,7 +260,7 @@ namespace Routers
                 (
                     StreamChannel::Data,
                     req->ip(),
-                    body["id"].get<int>(),
+                    id,
                     fc.release()
                 );
 
@@ -255,14 +270,16 @@ namespace Routers
             });
         });
 
-        cors_options(server, "/api/workspace/saveFile", "PUT");
+        cors_options(server, "/api/workspace/saveFile", "PUT", impl_->config.corsOption);
         server.put("/api/workspace/saveFile", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
             auto observer = res->observe_conclusion();
 
-            if (impl_->info.root.empty())
+            auto sess = this_session(req);
+
+            if (sess.workspace.root.empty())
                 return res->status(400).send("open a workspace first");
 
             auto maybeContentLen = req->get_header_field("Content-Length");
@@ -291,7 +308,7 @@ namespace Routers
             std::shared_ptr <HashedFile> file = std::make_shared <HashedFile>();
             std::shared_ptr <JsonDataHybridSink> sink{std::make_shared <JsonDataHybridSink>(
                 // json complete
-                [file, this, res](json const& jsonPart)
+                [file, this, res, req](json const& jsonPart)
                 {
                     try
                     {
@@ -303,7 +320,8 @@ namespace Routers
 
                         auto hash = jsonPart["sha256"].get<std::string>();
 
-                        auto const [error, path] = verifyPath(jsonPart["path"].get<std::string>(), false);
+                        auto sess = this_session(req);
+                        auto const [error, path] = verifyPath(jsonPart["path"].get<std::string>(), sess.workspace.root, false);
                         if (!error.empty())
                             return res->status(400).send(error);
 
@@ -378,12 +396,13 @@ namespace Routers
             });
         });
 
-        cors_options(server, "/api/workspace/setActiveProject", "POST");
+        cors_options(server, "/api/workspace/setActiveProject", "POST", impl_->config.corsOption);
         server.post("/api/workspace/setActiveProject", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
-            if (impl_->info.root.empty())
+            auto sess = this_session(req);
+            if (sess.workspace.root.empty())
                 return res->status(400).send("open a workspace first");
 
             readJsonBody(req, res, [this, req, res](json const& body)
@@ -393,21 +412,22 @@ namespace Routers
 
                 std::string path = body["path"].get<std::string>();
 
-                auto veri = verifyPath(path);
+                auto sess = this_session(req);
+                auto veri = verifyPath(path, sess.workspace.root);
                 if (!veri.first.empty())
                     return res->status(400).send(veri.first);
 
                 if (!sfs::is_directory(veri.second))
                     return res->status(400).send("is not a directory");
 
-                impl_->info.activeProject = veri.second;
+                sess.workspace.activeProject = veri.second;
 
                 res->status(200).end();
             });
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::pair <std::string, std::string> Workspace::verifyPath(std::string path, bool mustExist)
+    std::pair <std::string, std::string> Workspace::verifyPath(std::string path, std::string const& root, bool mustExist)
     {
         if (path.empty())
             return {"path cannot be empty"s, path};
@@ -418,7 +438,7 @@ namespace Routers
         if (path[0] == '/')
             path = path.substr(1, path.size() - 1);
 
-        auto relativePath = sfs::path{impl_->info.root}.remove_filename() / path;
+        auto relativePath = sfs::path{root}.remove_filename() / path;
 
         if (mustExist && !sfs::exists(relativePath))
             return {"path does not exist"s, path};

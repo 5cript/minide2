@@ -60,9 +60,8 @@ namespace Toolbars
             Types::ComboBox
         >;
 
-        BasicToolbar(std::string uuid, std::string name)
-            : uuid_{std::move(uuid)}
-            , name_{std::move(name)}
+        BasicToolbar(std::string name)
+            : name_{std::move(name)}
         {
         }
 
@@ -73,7 +72,6 @@ namespace Toolbars
         void name(std::string const& name);
 
         std::string name() const;
-        std::string uuid() const;
 
         /**
          *  Returns nullptr if not found.
@@ -91,7 +89,6 @@ namespace Toolbars
         std::vector <ActorType> actors_;
 
     private:
-        std::string uuid_;
         std::string name_;
     };
 }

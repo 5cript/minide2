@@ -14,7 +14,7 @@ class Workspace extends Router
     openWorkspace(path)
     {
         let url = this.url("/api/workspace/open");
-        fetch(
+        this.authFetch(
             url, 
             {
                 method: 'POST',
@@ -46,7 +46,7 @@ class Workspace extends Router
         let payload = jsonLen + '|' + json + content;
         
         let url = this.url("/api/workspace/saveFile");
-        fetch(
+        this.authFetch(
             url,
             {
                 method: 'PUT',

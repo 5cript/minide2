@@ -9,7 +9,7 @@ export function setConnected(connected)
 export function setBackendIp(ip) 
 {
     return {
-        type: 'SET_CONNECTION_STATUS',
+        type: 'SET_IP',
         ip: ip
     }
 }
@@ -17,7 +17,7 @@ export function setBackendIp(ip)
 export function setBackendPort(port) 
 {
     return {
-        type: 'SET_CONNECTION_STATUS',
+        type: 'SET_PORT',
         port: port
     }
 }
@@ -39,5 +39,13 @@ export function setTryingToConnect(connecting)
     return {
         type: 'SET_TRY_TO_CONNECT',
         connecting: connecting
+    }
+}
+
+export function setSessionId(id) 
+{
+    return {
+        type: 'SET_SESSION_ID',
+        sessionId: id
     }
 }

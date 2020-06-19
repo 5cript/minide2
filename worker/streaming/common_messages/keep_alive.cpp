@@ -6,7 +6,7 @@ namespace Streaming::Messages
     std::string KeepAlive::toJson() const
     {
         return json{
-            "type", "keep_alive"
+            {"type", "keep_alive"}
         }.dump();
     }
 //---------------------------------------------------------------------------------------------------------------------

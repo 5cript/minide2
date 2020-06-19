@@ -47,12 +47,6 @@ class Backend extends Router
         return this.workspaceRoutes;
     }
 
-    attachToStreams()
-    {
-        this.readControl();
-        this.readData();
-    }
-
     handleControlMessage(json)
     {
         if (json.type === "welcome") {
@@ -77,13 +71,14 @@ class Backend extends Router
     {
         let url = this.url("/api/streamer/control");
 
-        fetch(url).then((res) => {
+        this.authFetch(url).then((res) => {
             if (res.status >= 300) {
                 res.text().then((value) => {
                     this.errorCallback(value);
                 });
                 return;
             }
+            console.log(res.headers.get('Set-Cookie'));
             let reader = res.body.getReader();
             let decoder = new TextDecoder();
             let read = () => 
@@ -108,7 +103,7 @@ class Backend extends Router
                             this.handleControlMessage(json);
                         }
                         catch(e) {
-                            console.error("oh no " + e);
+                            console.error("error in control stream reader",e);
                         }
                     }
                     
@@ -126,7 +121,7 @@ class Backend extends Router
     {
         let url = this.url("/api/streamer/data");
 
-        fetch(url).then((res) => {
+        this.authFetch(url).then((res) => {
             if (res.status >= 300) {
                 res.text().then((value) => {
                     this.errorCallback(value);
@@ -155,7 +150,7 @@ class Backend extends Router
                             this.handleDataMessage(json);
                         }
                         catch(e) {
-                            console.error("oh no " + e);
+                            console.error("error in data stream reader",e);
                             console.error(e.stack);
                         }
                     }

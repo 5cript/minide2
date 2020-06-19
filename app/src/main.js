@@ -19,6 +19,11 @@ let mainWindow;
 
 let forceQuit = false;
 let port = '3000';
+let server = {
+	ip: '[::1]',
+	port: 43255,
+	authCookie: ''
+};
 
 const menuTemplate = [
 	{
@@ -50,7 +55,7 @@ const menuTemplate = [
 					createEnvironmentWindow(path, {
 						x: pos[0] + size[0] / 2,
 						y: pos[1] + size[1] / 2
-					});
+					}, server);
 				}
 			}
 		]
@@ -130,11 +135,40 @@ function createWindow()
 			e.preventDefault();
 		}
 	});
+	
+	mainWindow.webContents.on('did-finish-load', e => 
+	{
+		mainWindow.webContents.send('setBackend', server);
+	});
 
 	ipcMain.on('closeNow', (event, arg) => 
 	{
 		forceQuit = true;
 		mainWindow.close();
+	});
+
+	ipcMain.on('haveCookieUpdate', (event, arg) => 
+	{
+		// Query all cookies.
+		electron.session.defaultSession.cookies.get({})
+		.then((cookies) => {
+			console.log(cookies)
+			const authCookieIndex = cookies.findIndex(cookie => cookie.name === 'aSID');
+			if (authCookieIndex === -1)
+				return;
+			
+			console.log(authCookieIndex)
+			server.authCookie = cookies[authCookieIndex];
+			server.sessionId =  server.authCookie.value;
+			mainWindow.webContents.send('cookie', {
+				name: server.authCookie.name,
+				value: server.authCookie.value
+			})
+		}).catch((error) => {
+			console.log(error)
+		})
+
+		event.returnValue = 0;
 	});
 
 	registerShortcuts(mainWindow);

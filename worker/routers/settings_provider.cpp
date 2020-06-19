@@ -16,7 +16,7 @@ namespace Routers
     };
 //#####################################################################################################################
     SettingsProvider::SettingsProvider(RouterCollection* collection, attender::tcp_server& server, Config const& config)
-        : BasicRouter(collection)
+        : BasicRouter(collection, &server)
         , impl_{new SettingsProvider::Implementation(config)}
     {
         registerRoutes(server);
@@ -31,10 +31,10 @@ namespace Routers
 //---------------------------------------------------------------------------------------------------------------------
     void SettingsProvider::registerRoutes(attender::tcp_server& server)
     {
-        cors_options(server, "/api/settings/environment/names", "GET");
+        cors_options(server, "/api/settings/environment/names", "GET", impl_->config.corsOption);
         server.get("/api/settings/environment/names", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
             json j;
             auto names = std::vector <std::string> {};
@@ -48,10 +48,10 @@ namespace Routers
             sendJson(res, j);
         });
 
-        cors_options(server, "/api/settings/environment/load", "GET");
+        cors_options(server, "/api/settings/environment/load", "GET", impl_->config.corsOption);
         server.get("/api/settings/environment/load", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
             json j;
             auto&& envs = impl_->settings.environments();
@@ -61,10 +61,10 @@ namespace Routers
             sendJson(res, j);
         });
 
-        cors_options(server, "/api/settings/environment/save", "POST");
+        cors_options(server, "/api/settings/environment/save", "POST", impl_->config.corsOption);
         server.post("/api/settings/environment/save", [this](auto req, auto res)
         {
-            enable_cors(res);
+            enable_cors(req, res, impl_->config.corsOption);
 
             readJsonBody(req, res, [this, req, res](json const& body)
             {

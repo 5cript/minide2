@@ -18,12 +18,13 @@ namespace Routers
 {
 //#####################################################################################################################
     DataStreamer::DataStreamer(RouterCollection* collection, attender::tcp_server& server, Config const& config)
-        : BasicRouter{collection}
+        : BasicRouter{collection, &server}
         , endAllStreams_{false}
         , controlStream_{}
         , dataStream_{}
         , maxStreamListeners_{config.maxStreamListeners}
         , safeIdChecks_{config.streamIdCheck}
+        , config_{config}
     {
         registerRoutes(server);
     }
@@ -85,7 +86,7 @@ namespace Routers
          */
         auto commonStreamSetup = [this](auto req, auto res, auto& stream) -> int
         {
-            enable_cors(res);
+            enable_cors(req, res, config_.corsOption);
 
             if (stream.idProvider.usedIdCount() >= static_cast <std::size_t> (maxStreamListeners_))
             {
@@ -159,6 +160,7 @@ namespace Routers
                 connectionBasedStreamer->detach();
         };
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        cors_options(server, "/api/streamer/control", "GET", config_.corsOption);
         server.get("/api/streamer/control", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
         {
             auto id = commonStreamSetup(req, res, controlStream_);
@@ -193,11 +195,9 @@ namespace Routers
                 consumeLoop(id, controlStream_, produ);
             })};
 
-            auto session = getSession(server, req);
-            if (session)
             {
-                session.value().controlId = id;
-                setSession(server, session.value());
+                auto session = this_session(req);
+                session.controlId = id;
             }
 
             res->send_chunked(*produ, [produ, connectionBasedStreamer, id, commonCleanup, this](auto e)
@@ -208,6 +208,7 @@ namespace Routers
             });
         });
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        cors_options(server, "/api/streamer/data", "GET", config_.corsOption);
         server.get("/api/streamer/data", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
         {
             auto id = commonStreamSetup(req, res, dataStream_);
@@ -266,11 +267,9 @@ namespace Routers
                 }
             })};
 
-            auto session = getSession(server, req);
-            if (session)
             {
-                session.value().dataId = id;
-                setSession(server, session.value());
+                auto session = this_session(req);
+                session.dataId = id;
             }
 
             res->send_chunked(*produ, [produ, connectionBasedStreamer, commonCleanup, id, this](auto e)

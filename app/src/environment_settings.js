@@ -6,7 +6,7 @@ let envWindow = undefined;
 let isVisible = false;
 let forceQuit = false;
 
-export default function createEnvironmentWindow(path, parentCenter)
+export default function createEnvironmentWindow(path, parentCenter, server)
 {
     const w = 800;
     const h = 600;
@@ -29,9 +29,13 @@ export default function createEnvironmentWindow(path, parentCenter)
 		})
 		
 		envWindow.removeMenu();		
-		//envWindow.webContents.openDevTools();
+		envWindow.webContents.openDevTools();
 		envWindow.loadURL(path);
-		envWindow.webContents.send('loadEnvironment');
+
+		envWindow.webContents.on('did-finish-load', e => 
+		{
+			envWindow.webContents.send('loadEnvironment', server);
+		});
 
 		envWindow.on('close', (e) => 
 		{

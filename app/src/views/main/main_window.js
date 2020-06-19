@@ -15,7 +15,7 @@ import Slide from 'react-reveal/Slide';
 // Actions
 import {setFileTreeBranch} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
-import {setConnected, setConnectMessage, setTryingToConnect} from '../../actions/backend_actions';
+import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 
 // Other
 import Backend from '../../backend_connector';
@@ -169,33 +169,54 @@ class MainWindow extends React.Component
 
     onDataStream(head, data)
     {
-        if (head.type === undefined || head.type === null) 
+        try
         {
-            console.error("backend didn't send a message type. notify this to the backend dev");
-            return;
-        }
+            if (head.type === undefined || head.type === null) 
+            {
+                console.log(head);
+                console.error("backend didn't send a message type. notify this to the backend dev");
+                return;
+            }
 
-        if (head.type === "file_tree") 
-        {
-            this.handleTreeUpdates(head, data);
-            return;
-        }
+            if (head.type === "file_tree") 
+            {
+                this.handleTreeUpdates(head, data);
+                return;
+            }
 
-        if (head.type === "fileContent") 
+            if (head.type === "fileContent") 
+            {
+                console.log(head);
+                let data = '';
+                if (head.chunks !== undefined)
+                    data = head.chunks.join();
+                this.props.dispatch(addOpenFileWithContent(head.path, data));
+                return;
+            }
+
+            if (head.type === "welcome")
+            {
+                this.props.dispatch(setConnected(true));
+            }
+        }
+        catch(e)
         {
-            console.log(head);
-            let data = '';
-            if (head.chunks !== undefined)
-                data = head.chunks.join();
-            this.props.dispatch(addOpenFileWithContent(head.path, data));
-            return;
+            console.error(e);
         }
     }
 
     onControlStream(head, data)
     {
-        if (head.type === "welcome")
-            this.props.dispatch(setConnected(true));
+        console.log(head);
+        try
+        {
+            if (head.type === "welcome")
+                ipcRenderer.sendSync('haveCookieUpdate', {});
+        }
+        catch(e)
+        {
+            console.error(e);
+        }
     }
 
     onStreamError(err)
@@ -209,7 +230,7 @@ class MainWindow extends React.Component
         this.dict = new Dictionary();
         this.dict.setLang(this.props.locale.language);
 
-        this.registerMenuActions();
+        this.registerIpcHandler();
         this.installSaveShortcuts();
 
         this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectingToBackend", "main_window")));
@@ -238,7 +259,7 @@ class MainWindow extends React.Component
         this.props.dispatch(setTryingToConnect(false));
     }
 
-    registerMenuActions = () => 
+    registerIpcHandler = () => 
     {
         ipcRenderer.on('openWorkspace', (event, arg) => 
         {
@@ -247,9 +268,17 @@ class MainWindow extends React.Component
             this.backend.workspace().openWorkspace(arg.filePaths[0]);
         })
 
+        ipcRenderer.on('setBackend', (event, arg) =>
+        {
+            this.props.dispatch(setBackendIp(arg.ip));
+            this.props.dispatch(setBackendPort(arg.port));
+            if (this.props.backend.connected === false)
+                this.backend.readControl();
+        })
+
         ipcRenderer.on('connectBackend', (event, arg) => 
         {
-            this.backend.attachToStreams();
+            this.backend.readControl();
             this.props.dispatch(setTryingToConnect(true));
         })
         
@@ -277,6 +306,15 @@ class MainWindow extends React.Component
             if (!anyFound)
                 ipcRenderer.sendSync('closeNow', '');
         })
+
+        ipcRenderer.on('cookie', (event, arg) => {
+            console.log(arg);
+            if (arg.name === 'aSID')
+            {
+                this.props.dispatch(setSessionId(arg.value));
+                this.backend.readData();
+            }
+        })
     }
 
     showYesNoBox(message, yesAction) 
@@ -299,10 +337,6 @@ class MainWindow extends React.Component
 
     componentDidMount()
     {
-        console.log('mounted');
-        setTimeout(() => {
-            this.backend.attachToStreams();
-        }, 500);
     }
 
     render = () => 
