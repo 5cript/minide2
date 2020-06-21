@@ -31,16 +31,18 @@ namespace Routers
         return temp;
     }
 //#####################################################################################################################
-    TemporarySession::TemporarySession(server_type* server, Session const& sess)
-        : Session{sess}
+    TemporarySession::TemporarySession(server_type* server, Session&& sess)
+        : Session{std::move(sess)}
         , server_{server}
     {
+        sessionLock->lock();
     }
 //---------------------------------------------------------------------------------------------------------------------
     TemporarySession::~TemporarySession()
     {
         try
         {
+            sessionLock->unlock();
             setSession(*server_, *this);
         }
         catch(...)

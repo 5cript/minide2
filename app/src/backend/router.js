@@ -18,7 +18,6 @@ class Router
             obj.headers = {}
 
         const backend = this.store.getState().backend;
-        console.log(backend.sessionId);
         if (backend.sessionId.length > 0)
             obj.headers["cookie"] = "aSID=" + backend.sessionId;
         else
@@ -39,10 +38,9 @@ class Router
     {
         this.dataId = dataId;
     }
-    postJson(url, id, data, onSuccess, onFailure)
+    postJson(url, data, onSuccess, onFailure)
     {
         let body = {
-            "id": id,
             ...data
         };
         this.authFetch(

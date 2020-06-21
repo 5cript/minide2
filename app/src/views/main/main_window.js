@@ -16,6 +16,7 @@ import Slide from 'react-reveal/Slide';
 import {setFileTreeBranch} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
+import {initializeToolbars} from '../../actions/toolbar_actions';
 
 // Other
 import Backend from '../../backend_connector';
@@ -173,7 +174,6 @@ class MainWindow extends React.Component
         {
             if (head.type === undefined || head.type === null) 
             {
-                console.log(head);
                 console.error("backend didn't send a message type. notify this to the backend dev");
                 return;
             }
@@ -184,9 +184,8 @@ class MainWindow extends React.Component
                 return;
             }
 
-            if (head.type === "fileContent") 
+            if (head.type === "file_content") 
             {
-                console.log(head);
                 let data = '';
                 if (head.chunks !== undefined)
                     data = head.chunks.join();
@@ -197,6 +196,11 @@ class MainWindow extends React.Component
             if (head.type === "welcome")
             {
                 this.props.dispatch(setConnected(true));
+                this.backend.toolbar().loadAll(res => {
+                    res.json().then(json => {
+                        this.props.dispatch(initializeToolbars(json));
+                    })
+                });
             }
         }
         catch(e)
@@ -207,7 +211,6 @@ class MainWindow extends React.Component
 
     onControlStream(head, data)
     {
-        console.log(head);
         try
         {
             if (head.type === "welcome")
@@ -348,7 +351,7 @@ class MainWindow extends React.Component
                         <Blocker></Blocker>
                     </Slide>
                     <Slide right when={this.props.backend.connected}>
-                        <Toolbar cmake={new CMakeToolbarEvents()}/>
+                        <Toolbar backend={this.backend} cmake={new CMakeToolbarEvents()}/>
                     </Slide>
                 </div>
                 <div id='SplitterContainer'>

@@ -8,7 +8,5 @@ namespace Toolbars
     {
     public:
         CMakeToolbar(std::string uuid);
-
-        void onClick(int id) override;
     };
 }

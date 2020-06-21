@@ -8,5 +8,7 @@ public:
     // mild crime with shared_ptr:
     std::vector <std::shared_ptr<Toolbars::ScriptedToolbar>> scriptedToolbars;
 
+    Toolbars::ScriptedToolbar* toolbarById(std::string const& id);
+
     void reset();
 };

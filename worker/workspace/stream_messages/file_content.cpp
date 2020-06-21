@@ -12,7 +12,7 @@ namespace Streaming::Messages
     std::string FileContent::toJson() const
     {
         return json{
-            {"type", "fileContent"s},
+            {"type", "file_content"s},
             {"chunks", chunks},
             {"path", path}
         }.dump();

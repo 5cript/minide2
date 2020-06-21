@@ -152,6 +152,8 @@
 		<Unit filename="filesystem/directory_cache.cpp" />
 		<Unit filename="filesystem/directory_cache.hpp" />
 		<Unit filename="filesystem/filesystem.hpp" />
+		<Unit filename="filesystem/home_directory.cpp" />
+		<Unit filename="filesystem/home_directory.hpp" />
 		<Unit filename="hybrid_read_sink.cpp" />
 		<Unit filename="hybrid_read_sink.hpp" />
 		<Unit filename="json.hpp" />
@@ -188,6 +190,7 @@
 		<Unit filename="scripting_engine/state.hpp" />
 		<Unit filename="session.cpp" />
 		<Unit filename="session.hpp" />
+		<Unit filename="session/toolbar_store.cpp" />
 		<Unit filename="session/toolbar_store.hpp" />
 		<Unit filename="session_storage.hpp" />
 		<Unit filename="settings/environment.cpp" />
@@ -211,8 +214,6 @@
 		<Unit filename="termination_handler.hpp" />
 		<Unit filename="toolbars/basic_toolbar.cpp" />
 		<Unit filename="toolbars/basic_toolbar.hpp" />
-		<Unit filename="toolbars/cmake_toolbar.cpp" />
-		<Unit filename="toolbars/cmake_toolbar.hpp" />
 		<Unit filename="toolbars/scripted_toolbar.cpp" />
 		<Unit filename="toolbars/scripted_toolbar.hpp" />
 		<Unit filename="variant.hpp" />

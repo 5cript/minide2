@@ -16,12 +16,15 @@ namespace Toolbars
         ScriptedToolbar(sfs::path const& root);
         ~ScriptedToolbar();
 
-        void onClick(int id) override;
+        std::string id() const;
+
+        std::string clickAction(std::string const& itemId);
 
         json getJson() const;
 
     private:
         void initialize();
+        void passOptions();
 
     private:
         struct Implementation;

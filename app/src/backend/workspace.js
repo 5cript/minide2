@@ -66,21 +66,21 @@ class Workspace extends Router
 
     enumDirectory(path)
     {
-        this.postJson(this.url("/api/workspace/enlist"), this.dataId, {
+        this.postJson(this.url("/api/workspace/enlist"), {
             path: path
         });
     }
 
     loadFile(path)
     {
-        this.postJson(this.url("/api/workspace/loadFile"), this.dataId, {
+        this.postJson(this.url("/api/workspace/loadFile"), {
             path: path
         });
     }
 
     setActiveProject(path, onSuccess)
     {
-        this.postJson(this.url("/api/workspace/setActiveProject"), this.controlId, {
+        this.postJson(this.url("/api/workspace/setActiveProject"), {
             path: path
         }, onSuccess);
     }

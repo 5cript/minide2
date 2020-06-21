@@ -100,7 +100,8 @@ export default class ContextMenu extends React.PureComponent
             for (let om of this.props.otherMenus)
             {
                 const menu = document.getElementById(om);
-                menu.style.cssText = menu.style.cssText + 'visibility: hidden;'
+                if (menu)
+                    menu.style.cssText = menu.style.cssText + 'visibility: hidden;'
             }
         }
 
@@ -114,7 +115,8 @@ export default class ContextMenu extends React.PureComponent
     closeContextMenu() 
     {
         const menu = document.getElementById(this.menuId);
-        menu.style.cssText = menu.style.cssText + 'visibility: hidden;';
+        if (menu)
+            menu.style.cssText = menu.style.cssText + 'visibility: hidden;';
     }
 
     getItems() 

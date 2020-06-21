@@ -12,9 +12,10 @@
 
 #ActualToolbar {
     align-content: center;
+    display: flex;
 }
 
-.IconButtonGroup {
+.ToolbarGroup {
     position: relative;
     top: calc(50% - 13px);
     display: flex;

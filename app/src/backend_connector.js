@@ -1,4 +1,5 @@
-import Workspace from './backend/workspace';
+import WorkspaceApi from './backend/workspace';
+import ToolbarApi from './backend/toolbar';
 import Router from './backend/router';
 
 class Backend extends Router
@@ -13,7 +14,9 @@ class Backend extends Router
         this.errorCallback = errorCallback;
         this.onConnectionLoss = onConnectionLoss;
 
-        this.workspaceRoutes = new Workspace(store, errorCallback);
+        this.workspaceRoutes = new WorkspaceApi(store, errorCallback);
+        this.toolbarRoutes = new ToolbarApi(store, errorCallback);
+
         this.routers = [
             this.workspaceRoutes
         ];
@@ -45,6 +48,11 @@ class Backend extends Router
     workspace()
     {
         return this.workspaceRoutes;
+    }
+
+    toolbar()
+    {
+        return this.toolbarRoutes;
     }
 
     handleControlMessage(json)

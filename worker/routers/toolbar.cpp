@@ -6,6 +6,7 @@
 
 #include <nlohmann/json.hpp>
 #include <iterator>
+#include <iostream>
 #include <algorithm>
 
 using json = nlohmann::json;
@@ -68,6 +69,31 @@ namespace Routers
                 toolbars["toolbars"].push_back(toolbar->getJson());
             }
             sendJson(res, toolbars);
+        });
+
+        cors_options(server, "/api/toolbar/callAction", "POST", impl_->config.corsOption);
+        server.post("/api/toolbar/callAction", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            readJsonBody(req, res, [req, res, this](json const& body)
+            {
+                if (!body.contains("toolbarId"))
+                    return res->status(400).send("need toolbarId");
+                if (!body.contains("itemId"))
+                    return res->status(400).send("need itemId");
+
+                auto session = this_session(req);
+                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
+                if (toolbar == nullptr)
+                    return res->status(400).send("toolbar with given id not found");
+
+                auto resultMessage = toolbar->clickAction(body["itemId"].get<std::string>());
+                if (resultMessage.empty())
+                    res->status(200).end();
+                else
+                    res->status(400).send(resultMessage);
+            });
         });
     }
 //---------------------------------------------------------------------------------------------------------------------

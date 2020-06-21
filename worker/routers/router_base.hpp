@@ -58,7 +58,7 @@ namespace Routers
         using server_type = attender::tcp_server;
 
     public:
-        explicit TemporarySession(server_type* server, Session const& sess);
+        explicit TemporarySession(server_type* server, Session&& sess);
         TemporarySession(TemporarySession const&) = delete;
         TemporarySession& operator=(TemporarySession const&) = delete;
         TemporarySession(TemporarySession&&) = default;
@@ -85,6 +85,10 @@ namespace Routers
     protected:
         void respondWithError(attender::response_handler* res, int status, char const* msg);
         void readExcept(boost::system::error_code ec);
+
+        /**
+         *  Obtaining the session this way is safer than manually getting it.
+         */
         TemporarySession this_session(attender::request_handler* req);
 
         RouterCollection* collection_;
@@ -124,7 +128,7 @@ namespace Routers
         }
         else
             throw std::runtime_error("session control not installed");
-        return s;
+        return std::optional <Session>{s};
     }
 
     template <typename ServerT>

@@ -1,5 +1,3 @@
-function ComponentSwitch(index, ...Options) {
+export function ArraySwitch(index, ...Options) {
     return [...Options][index]
 }
-
-export default ComponentSwitch;

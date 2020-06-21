@@ -89,6 +89,8 @@ function createWindow()
 
 	electron.Menu.setApplicationMenu(menu);
 
+	const screen = 0;
+
 	let windowWidth = 1500;
 	let windowHeight = 900;
 	
@@ -96,7 +98,7 @@ function createWindow()
 	let y = undefined;
 	if (isDev)
 	{
-		let bounds = electron.screen.getAllDisplays()[1].bounds;
+		let bounds = electron.screen.getAllDisplays()[screen].bounds;
 		x = bounds.x + bounds.width / 2 - windowWidth / 2;
 		y = bounds.y + bounds.height / 2 - windowHeight / 2;
 	}

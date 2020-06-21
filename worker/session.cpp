@@ -8,6 +8,7 @@ Session::Session(std::string id)
     , dataId{-1}
     , controlId{-1}
     , workspace{}
+    , sessionLock{new std::mutex}
 {
 
 }

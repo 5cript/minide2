@@ -1,4 +1,5 @@
 import React from 'react';
+import {connect} from 'react-redux';
 
 // Styling
 import { styled } from '@material-ui/core/styles';
@@ -12,7 +13,7 @@ import Input from '@material-ui/core/Input';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
 // Other
-import ComponentSwitch from '../../../util/switch';
+import _ from 'lodash';
 
 // Styles
 import './styles/toolbar.css'
@@ -60,10 +61,97 @@ const HoverFix = createMuiTheme({
 
 class Toolbar extends React.Component {
     state = {
-        shownBarId: 0
+        shownBarId: ''
+    }
+
+    constructor(props)
+    {
+        super(props);
+        console.log(this.props.toolbars)
+    }
+
+    buttonAction = (toolbar, item) => 
+    {
+        if (item.special_actions && item.special_actions.length > 0)
+            console.log('SPECIAL_ACTIONS!!!')
+
+        this.props.backend.toolbar().callAction(toolbar.id, item.id);
+    }
+
+    buildToolbar = (id) => 
+    {
+        if (this.props.toolbars === undefined || _.isEmpty(this.props.toolbars))
+            return <div />
+
+        const toolbar = this.props.toolbars[id];
+        if (toolbar === undefined || _.isEmpty(toolbar))
+            return <div />
+
+        let components = []
+        for (let i in toolbar.items)
+        {
+            const item = toolbar.items[i]
+            const mapper = item => 
+            {
+                switch(item.type)
+                {
+                    case("IconButton"):
+                    {
+                        const img = (item.pngbase64 && item.pngbase64.length > 0) 
+                            ? 'data:image/png;base64, ' + item.pngbase64
+                            : 'resources/images/toolbar/red_x.png'
+                        ;
+                        return <SimpleIconButton key={item.id} edge={false} onClick={() => this.buttonAction(toolbar, item)}>
+                            <img alt={'ohno'} src={img}></img>
+                        </SimpleIconButton>
+                    }
+                    case("Splitter"):
+                    {
+                        return <div key={item.id} className='Seperator' />
+                    }
+                    default:
+                        return <div key={item.id} >{item.id}</div>
+                }
+            }
+            components.push(mapper(item));
+        }
+        console.log(components)
+        return components
     }
 
     render = () => {
+        return (
+            <div id='ToolbarContainer'>
+                <div>
+                    <StyledLabel id='toolbar-select-label'>Toolbar</StyledLabel>
+                    <StyledSelect
+                        labelId={'toolbar-select-label'}
+                        value={this.state.shownBarId}
+                        onChange={id => { this.setState({ shownBarId: id.target.value }) }}
+                        input={<Input classes={{
+                            underline: StyledSelect.underline,
+                        }} />}
+                    >
+                    {
+                        Object.values(this.props.toolbars).map(toolbar => {
+                            return <MenuItem value={
+                                toolbar.id
+                            }>{toolbar.name}</MenuItem>
+                        })
+                    }
+                    </StyledSelect>
+                </div>
+                <div className='Seperator' />
+                <div id='ActualToolbar'>
+                    <MuiThemeProvider theme={HoverFix}>
+                    {
+                        this.buildToolbar(this.state.shownBarId)
+                    }
+                    </MuiThemeProvider>
+                </div>
+            </div>
+        )
+        /*
         return (
             <div id='ToolbarContainer'>
                 <div>
@@ -134,7 +222,17 @@ class Toolbar extends React.Component {
                 </div>
             </div>
         )
+        */
     }
 }
 
-export default Toolbar;
+export default connect(state => {
+    return {
+        openFiles: state.openFiles.openFiles,
+        activeFile: state.openFiles.activeFile,
+        shortcuts: state.shortcuts,
+        locale: state.locale,
+        toolbars: state.toolbars.toolbars,
+        lookup: state.toolbars.lookup
+    }
+})(Toolbar);
