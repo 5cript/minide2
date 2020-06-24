@@ -2,7 +2,7 @@
 
 #include "../routers_fwd.hpp"
 #include "../json.hpp"
-#include "../session.hpp"
+#include "../session/session.hpp"
 
 #include <attender/attender.hpp>
 
@@ -63,6 +63,13 @@ namespace Routers
         TemporarySession& operator=(TemporarySession const&) = delete;
         TemporarySession(TemporarySession&&) = default;
         TemporarySession& operator=(TemporarySession&&) = default;
+
+        /**
+         *  Used to be automatic, but could race or be in improper order.
+         *  ASIO calls can be synchronous as it seems, if they're small.
+         *  Which then can lead to a state that is unmodified save after the modded one.
+         */
+        void save();
 
         ~TemporarySession();
 

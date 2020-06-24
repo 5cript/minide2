@@ -183,6 +183,8 @@
 		<Unit filename="scripting_engine/common_state_setup.hpp" />
 		<Unit filename="scripting_engine/process.cpp" />
 		<Unit filename="scripting_engine/process.hpp" />
+		<Unit filename="scripting_engine/project_control.cpp" />
+		<Unit filename="scripting_engine/project_control.hpp" />
 		<Unit filename="scripting_engine/script.cpp" />
 		<Unit filename="scripting_engine/script.hpp" />
 		<Unit filename="scripting_engine/script_view.cpp" />

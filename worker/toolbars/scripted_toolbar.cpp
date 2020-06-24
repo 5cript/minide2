@@ -2,6 +2,8 @@
 #include "../scripting_engine/common_state_setup.hpp"
 #include "../scripting_engine/script.hpp"
 #include "../scripting_engine/process.hpp"
+#include "../scripting_engine/project_control.hpp"
+#include "../session/session_obtainer.hpp"
 
 #include <attender/attender/session/uuid_session_cookie_generator.hpp>
 
@@ -37,11 +39,11 @@ namespace Toolbars
         }
     };
 //#####################################################################################################################
-    ScriptedToolbar::ScriptedToolbar(sfs::path const& root)
+    ScriptedToolbar::ScriptedToolbar(sfs::path const& root, SessionObtainer const& obtainer)
         : BasicToolbar{""}
         , impl_{new ScriptedToolbar::Implementation(root)}
     {
-        initialize();
+        initialize(obtainer);
     }
 //---------------------------------------------------------------------------------------------------------------------
     ScriptedToolbar::~ScriptedToolbar() = default;
@@ -56,12 +58,7 @@ namespace Toolbars
         return impl_->id;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void ScriptedToolbar::passOptions()
-    {
-
-    }
-//---------------------------------------------------------------------------------------------------------------------
-    void ScriptedToolbar::initialize()
+    void ScriptedToolbar::initialize(SessionObtainer const& obtainer)
     {
         auto mainScript = MinIDE::Scripting::Script{impl_->toolbarRoot / "main.lua"};
 
@@ -73,6 +70,9 @@ namespace Toolbars
 
             commonStateSetup(lua, true);
             addToPackagePath(lua, impl_->toolbarRoot);
+
+            // Load APIs
+            loadProjectControl(impl_->engine, obtainer);
 
             lua["debugging"] = false;
             lua.script(mainScript.script());

@@ -10,6 +10,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
+import { Combobox } from 'react-widgets';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
 // Other
@@ -108,6 +109,12 @@ class Toolbar extends React.Component {
                     case("Splitter"):
                     {
                         return <div key={item.id} className='Seperator' />
+                    }
+                    case("ComboBox"):
+                    {
+                        return <div className='ToolbarComboBoxDiv'>
+                            <Combobox key={item.id} />
+                        </div>
                     }
                     default:
                         return <div key={item.id} >{item.id}</div>

@@ -2,6 +2,7 @@
 
 #include "router_base.hpp"
 #include "../config.hpp"
+#include "../filesystem/filesystem.hpp"
 
 #include <memory>
 #include <string>
@@ -21,7 +22,7 @@ namespace Routers
         /**
          *  Returns an pair of <E, P>. There was an error if E is non-empty
          */
-        std::pair <std::string, std::string> verifyPath(std::string path, std::string const& root, bool mustExist = true);
+        std::pair <std::string, std::string> verifyPath(std::string path, sfs::path const& root, bool mustExist = true);
 
     private:
         struct Implementation;

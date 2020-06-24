@@ -17,7 +17,7 @@ namespace Routers
 
     private:
         void registerRoutes(attender::tcp_server& server);
-        void loadToolbars(Session& session);
+        void loadToolbars(Session& session, std::string const& id);
 
     private:
         struct Implementation;

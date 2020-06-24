@@ -4,7 +4,8 @@
     --widgets-background: var(--background-color-darker);
     --widgets-background-darker: black;
     --widgets-foreground-color: var(--foreground-color);
-    --widgets-foreground-color-2: var(--foreground-color);
+	--widgets-foreground-color-2: var(--foreground-color);
+	--font-size: 12px;
 }
 
 .rw-btn,
@@ -173,7 +174,7 @@ fieldset[disabled] .rw-btn-primary {
 	background-clip: border-box;
 	border: none;
 	color: var(--widgets-foreground-color);
-	font-size: 1em;
+	font-size: var(--font-size);
 	font-family: inherit;
 	outline: none;
 	position: relative

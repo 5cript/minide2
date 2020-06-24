@@ -11,11 +11,11 @@
 #include "routers/toolbar.hpp"
 #include "routers.hpp"
 
-#include "session.hpp"
+#include "session/session.hpp"
 #include "config.hpp"
 #include "log.hpp"
 #include "termination_handler.hpp"
-#include "session_storage.hpp"
+#include "session/session_storage.hpp"
 #include "streaming/common_messages/server_time.hpp"
 
 // FIXME REMOVE
@@ -59,7 +59,8 @@ int main(int argc, char** argv)
     };
 
     // create a server
-    tcp_server server(context.get_io_service(),
+    tcp_server server(
+        context.get_io_service(),
         [](auto* connection, auto const& ec, auto const& exc) {
             // some error occured. (this is not thread safe)
             // You MUST check the error code here, because some codes mean, that the connection went kaputt!
@@ -69,6 +70,11 @@ int main(int argc, char** argv)
                 std::cout << connection->get_remote_address() << ":" << connection->get_remote_port() << "\n";
             }
             std::cerr << ec << " " << exc.what() << "\n";
+        },
+        attender::settings
+        {
+            false,
+            true
         }
     );
 

@@ -35,15 +35,18 @@ namespace Routers
         : Session{std::move(sess)}
         , server_{server}
     {
-        sessionLock->lock();
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void TemporarySession::save()
+    {
+        setSession(*server_, *this);
     }
 //---------------------------------------------------------------------------------------------------------------------
     TemporarySession::~TemporarySession()
     {
         try
         {
-            sessionLock->unlock();
-            setSession(*server_, *this);
+            // ...
         }
         catch(...)
         {

@@ -57,10 +57,6 @@ namespace Routers
         {
             enable_cors(req, res, impl_->config.corsOption);
 
-            std::cout << req->get_cookie_value("aSID").value();
-            auto sess = this_session(req);
-            sess.dump();
-
             readJsonBody(req, res, [this, res, req](json const& body)
             {
                 auto sess = this_session(req);
@@ -92,6 +88,7 @@ namespace Routers
                     return res->status(400).send("please first listen to the data stream or provide correct listener id");
 
                 sess.workspace.root = root;
+                sess.save();
                 res->status(204).end();
             });
         });
@@ -421,13 +418,14 @@ namespace Routers
                     return res->status(400).send("is not a directory");
 
                 sess.workspace.activeProject = veri.second;
+                sess.save();
 
                 res->status(200).end();
             });
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::pair <std::string, std::string> Workspace::verifyPath(std::string path, std::string const& root, bool mustExist)
+    std::pair <std::string, std::string> Workspace::verifyPath(std::string path, sfs::path const& root, bool mustExist)
     {
         if (path.empty())
             return {"path cannot be empty"s, path};

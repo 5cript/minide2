@@ -1,13 +1,14 @@
 #ToolbarContainer {
     background-color: var(--background-color-darker);
-    padding: 5px;
+    padding: 3px;
     display: flex;
 }
 
 .Seperator {
     border-right: solid 1px var(--foreground-color);
-    padding-left: 5px;
-    margin-right: 5px;
+    position: relative;
+    top: 10%;
+    height: 80%;
 }
 
 #ActualToolbar {
@@ -19,4 +20,12 @@
     position: relative;
     top: calc(50% - 13px);
     display: flex;
+    align-items: flex-start;
+}
+
+.ToolbarComboBoxDiv
+{
+    width: 200px;
+    padding-top: 5px;
+    padding-left: 3px;
 }

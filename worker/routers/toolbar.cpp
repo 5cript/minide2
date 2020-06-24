@@ -3,6 +3,7 @@
 #include "../toolbars/cmake_toolbar.hpp"
 #include "../variant.hpp"
 #include "../filesystem/home_directory.hpp"
+#include "../session/session_obtainer.hpp"
 
 #include <nlohmann/json.hpp>
 #include <iterator>
@@ -60,7 +61,8 @@ namespace Routers
             auto sess = this_session(req);
             //sess.toolbarStore.scriptedToolbars
 
-            loadToolbars(sess);
+            loadToolbars(sess, req->get_cookie_value("aSID").value());
+            sess.save();
 
             json toolbars = json::object();
             toolbars["toolbars"] = json::array();
@@ -97,7 +99,7 @@ namespace Routers
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Toolbar::loadToolbars(Session& session)
+    void Toolbar::loadToolbars(Session& session, std::string const& id)
     {
         auto toolbars = inHomeDirectory() / "toolbars";
         session.toolbarStore.reset();
@@ -105,7 +107,11 @@ namespace Routers
         for (auto const& p : sfs::directory_iterator{toolbars})
         {
             if (sfs::is_directory(p) && sfs::exists(p.path() / "main.lua"))
-                session.toolbarStore.scriptedToolbars.emplace_back(std::make_shared <ScriptedToolbar> (p.path()));
+                session.toolbarStore.scriptedToolbars.emplace_back(std::make_shared <ScriptedToolbar>
+                (
+                    p.path(),
+                    SessionObtainer(server_->get_installed_session_manager(), id)
+                ));
         }
     }
 //#####################################################################################################################

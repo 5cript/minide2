@@ -198,6 +198,7 @@ namespace Routers
             {
                 auto session = this_session(req);
                 session.controlId = id;
+                session.save();
             }
 
             res->send_chunked(*produ, [produ, connectionBasedStreamer, id, commonCleanup, this](auto e)
@@ -270,6 +271,7 @@ namespace Routers
             {
                 auto session = this_session(req);
                 session.dataId = id;
+                session.save();
             }
 
             res->send_chunked(*produ, [produ, connectionBasedStreamer, commonCleanup, id, this](auto e)

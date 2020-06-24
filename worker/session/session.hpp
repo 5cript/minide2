@@ -1,7 +1,8 @@
 #pragma once
 
-#include "workspace/workspace.hpp"
-#include "session/toolbar_store.hpp"
+#include "session_fwd.hpp"
+#include "../workspace/workspace.hpp"
+#include "toolbar_store.hpp"
 
 #include <attender/attender/session/session.hpp>
 #include <string>
@@ -17,7 +18,6 @@ public:
     int dataId;
     int controlId;
     WorkspaceInfo workspace;
-    std::shared_ptr <std::mutex> sessionLock;
 
     ToolbarStore toolbarStore;
 
