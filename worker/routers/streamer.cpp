@@ -198,6 +198,7 @@ namespace Routers
             {
                 auto session = this_session(req);
                 session.controlId = id;
+                session.remoteAddress = req->ip();
                 session.save();
             }
 

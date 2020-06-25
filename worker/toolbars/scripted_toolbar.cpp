@@ -3,7 +3,9 @@
 #include "../scripting_engine/script.hpp"
 #include "../scripting_engine/process.hpp"
 #include "../scripting_engine/project_control.hpp"
+#include "../scripting_engine/streamer_access.hpp"
 #include "../session/session_obtainer.hpp"
+#include "../routers/streamer.hpp"
 
 #include <attender/attender/session/uuid_session_cookie_generator.hpp>
 
@@ -39,11 +41,11 @@ namespace Toolbars
         }
     };
 //#####################################################################################################################
-    ScriptedToolbar::ScriptedToolbar(sfs::path const& root, SessionObtainer const& obtainer)
+    ScriptedToolbar::ScriptedToolbar(sfs::path const& root, SessionObtainer const& obtainer, Routers::DataStreamer* streamer)
         : BasicToolbar{""}
         , impl_{new ScriptedToolbar::Implementation(root)}
     {
-        initialize(obtainer);
+        initialize(obtainer, streamer);
     }
 //---------------------------------------------------------------------------------------------------------------------
     ScriptedToolbar::~ScriptedToolbar() = default;
@@ -58,7 +60,7 @@ namespace Toolbars
         return impl_->id;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void ScriptedToolbar::initialize(SessionObtainer const& obtainer)
+    void ScriptedToolbar::initialize(SessionObtainer const& obtainer, Routers::DataStreamer* streamer)
     {
         auto mainScript = MinIDE::Scripting::Script{impl_->toolbarRoot / "main.lua"};
 
@@ -73,6 +75,7 @@ namespace Toolbars
 
             // Load APIs
             loadProjectControl(impl_->engine, obtainer);
+            loadStreamerAccess(impl_->engine, obtainer, streamer);
 
             lua["debugging"] = false;
             lua.script(mainScript.script());

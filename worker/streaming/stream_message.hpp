@@ -6,6 +6,8 @@
 #include <variant>
 #include <vector>
 #include <string>
+#include <utility>
+#include <type_traits>
 
 namespace Streaming
 {
@@ -44,4 +46,10 @@ namespace Streaming
         {
         }
     };
+
+    template <typename T, typename... Args>
+    Message makeMessage(Args&&... args)
+    {
+        return Message(new T(std::forward <Args&&>(args)...));
+    }
 }

@@ -4,6 +4,7 @@
 #include "../variant.hpp"
 #include "../filesystem/home_directory.hpp"
 #include "../session/session_obtainer.hpp"
+#include "../routers.hpp"
 
 #include <nlohmann/json.hpp>
 #include <iterator>
@@ -61,7 +62,12 @@ namespace Routers
             auto sess = this_session(req);
             //sess.toolbarStore.scriptedToolbars
 
-            loadToolbars(sess, req->get_cookie_value("aSID").value());
+            loadToolbars
+            (
+                sess,
+                req->get_cookie_value("aSID").value(),
+                &collection_->streamer()
+            );
             sess.save();
 
             json toolbars = json::object();
@@ -99,7 +105,7 @@ namespace Routers
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Toolbar::loadToolbars(Session& session, std::string const& id)
+    void Toolbar::loadToolbars(Session& session, std::string const& id, DataStreamer* streamer)
     {
         auto toolbars = inHomeDirectory() / "toolbars";
         session.toolbarStore.reset();
@@ -110,7 +116,8 @@ namespace Routers
                 session.toolbarStore.scriptedToolbars.emplace_back(std::make_shared <ScriptedToolbar>
                 (
                     p.path(),
-                    SessionObtainer(server_->get_installed_session_manager(), id)
+                    SessionObtainer(server_->get_installed_session_manager(), id),
+                    streamer
                 ));
         }
     }

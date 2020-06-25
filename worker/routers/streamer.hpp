@@ -1,6 +1,8 @@
 #pragma once
 
 #include "router_base.hpp"
+#include "streamer_fwd.hpp"
+
 #include "../streaming/id.hpp"
 #include "../streaming/stream_queue.hpp"
 
@@ -16,7 +18,7 @@
 
 namespace Routers
 {
-    enum StreamChannel
+    enum class StreamChannel
     {
         Control = 0x0,
         Data = 0x1

@@ -215,6 +215,11 @@ class MainWindow extends React.Component
         {
             if (head.type === "welcome")
                 ipcRenderer.sendSync('haveCookieUpdate', {});
+            else
+            {
+                // Unhandled:
+                console.log(head);
+            }
         }
         catch(e)
         {

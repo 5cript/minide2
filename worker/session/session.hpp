@@ -18,6 +18,8 @@ public:
     int dataId;
     int controlId;
     WorkspaceInfo workspace;
+    std::string remoteAddress;
+    std::string terminalEnvironment;
 
     ToolbarStore toolbarStore;
 
