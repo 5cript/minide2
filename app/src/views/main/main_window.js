@@ -289,6 +289,15 @@ class MainWindow extends React.Component
         {
             this.backend.workspace().openWorkspace("D:/Development/IDE2/test-project");
         })
+
+        ipcRenderer.on('reloadToolbar', (event, arg) => 
+        {
+            this.backend.toolbar().loadAll(res => {
+                res.json().then(json => {
+                    this.props.dispatch(initializeToolbars(json));
+                })
+            });
+        })
         
         ipcRenderer.on('closeIssued', (event, arg) => 
         {

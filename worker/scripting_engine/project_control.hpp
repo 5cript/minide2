@@ -63,7 +63,7 @@ namespace MinIDE::Scripting
         /**
          *  Save string to file.
          */
-        bool saveProjectFile(std::string const& fileName, std::string const& content);
+        int saveProjectFile(std::string const& fileName, std::string const& content);
 
     private:
         struct Implementation;

@@ -70,6 +70,10 @@ const menuTemplate = [
 			{
 				label: dict.translate('$Test', 'menu'),
 				click: async e => mainWindow.webContents.send('testBackend')
+			},
+			{
+				label: dict.translate('$ReloadToolbar', 'menu'),
+				click: async e => mainWindow.webContents.send('reloadToolbar')
 			}
 		]
 	}

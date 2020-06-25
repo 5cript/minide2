@@ -419,6 +419,7 @@ namespace Routers
 
                 sess.workspace.activeProject = veri.second;
                 sess.save();
+                std::cout << sess.workspace.activeProject << "\n";
 
                 res->status(200).end();
             });

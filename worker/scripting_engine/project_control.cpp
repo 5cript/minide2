@@ -67,7 +67,7 @@ namespace MinIDE::Scripting
             return false;
         auto p = s.value().workspace.activeProject;
 
-        return sfs::exists(p);
+        return sfs::exists(p / ".minIDE");
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::string LuaProjectControl::getMinIDEDirectory() const
@@ -76,9 +76,9 @@ namespace MinIDE::Scripting
         if (!s)
             return "";
         auto p = s.value().workspace.activeProject / ".minIDE";
-        if (!sfs::exists(p / ".minIDE"))
+        if (!sfs::exists(p))
             return "";
-        return (p / ".minIDE").string();
+        return p.string();
     }
 //---------------------------------------------------------------------------------------------------------------------
     bool LuaProjectControl::hasActiveProject() const
@@ -105,22 +105,29 @@ namespace MinIDE::Scripting
         return sstr.str();
     }
 //---------------------------------------------------------------------------------------------------------------------
-    bool LuaProjectControl::saveProjectFile(std::string const& fileName, std::string const& jsonString)
+    int LuaProjectControl::saveProjectFile(std::string const& fileName, std::string const& jsonString)
     {
-        sfs::path project{getProjectDirectory()};
+        sfs::path project{getMinIDEDirectory()};
         if (project.string() == "")
-            return false;
+            return -1;
+
+        std::string formatted;
+        try
+        {
+            formatted = json::parse(jsonString).dump(4);
+        }
+        catch(...)
+        {
+            return -3;
+        }
 
         auto settingsFile = project / fileName;
-        if (!sfs::exists(settingsFile))
-            return false;
-
         std::ofstream writer{settingsFile.string(), std::ios_base::binary};
         if (!writer.good())
-            return false;
+            return -2;
 
-        writer.write(jsonString.c_str(), jsonString.size());
-        return true;
+        writer.write(formatted.c_str(), formatted.size());
+        return 0;
     }
 //#####################################################################################################################
     void loadProjectControl(std::weak_ptr <StateCollection> state, SessionObtainer sessionAccess)
@@ -147,7 +154,8 @@ namespace MinIDE::Scripting
             "get_meta_directory", &LuaProjectControl::getMinIDEDirectory,
             "has_active_project", &LuaProjectControl::hasActiveProject,
             "update", &LuaProjectControl::reloadInformation,
-            "read_project_file", &LuaProjectControl::readProjectFile
+            "read_project_file", &LuaProjectControl::readProjectFile,
+            "save_project_file", &LuaProjectControl::saveProjectFile
         );
     }
 //#####################################################################################################################
