@@ -138,6 +138,25 @@ namespace MinIDE::Scripting
         );
         return true;
     }
+//---------------------------------------------------------------------------------------------------------------------
+    void LuaStreamer::remoteProcedureRequest(std::string const& fname, std::string const& formattedData)
+    {
+        auto s = impl_->sessionAccess.session();
+        if (!s)
+            return false;
+        impl_->streamer->send
+        (
+            StreamChannel::Control,
+            s.value().remoteAddress,
+            s.value().controlId,
+            Streaming::makeMessage<Streaming::Messages::LuaRemoteProcedureCall>
+            (
+                fname,
+                formattedData
+            )
+        );
+        return true;
+    }
 //#####################################################################################################################
     void loadStreamerAccess
     (
@@ -165,7 +184,8 @@ namespace MinIDE::Scripting
             "send_warning", &LuaStreamer::sendWarning,
             "send_info", &LuaStreamer::sendInformation,
             "send_subprocess_stdout", &LuaStreamer::sendSubprocessStdout,
-            "send_subprocess_stderr", &LuaStreamer::sendSubprocessStderr
+            "send_subprocess_stderr", &LuaStreamer::sendSubprocessStderr,
+            "remote_call", &LuaStreamer::remoteProcedureRequest
         );
 
         strongRef->lua.new_enum(

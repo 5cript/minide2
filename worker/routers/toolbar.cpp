@@ -62,21 +62,28 @@ namespace Routers
             auto sess = this_session(req);
             //sess.toolbarStore.scriptedToolbars
 
-            loadToolbars
-            (
-                sess,
-                req->get_cookie_value("aSID").value(),
-                &collection_->streamer()
-            );
-            sess.save();
-
-            json toolbars = json::object();
-            toolbars["toolbars"] = json::array();
-            for (auto const& toolbar : sess.toolbarStore.scriptedToolbars)
+            try
             {
-                toolbars["toolbars"].push_back(toolbar->getJson());
+                loadToolbars
+                (
+                    sess,
+                    req->get_cookie_value("aSID").value(),
+                    &collection_->streamer()
+                );
+                sess.save();
+
+                json toolbars = json::object();
+                toolbars["toolbars"] = json::array();
+                for (auto const& toolbar : sess.toolbarStore.scriptedToolbars)
+                {
+                    toolbars["toolbars"].push_back(toolbar->getJson());
+                }
+                sendJson(res, toolbars);
             }
-            sendJson(res, toolbars);
+            catch(std::exception const& exc)
+            {
+                res->status(500).send(exc.what());
+            }
         });
 
         cors_options(server, "/api/toolbar/callAction", "POST", impl_->config.corsOption);

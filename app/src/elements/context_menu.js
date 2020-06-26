@@ -1,9 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 import './styles/context_menu.css';
 
-const MenuItem = ({ item }) => 
+const MenuItem = ({ item, anyImage }) => 
 {
     const {
         label,
@@ -16,18 +17,18 @@ const MenuItem = ({ item }) =>
         return (
             <span
                 className="menuItem"
-                onClick={onClick}
+                onClick={(e) => {console.log(label); onClick(e, item.label)}}
                 key={label}
                 style={{"cursor":"pointer","display":"flex","alignItems":"center","justifyContent":"flex-start","marginBottom":"7px"}}
             >
-                {icon && <img className="icon" src={icon} alt={'X'} />}
+                {icon && <img className="menuIcon" src={icon} alt={'X'} />}
+                {icon === undefined && anyImage && <div className="menuImageFill"></div>}
                 {label}
             </span>
         );
     else
         return (
             <div className="menuLine">
-                
             </div>
         );
 };
@@ -52,19 +53,28 @@ export default class ContextMenu extends React.PureComponent
         this.state = {
             target: '',
         };
+        this.visible = false;
     }
 
     componentDidMount() {
         const { contextId } = this.props;
         const context = document.getElementById(contextId);
-        context.addEventListener('contextmenu', (event) => {
-            this.openContextMenu(event);
-        });
+        if (this.props.openOnClick !== true)
+            context.addEventListener('contextmenu', (event) => {
+                this.openContextMenu(event);
+            });
+        else
+            context.addEventListener('click', (event) => {
+                if (this.props.closeOnClick === true && this.visible)
+                    this.closeContextMenu();
+                else
+                    this.openContextMenu(event);
+            });
 
         const menu = document.getElementById(this.menuId);
         menu.addEventListener('mouseleave', () => {
-            const { closeOnClickOut } = this.props;
-            if (!closeOnClickOut) {
+            const { closeOnClickOut, closeOnClick } = this.props;
+            if (!closeOnClickOut && !closeOnClick) {
                 this.closeContextMenu();
             }
         });
@@ -72,7 +82,8 @@ export default class ContextMenu extends React.PureComponent
         document.addEventListener('click', (event) => {
             const { closeOnClickOut } = this.props;
 
-            if (closeOnClickOut && !menu.contains(event.target)) {
+            if (closeOnClickOut && !menu.contains(event.target)) 
+            {
                 event.preventDefault();
                 this.closeContextMenu();
             }
@@ -84,9 +95,9 @@ export default class ContextMenu extends React.PureComponent
         let xOffset = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
         let yOffset = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
 
-        let element = this.props.onOpen(xOffset, yOffset);
-        xOffset = element.xOffset;
-        yOffset = element.yOffset;
+        let element = this.props.onOpen(xOffset, yOffset, event);
+        const x = element.x;
+        const y = element.y;
 
         if (!element.doShow)
             return;
@@ -107,14 +118,16 @@ export default class ContextMenu extends React.PureComponent
 
         const menu = document.getElementById(this.menuId);
 
-        menu.style.cssText = menu.style.cssText + `left: ${event.clientX + xOffset}px;`
-            + `top: ${event.clientY + yOffset}px;`
+        this.visible = true;
+        menu.style.cssText = menu.style.cssText + `left: ${x}px;`
+            + `top: ${y}px;`
             + 'visibility: visible;';
     }
 
     closeContextMenu() 
     {
         const menu = document.getElementById(this.menuId);
+        this.visible = false; 
         if (menu)
             menu.style.cssText = menu.style.cssText + 'visibility: hidden;';
     }
@@ -141,23 +154,28 @@ export default class ContextMenu extends React.PureComponent
         })
     }
 
+    anyImage = () => 
+    {
+        return _.filter(this.props.items, item => item.pngbase64 !== undefined) > 0;
+    }
+
     render() {
         return (
             <div
                 id={this.menuId}
                 className="contextMenu"
                 style={{ 
-                    "position": "absolute", 
+                    "position": "fixed", 
                     "display": "flex", 
                     "flexFlow": "column", 
                     "border": "1px solid rgba(0,0,0,0.15)", 
-                    "borderRadius": "2px", 
                     "boxShadow": "0 1px 1px 1px rgba(0,0,0,0.05)", 
-                    "visibility": "hidden" 
+                    "visibility": "hidden",
+                    "zIndex": "10"
                 }}
             >
                 {this.getItems().map(item => (
-                    <MenuItem item={item} key={item.label} />
+                    <MenuItem item={item} key={item.label} anyImage={this.anyImage} />
                 ))}
             </div>
         );

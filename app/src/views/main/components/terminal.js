@@ -59,7 +59,7 @@ class TerminalInstance extends React.Component
         this.term.onKey((e) => {this.handleInput(e.key, e.domEvent);});
         this.term.onResize((e) => 
         {
-            console.log(e);
+            //console.log(e);
         });
     }
 

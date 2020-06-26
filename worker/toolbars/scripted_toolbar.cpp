@@ -92,9 +92,11 @@ namespace Toolbars
                 json jsonItem = json::object();
                 sol::table item = value;
 
-                auto transferToJson = [&jsonItem, &item](auto id, auto alternate)
+                // Converts lua table entries to JSON if they exist
+                auto transfer = [](auto& j, sol::table& luaItem, auto const& id, auto alternate)
                 {
-                    auto val = item.get_or<std::decay_t<decltype(alternate)>>(id, alternate);
+                    using alterType = std::decay_t<decltype(alternate)>;
+                    auto val = luaItem.get_or<alterType>(id, alternate);
                     if constexpr
                     (
                         std::is_same_v<std::decay_t<decltype(alternate)>, std::string> ||
@@ -104,20 +106,50 @@ namespace Toolbars
                         if (val.empty())
                             return;
                     }
-                    jsonItem[id] = val;
+                    j[id] = val;
                 };
 
+                auto transferBasics = [&jsonItem, &item, &transfer](auto const& id, auto const& alternate)
+                {
+                    transfer(jsonItem, item, id, alternate);
+                };
+
+                // No Type No Deal
                 if (!item["type"].valid())
                     continue;
 
-                std::string type = item.get<std::string>("type");
-                jsonItem["type"] = type;
-                transferToJson("id", "missing_id_"s + key.as<std::string>());
+                // Type
+                jsonItem["type"] = item.get<std::string>("type");
 
+                // Id
+                transferBasics("id", "missing_id_"s + key.as<std::string>());
+
+                // Item Type dependent transferals
+                std::string type = jsonItem["type"];
                 if (type == "IconButton")
                 {
-                    transferToJson("pngbase64", ""s);
-                    transferToJson("special_actions", std::vector <std::string>{});
+                    transferBasics("pngbase64", ""s);
+                    transferBasics("special_actions", std::vector <std::string>{});
+                }
+                else if (type == "Menu")
+                {
+                    if (item["entries"].valid())
+                    {
+                        jsonItem["entries"] = json::array();
+                        for (sol::table const entries = item["entries"]; auto const& [key, value] : entries)
+                        {
+                            json jentry = json::object();
+                            sol::table entry = value;
+
+                            transfer(jentry, entry, "label", ""s);
+                            transfer(jentry, entry, "is_splitter", false);
+                            transfer(jentry, entry, "pngbase64", ""s);
+                            transfer(jentry, entry, "special_actions", std::vector <std::string>{});
+
+
+                            jsonItem["entries"].push_back(jentry);
+                        }
+                    }
                 }
 
                 impl_->jsonRepresentation["items"].push_back(jsonItem);

@@ -12,6 +12,8 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import { Combobox } from 'react-widgets';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import HamburgerMenu from 'react-hamburger-menu';
+import ContextMenu from '../../../elements/context_menu';
 
 // Other
 import _ from 'lodash';
@@ -62,13 +64,13 @@ const HoverFix = createMuiTheme({
 
 class Toolbar extends React.Component {
     state = {
-        shownBarId: ''
+        shownBarId: '',
+        openMenuId: null
     }
 
     constructor(props)
     {
         super(props);
-        console.log(this.props.toolbars)
     }
 
     buttonAction = (toolbar, item) => 
@@ -77,6 +79,34 @@ class Toolbar extends React.Component {
             console.log('SPECIAL_ACTIONS!!!')
 
         this.props.backend.toolbar().callAction(toolbar.id, item.id);
+    }
+
+    openMenu = (id) => 
+    {
+        if (this.state.openMenuId !== id)
+            this.setState({openMenuId: id});
+        else
+            this.setState({openMenuId: null});
+    }
+
+    onMenuContextOpen(itemId, xOffset, yOffset, event)
+    {
+        const rect = event.target.getBoundingClientRect();
+        let x = rect.left;
+        x = x + (x%rect.width) - rect.width + 2;
+        let y = rect.bottom + 4;
+        y = y + (y%rect.height) - rect.height + 11;
+
+        return {
+            x: x,
+            y: y,
+            doShow: true
+        }
+    }
+
+    onContextMenuItemClick = (toolbarId, itemId, event, label) => 
+    {
+        console.log(toolbarId, itemId, event, label)
     }
 
     buildToolbar = (id) => 
@@ -112,9 +142,66 @@ class Toolbar extends React.Component {
                     }
                     case("ComboBox"):
                     {
-                        return <div className='ToolbarComboBoxDiv'>
-                            <Combobox key={item.id} />
+                        return <div key={item.id} className='ToolbarComboBoxDiv'>
+                            <Combobox />
                         </div>
+                    }
+                    case("Menu"):
+                    {
+                        return (
+                            <div 
+                                key={item.id}
+                                id={toolbar.id + "_" + item.id}
+                                onClick={() => this.openMenu(item.id)}
+                                className='MenuButton'
+                            >
+                                <HamburgerMenu
+                                    isOpen={this.state.openMenuId === item.id}
+                                    menuClicked={() => this.openMenu(item.id)}
+                                    width={18}
+                                    height={14}
+                                    strokeWidth={2}
+                                    rotate={0}
+                                    color='white'
+                                    borderRadius={0}
+                                    animationDuration={0.3}
+                                >
+                                </HamburgerMenu>
+                                <ContextMenu
+                                    contextId={toolbar.id + "_" + item.id}
+                                    menuId={toolbar.id + "_" + item.id + "_ctx"}
+                                    closeOnClickOut={false}
+                                    stayOpen={true}
+                                    openOnClick={true}
+                                    closeOnClick={true}
+                                    onOpen={(...args) => {return this.onMenuContextOpen(item.id, ...args);}}
+                                    otherMenus={[]}
+                                    /*items={[
+                                        {
+                                            label: 'bob',
+                                            onClick: (e, label) => {this.onContextMenuItemClick(toolbar.id, item.id, e, 'bob')}
+                                        }
+                                    ]}*/
+                                    items={
+                                        _.filter(item.entries.map(entry => 
+                                        {
+                                            const img = (entry.pngbase64 && entry.pngbase64.length > 0) 
+                                                ? 'data:image/png;base64, ' + entry.pngbase64
+                                                : undefined
+                                            ;
+                                            return {
+                                                label: entry.label,
+                                                line: entry.is_splitter,
+                                                icon: img,
+                                                onClick: () => {this.onContextMenuItemClick(toolbar.id, item.id, undefined, entry.label)}
+                                            }
+                                        }), item => {
+                                            return item.label !== undefined || item.line === true;
+                                        })
+                                    }
+                                ></ContextMenu>
+                            </div>
+                        )
                     }
                     default:
                         return <div key={item.id} >{item.id}</div>
@@ -122,8 +209,17 @@ class Toolbar extends React.Component {
             }
             components.push(mapper(item));
         }
-        console.log(components)
         return components
+    }
+
+    
+    preselectToolbar = () => 
+    {
+        for (let i in this.props.toolbars)
+        {
+            this.setState({shownBarId: this.props.toolbars[i].id});
+            break;
+        }
     }
 
     render = () => {
@@ -158,78 +254,6 @@ class Toolbar extends React.Component {
                 </div>
             </div>
         )
-        /*
-        return (
-            <div id='ToolbarContainer'>
-                <div>
-                    <StyledLabel id='toolbar-select-label'>Toolbar</StyledLabel>
-                    <StyledSelect
-                        labelId={'toolbar-select-label'}
-                        value={this.state.shownBarId}
-                        onChange={id => { this.setState({ shownBarId: id.target.value }) }}
-                        input={<Input classes={{
-                            underline: StyledSelect.underline,
-                        }} />}
-                    >
-                        <MenuItem value={0}>CMake C/C++</MenuItem>
-                        <MenuItem value={1}>Bash</MenuItem>
-                    </StyledSelect>
-                </div>
-                <div className='Seperator' />
-                <div id='ActualToolbar'>
-                    <MuiThemeProvider theme={HoverFix}>
-                    {ComponentSwitch(this.state.shownBarId,
-                        <div className='IconButtonGroup'>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onSave}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/save.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onSaveAll}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/save_all.png'}></img>
-                            </SimpleIconButton>
-                            <div className='Seperator' />
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onCmake}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/cmake.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onBuild}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/build.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onRun}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/run.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onBuildRun}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/build_run.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onCancel}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/red_x.png'}></img>
-                            </SimpleIconButton>
-                            <div className='Seperator' />
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onDebug}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/debug.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onNextLine}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/next_line.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onStepInto}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/step_into.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onStepOut}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/step_out.png'}></img>
-                            </SimpleIconButton>
-                        </div>,
-                        <div className='IconButtonGroup'>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onSave}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/save.png'}></img>
-                            </SimpleIconButton>
-                            <SimpleIconButton edge={false} onClick={this.props.cmake.onSaveAll}>
-                                <img alt={'ohno'} src={'resources/images/toolbar/save_all.png'}></img>
-                            </SimpleIconButton>
-                        </div>
-                    )}
-                    </MuiThemeProvider>
-                </div>
-            </div>
-        )
-        */
     }
 }
 
@@ -242,4 +266,4 @@ export default connect(state => {
         toolbars: state.toolbars.toolbars,
         lookup: state.toolbars.lookup
     }
-})(Toolbar);
+}, null, null, {forwardRef: true})(Toolbar);

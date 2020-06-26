@@ -1,6 +1,6 @@
 .menuLine
 {
-    border-bottom: 1px solid var(--foreground-color);
+    border-bottom: 1px solid var(--background-color-brighter);
     margin-left: 5px;
     margin-right: 5px;
     margin-bottom: 5px;
@@ -15,13 +15,23 @@
 
 .contextMenu
 {
-    padding: 10px 0px;
-    background: var(--background-color-darker);
+    padding-top: 5px;
+    background: var(--foreground-color);
     position: absolute; 
     display: flex; 
-    color: var(--foreground-color);
+    color: black;
     flex-flow: column; 
     border: 1px solid rgba(0,0,0,0.15); 
     box-shadow: 0 1px 1px 1px rgba(0,0,0,0.05); 
     visibility: hidden;
+}
+
+.menuIcon
+{
+    margin-right: 3px;
+}
+
+.menuImageFill
+{
+    width: 19px;
 }

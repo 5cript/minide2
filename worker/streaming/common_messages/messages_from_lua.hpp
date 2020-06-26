@@ -88,4 +88,20 @@ namespace Streaming::Messages
 
         std::string toJson() const override;
     };
+
+    struct LuaRemoteProcedureCall : public JsonSerializable
+    {
+        std::string fname;
+        std::string formattedData;
+
+        LuaRemoteProcedureCall() = default;
+        LuaRemoteProcedureCall(std::string fname, std::string formattedData)
+            : fname{std::move(fname)}
+            , formattedData{std::move(formattedData)}
+        {
+        }
+        LuaProcessOutputMessage(LuaProcessOutputMessage&&) = default;
+
+        std::string toJson() const override;
+    };
 }

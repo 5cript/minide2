@@ -112,26 +112,26 @@ class FileView extends PureComponent
         this.hoveredNode = undefined;
     }
 
-    onFileContextOpen(xOffset, yOffset)
+    onFileContextOpen(xOffset, yOffset, event)
     {
         const doShow = this.hoveredNode && (this.hoveredNode.isLeaf !== false);
         if (doShow)
             this.contextItem = this.hoveredNode;
         return {
-            xOffset: 10,
-            yOffset: -110,
+            x: event.clientX + xOffset,
+            y: event.clientY +  yOffset,
             doShow: doShow
         }
     }
 
-    onDirectoryContextOpen(xOffset, yOffset)
+    onDirectoryContextOpen(xOffset, yOffset, event)
     {
         const doShow = this.hoveredNode && (this.hoveredNode.isLeaf === false);
         if (doShow)
             this.contextItem = this.hoveredNode;
         return {
-            xOffset: 10,
-            yOffset: -110,
+            x: event.clientX + xOffset,
+            y: event.clientY +  yOffset,
             doShow: doShow
         }
     }

@@ -198,7 +198,7 @@ class MainWindow extends React.Component
                 this.props.dispatch(setConnected(true));
                 this.backend.toolbar().loadAll(res => {
                     res.json().then(json => {
-                        this.props.dispatch(initializeToolbars(json));
+                        this.initToolbars(json);
                     })
                 });
             }
@@ -209,12 +209,21 @@ class MainWindow extends React.Component
         }
     }
 
+    initToolbars = (json) =>
+    {
+        this.props.dispatch(initializeToolbars(json));
+        if (this.toolbar)
+            this.toolbar.preselectToolbar();
+    }
+
     onControlStream(head, data)
     {
         try
         {
             if (head.type === "welcome")
                 ipcRenderer.sendSync('haveCookieUpdate', {});
+            else if (head.type === "keep_alive")
+            {}
             else
             {
                 // Unhandled:
@@ -299,7 +308,7 @@ class MainWindow extends React.Component
         {
             this.backend.toolbar().loadAll(res => {
                 res.json().then(json => {
-                    this.props.dispatch(initializeToolbars(json));
+                    this.initToolbars(json);
                 })
             });
         })
@@ -356,6 +365,11 @@ class MainWindow extends React.Component
     {
     }
 
+    setToolbarRef = (node) => 
+    {
+        this.toolbar = node;
+    }
+
     render = () => 
     {
         return (
@@ -365,7 +379,7 @@ class MainWindow extends React.Component
                         <Blocker></Blocker>
                     </Slide>
                     <Slide right when={this.props.backend.connected}>
-                        <Toolbar backend={this.backend} cmake={new CMakeToolbarEvents()}/>
+                        <Toolbar ref={(n) => {this.setToolbarRef(n)}} backend={this.backend} cmake={new CMakeToolbarEvents()}/>
                     </Slide>
                 </div>
                 <div id='SplitterContainer'>
