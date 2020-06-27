@@ -52,6 +52,8 @@ const extensionToLanguage = (ext, filename, extraDefinitions, guess) =>
         return 'shell';
     if (isAnyOf('.html'))
         return 'html';
+    if (isAnyOf('.json'))
+        return 'json';
 
     // workaround for cmake
     if (isAnyOf('.cmake'))

@@ -65,7 +65,10 @@ const HoverFix = createMuiTheme({
 class Toolbar extends React.Component {
     state = {
         shownBarId: '',
-        openMenuId: null
+        openMenuId: null,
+        busyComboxes: [],
+        openCombobox: null,
+        comboboxes: {}
     }
 
     constructor(props)
@@ -104,9 +107,59 @@ class Toolbar extends React.Component {
         }
     }
 
+    comboboxLoaded = (toolbarId, itemId, elements) =>
+    {
+        const id = toolbarId + "_" + itemId;
+        if (elements === undefined)
+            return this.setState({
+                busyComboxes: _.filter(this.state.busyComboxes, item =>
+                    item !== id
+                ),
+            })
+        const names = elements.map(elem => {
+            return elem.name
+        })
+        let boxes = _.clone(this.state.comboboxes);
+        if (boxes[id] === undefined)
+            boxes[id] = {}
+        boxes[id].items = names
+        this.setState({
+            busyComboxes: _.filter(this.state.busyComboxes, item =>
+                item !== id
+            ),
+            comboboxes: boxes,
+            openCombobox: id
+        });
+    }
+
+    closeComboBox = (toolbarId, itemId, selected) => 
+    {
+        const id = toolbarId + "_" + itemId;
+        let boxes = _.clone(this.state.comboboxes);
+        if (boxes[id] === undefined)
+            boxes[id] = {}
+        boxes[id].selected = selected
+        this.setState({
+            openCombobox: null,
+            comboboxes: boxes
+        })
+        this.props.backend.toolbar().comboxSelect(toolbarId, itemId, selected);
+    }
+
     onContextMenuItemClick = (toolbarId, itemId, event, label) => 
     {
-        console.log(toolbarId, itemId, event, label)
+        this.props.backend.toolbar().menuAction(toolbarId, itemId, label);
+    }
+
+    onOpenCombox = (toolbarId, itemId) =>
+    {
+        this.setState({
+            busyComboxes: [
+                ...this.state.busyComboxes,
+                toolbarId + "_" + itemId
+            ]
+        })
+        this.props.backend.toolbar().loadCombobox(toolbarId, itemId);
     }
 
     buildToolbar = (id) => 
@@ -143,7 +196,22 @@ class Toolbar extends React.Component {
                     case("ComboBox"):
                     {
                         return <div key={item.id} className='ToolbarComboBoxDiv'>
-                            <Combobox />
+                            <Combobox 
+                                open={this.state.openCombobox === (toolbar.id + "_" + item.id)}
+                                busy={-1 !== this.state.busyComboxes.findIndex(elem => elem === (toolbar.id + "_" + item.id))}
+                                onToggle={aboutToShow => {
+                                    if (aboutToShow)
+                                        this.onOpenCombox(toolbar.id, item.id)
+                                }}
+                                data={
+                                    this.state.comboboxes[toolbar.id + "_" + item.id] ?
+                                    this.state.comboboxes[toolbar.id + "_" + item.id].items :
+                                    []
+                                }
+                                onSelect={selected => {
+                                    this.closeComboBox(toolbar.id, item.id, selected)
+                                }}
+                            />
                         </div>
                     }
                     case("Menu"):
@@ -176,12 +244,6 @@ class Toolbar extends React.Component {
                                     closeOnClick={true}
                                     onOpen={(...args) => {return this.onMenuContextOpen(item.id, ...args);}}
                                     otherMenus={[]}
-                                    /*items={[
-                                        {
-                                            label: 'bob',
-                                            onClick: (e, label) => {this.onContextMenuItemClick(toolbar.id, item.id, e, 'bob')}
-                                        }
-                                    ]}*/
                                     items={
                                         _.filter(item.entries.map(entry => 
                                         {
@@ -190,7 +252,7 @@ class Toolbar extends React.Component {
                                                 : undefined
                                             ;
                                             return {
-                                                label: entry.label,
+                                                label: this.props.dict.translate(entry.label, "toolbar"),
                                                 line: entry.is_splitter,
                                                 icon: img,
                                                 onClick: () => {this.onContextMenuItemClick(toolbar.id, item.id, undefined, entry.label)}

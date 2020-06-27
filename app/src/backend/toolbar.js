@@ -21,6 +21,32 @@ class ToolbarApi extends Router
             itemId: itemId
         })
     }
+
+    menuAction(toolbarId, itemId, label)
+    {
+        this.postJson(this.url("/api/toolbar/menuAction"), {
+            toolbarId: toolbarId,
+            itemId,  itemId,
+            menuEntryLabel: label
+        })
+    }
+
+    loadCombobox(toolbarId, itemId)
+    {
+        this.postJson(this.url("/api/toolbar/loadCombobox"), {
+            toolbarId: toolbarId,
+            itemId: itemId
+        })
+    }
+
+    comboxSelect(toolbarId, itemId, selected)
+    {
+        this.postJson(this.url("/api/toolbar/comboboxSelect"), {
+            toolbarId: toolbarId,
+            itemId: itemId,
+            selected: selected
+        })
+    }
 }
 
 export default ToolbarApi;

@@ -171,6 +171,7 @@
 		<Unit filename="routers/settings_provider.hpp" />
 		<Unit filename="routers/streamer.cpp" />
 		<Unit filename="routers/streamer.hpp" />
+		<Unit filename="routers/streamer_fwd.hpp" />
 		<Unit filename="routers/terminal.cpp" />
 		<Unit filename="routers/terminal.hpp" />
 		<Unit filename="routers/toolbar.cpp" />
@@ -178,7 +179,6 @@
 		<Unit filename="routers/workspace.cpp" />
 		<Unit filename="routers/workspace.hpp" />
 		<Unit filename="routers_fwd.hpp" />
-		<Unit filename="scripting_engine/api/toolbar/toolbar_settings.hpp" />
 		<Unit filename="scripting_engine/common_state_setup.cpp" />
 		<Unit filename="scripting_engine/common_state_setup.hpp" />
 		<Unit filename="scripting_engine/process.cpp" />
@@ -206,6 +206,8 @@
 		<Unit filename="streaming/common_messages/binary_data.hpp" />
 		<Unit filename="streaming/common_messages/keep_alive.cpp" />
 		<Unit filename="streaming/common_messages/keep_alive.hpp" />
+		<Unit filename="streaming/common_messages/messages_from_lua.cpp" />
+		<Unit filename="streaming/common_messages/messages_from_lua.hpp" />
 		<Unit filename="streaming/common_messages/server_time.cpp" />
 		<Unit filename="streaming/common_messages/server_time.hpp" />
 		<Unit filename="streaming/common_messages/welcome.cpp" />

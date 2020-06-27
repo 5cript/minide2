@@ -100,7 +100,7 @@ namespace Streaming::Messages
             , formattedData{std::move(formattedData)}
         {
         }
-        LuaProcessOutputMessage(LuaProcessOutputMessage&&) = default;
+        LuaRemoteProcedureCall(LuaRemoteProcedureCall&&) = default;
 
         std::string toJson() const override;
     };

@@ -253,6 +253,9 @@ namespace Routers
                 );
                 fc->path = path;
 
+                if (body.contains("flag"))
+                    fc->flag = body["flag"].get<std::string>();
+
                 auto result = collection_->streamer().send
                 (
                     StreamChannel::Data,

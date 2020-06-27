@@ -110,6 +110,96 @@ namespace Routers
                     res->status(400).send(resultMessage);
             });
         });
+
+        cors_options(server, "/api/toolbar/menuAction", "POST", impl_->config.corsOption);
+        server.post("/api/toolbar/menuAction", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            readJsonBody(req, res, [req, res, this](json const& body)
+            {
+                if (!body.contains("toolbarId"))
+                    return res->status(400).send("need toolbarId");
+                if (!body.contains("itemId"))
+                    return res->status(400).send("need itemId");
+                if (!body.contains("menuEntryLabel"))
+                    return res->status(400).send("need menuEntryLabel");
+
+                auto session = this_session(req);
+                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
+                if (toolbar == nullptr)
+                    return res->status(400).send("toolbar with given id not found");
+
+                auto resultMessage = toolbar->menuAction
+                (
+                    body["itemId"].get<std::string>(),
+                    body["menuEntryLabel"].get<std::string>()
+                );
+                if (resultMessage.empty())
+                    res->status(200).end();
+                else
+                    res->status(400).send(resultMessage);
+            });
+        });
+
+        cors_options(server, "/api/toolbar/loadCombobox", "POST", impl_->config.corsOption);
+        server.post("/api/toolbar/loadCombobox", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            readJsonBody(req, res, [req, res, this](json const& body)
+            {
+                if (!body.contains("toolbarId"))
+                    return res->status(400).send("need toolbarId");
+                if (!body.contains("itemId"))
+                    return res->status(400).send("need itemId");
+
+                auto session = this_session(req);
+                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
+                if (toolbar == nullptr)
+                    return res->status(400).send("toolbar with given id not found");
+
+                auto resultMessage = toolbar->loadCombobox
+                (
+                    body["itemId"].get<std::string>()
+                );
+                if (resultMessage.empty())
+                    res->status(200).end();
+                else
+                    res->status(400).send(resultMessage);
+            });
+        });
+
+        cors_options(server, "/api/toolbar/comboboxSelect", "POST", impl_->config.corsOption);
+        server.post("/api/toolbar/comboboxSelect", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            readJsonBody(req, res, [req, res, this](json const& body)
+            {
+                if (!body.contains("toolbarId"))
+                    return res->status(400).send("need toolbarId");
+                if (!body.contains("itemId"))
+                    return res->status(400).send("need itemId");
+                if (!body.contains("selected"))
+                    return res->status(400).send("need selected");
+
+                auto session = this_session(req);
+                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
+                if (toolbar == nullptr)
+                    return res->status(400).send("toolbar with given id not found");
+
+                auto resultMessage = toolbar->comboboxSelect
+                (
+                    body["itemId"].get<std::string>(),
+                    body["selected"].get<std::string>()
+                );
+                if (resultMessage.empty())
+                    res->status(200).end();
+                else
+                    res->status(400).send(resultMessage);
+            });
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
     void Toolbar::loadToolbars(Session& session, std::string const& id, DataStreamer* streamer)

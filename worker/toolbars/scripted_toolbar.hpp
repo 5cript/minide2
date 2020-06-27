@@ -23,6 +23,10 @@ namespace Toolbars
 
         std::string id() const;
         std::string clickAction(std::string const& itemId);
+        std::string menuAction(std::string const& itemId, std::string const& menuEntryLabel);
+        std::string loadCombobox(std::string const& itemId);
+        std::string comboboxSelect(std::string const& itemId, std::string const& selected);
+
         json getJson() const;
 
     private:

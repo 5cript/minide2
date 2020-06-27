@@ -17,7 +17,7 @@ const MenuItem = ({ item, anyImage }) =>
         return (
             <span
                 className="menuItem"
-                onClick={(e) => {console.log(label); onClick(e, item.label)}}
+                onClick={(e) => {onClick(e, item.label)}}
                 key={label}
                 style={{"cursor":"pointer","display":"flex","alignItems":"center","justifyContent":"flex-start","marginBottom":"7px"}}
             >

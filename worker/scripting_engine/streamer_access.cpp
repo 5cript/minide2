@@ -139,7 +139,7 @@ namespace MinIDE::Scripting
         return true;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void LuaStreamer::remoteProcedureRequest(std::string const& fname, std::string const& formattedData)
+    bool LuaStreamer::remoteProcedureRequest(std::string const& fname, std::string const& formattedData)
     {
         auto s = impl_->sessionAccess.session();
         if (!s)

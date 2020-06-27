@@ -88,7 +88,7 @@ namespace MinIDE::Scripting
 //---------------------------------------------------------------------------------------------------------------------
     std::string LuaProjectControl::readProjectFile(std::string const& fileName)
     {
-        sfs::path project{getProjectDirectory()};
+        sfs::path project{getMinIDEDirectory()};
         if (project.string() == "")
             return "";
 

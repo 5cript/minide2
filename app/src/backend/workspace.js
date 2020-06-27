@@ -71,10 +71,15 @@ class Workspace extends Router
         });
     }
 
-    loadFile(path)
+    loadFile(path, optionalFlag)
     {
+        const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
+            ? optionalFlag
+            : undefined
+        ;
         this.postJson(this.url("/api/workspace/loadFile"), {
-            path: path
+            path: path,
+            flag: flag
         });
     }
 

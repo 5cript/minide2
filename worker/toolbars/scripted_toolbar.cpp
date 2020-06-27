@@ -39,7 +39,46 @@ namespace Toolbars
             , loaded{false}
         {
         }
+
+        std::pair <std::string, sol::table> getItem(std::string const& itemId);
     };
+//---------------------------------------------------------------------------------------------------------------------
+    std::pair <std::string, sol::table> ScriptedToolbar::Implementation::getItem(std::string const& itemId)
+    {
+        std::lock_guard <StateCollection::mutex_type> guard{engine->globalMutex};
+        auto& lua = engine->lua;
+
+        if (!loaded)
+            return {"not loaded (how did this happen?) "s + __FILE__ + ":" + std::to_string(__LINE__), {}};
+
+        if (!lua["get_toolbar"].valid())
+            return {"missing get_toolbar function", {}};
+
+        sol::table interface = lua["get_toolbar"]();
+
+        if (!interface["items"].valid())
+            return {"toolbar is missing items", {}};
+
+        sol::table items = interface["items"];
+
+        try
+        {
+            for (sol::table const items = interface["items"]; auto const& [key, value] : items)
+            {
+                sol::table tablified = value;
+                auto id = tablified.get_or<std::string>("id", "");
+                if (id != itemId)
+                    continue;
+
+                return {""s, tablified};
+            }
+        }
+        catch(std::exception const& exc)
+        {
+            return {std::string{exc.what()}, {}};
+        }
+        return {"item id not found", {}};
+    }
 //#####################################################################################################################
     ScriptedToolbar::ScriptedToolbar(sfs::path const& root, SessionObtainer const& obtainer, Routers::DataStreamer* streamer)
         : BasicToolbar{""}
@@ -161,45 +200,98 @@ namespace Toolbars
 //---------------------------------------------------------------------------------------------------------------------
     std::string ScriptedToolbar::clickAction(std::string const& id)
     {
+        auto p = impl_->getItem(id);
+        if (!p.first.empty())
+            return p.first;
+
         std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+
+        auto& tablified = p.second;
+
+        bool fail = false;
+        auto action = tablified.get_or<std::function<void()>>("action", [&fail]()
+        {
+            fail = true;
+        });
+        action();
+        if (!fail)
+            return "";
+        else
+            return "item does not have an action, or action is not a function";
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    std::string ScriptedToolbar::menuAction(std::string const& itemId, std::string const& menuEntryLabel)
+    {
+        auto p = impl_->getItem(itemId);
+        if (!p.first.empty())
+            return p.first;
+
+        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+        auto& tablified = p.second;
+
+        if (!tablified["entries"].valid())
+            return "no entries in menu";
+
+        for (sol::table const entries = tablified["entries"]; auto const& [ek, entry] : entries)
+        {
+            sol::table entryTable = entry;
+            auto label = entryTable.get_or<std::string>("label", "");
+            if (label != menuEntryLabel)
+                continue;
+
+            if (!entryTable["action"].valid())
+                return "item.entry does not have an action";
+
+            auto action = entryTable.get_or<std::function<void()>>("action", [](){});
+            action();
+            return "";
+        }
+        return "menu was found, but not the label of the menu entry";
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    std::string ScriptedToolbar::loadCombobox(std::string const& itemId)
+    {
+        auto p = impl_->getItem(itemId);
+        if (!p.first.empty())
+            return p.first;
+
+        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+        auto& item = p.second;
+
+        bool fail = false;
+        auto load = item.get_or<std::function<void()>>("load", [&fail]()
+        {
+            fail = true;
+        });
+        load();
+        if (!fail)
+            return "";
+        else
+            return "item does not have a load function, or member is not a function";
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    std::string ScriptedToolbar::comboboxSelect(std::string const& itemId, std::string const& selected)
+    {
+        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+
         auto& lua = impl_->engine->lua;
 
         if (!impl_->loaded)
             return "not loaded (how did this happen?) "s + __FILE__ + ":" + std::to_string(__LINE__);
 
-        sol::table interface = lua["get_toolbar"]();
-        sol::table items = interface["items"];
+        if (!lua["combox_select"].valid())
+            return "missing combox_select function";
 
-        // there might be a better option, but it wont exceed 100 anyway.
-        // might take indices, but is the order guaranteed?
-        try
-        {
-            for (sol::table const items = interface["items"]; auto const& [key, value] : items)
-            {
-                sol::table tablified = value;
-                auto iid = tablified.get_or<std::string>("id", "");
-                if (iid == id)
-                {
-                    bool fail = false;
-                    auto action = tablified.get_or<std::function<void()>>("action", [&fail]()
-                    {
-                        fail = true;
-                    });
-                    action();
-                    if (!fail)
-                    {
-                        return "";
-                    }
-                    else
-                        return "item does not have an action, or action is not a function";
-                }
-            }
-        }
-        catch(std::exception const& exc)
-        {
-            return exc.what();
-        }
-        return "item id not found";
+        bool fail = false;
+        auto select = lua.get_or<std::function<void(std::string const&, std::string const&)>>
+        (
+            "combox_select",
+            [&fail](auto const&, auto const&){fail = true;}
+        );
+        select(itemId, selected);
+        if (fail)
+            return "script interface misses the combox_select function";
+        return "";
     }
 //#####################################################################################################################
 }

@@ -59,7 +59,7 @@ namespace MinIDE::Scripting
         /**
          *  Request a remote procedure call passing formattedData (json) to it.
          */
-        void remoteProcedureRequest(std::string const& fname, std::string const& formattedData);
+        bool remoteProcedureRequest(std::string const& fname, std::string const& formattedData);
 
     private:
         struct Implementation;

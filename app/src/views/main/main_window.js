@@ -88,7 +88,9 @@ class MainWindow extends React.Component
             options: {}
         },
         yesNoBoxVisible: false,
-        yesNoMessage: 'blubber'
+        yesNoMessage: '',
+        okBoxVisible: false,
+        okBoxMessage: ''
     }
 
     isShortcut(event, shortcutDefinition)
@@ -216,6 +218,34 @@ class MainWindow extends React.Component
             this.toolbar.preselectToolbar();
     }
 
+    showProjectSettigns({settingsFile})
+    {
+        if (this.props.activeProject === undefined || this.props.activeProject === null || this.props.activeProject === '')
+            return this.showOkBox(this.dict.translate("$NoActiveProject", "dialog"));
+        if (this.props.workspaceRoot === undefined || this.props.workspaceRoot === null || this.props.workspaceRoot === '')
+            return;
+
+        console.log(this.props.activeProject + "/.minIDE/" + settingsFile)
+        this.backend.workspace().loadFile(this.props.activeProject + "/.minIDE/" + settingsFile, "projectSettings");
+    }
+
+    handleLuaRpc(func, data)
+    {
+        console.log(data);
+        switch (func)
+        {
+            case('showProjectSettings'):
+                return this.showProjectSettigns(data);
+            case('setComboboxData'):
+                return this.toolbar.comboboxLoaded
+                (
+                    data.toolbarId,
+                    data.itemId,
+                    data.targets
+                )
+        }
+    }
+
     onControlStream(head, data)
     {
         try
@@ -224,6 +254,10 @@ class MainWindow extends React.Component
                 ipcRenderer.sendSync('haveCookieUpdate', {});
             else if (head.type === "keep_alive")
             {}
+            else if (head.type === "lua_rpc")
+            {
+                this.handleLuaRpc(head.functionName, JSON.parse(head.data))
+            }
             else
             {
                 // Unhandled:
@@ -352,13 +386,31 @@ class MainWindow extends React.Component
         this.yesAction = yesAction;
     }
 
+    showOkBox(message, okAction) 
+    {
+        this.setState({
+            okBoxVisible: true,
+            okBoxMessage: message
+        })
+        this.okAction = okAction;
+    }
+
     onMessageBoxClose(whatButton)
     {
         this.setState({
             yesNoBoxVisible: false
         });
-        if (whatButton === "Yes")
+        if (whatButton === "Yes" && this.okAction)
             this.yesAction();
+    }
+
+    onOkBoxClose(whatButton)
+    {
+        this.setState({
+            okBoxVisible: false
+        });
+        if (whatButton === "Ok" && this.okAction)
+            this.okAction();
     }
 
     componentDidMount()
@@ -379,7 +431,7 @@ class MainWindow extends React.Component
                         <Blocker></Blocker>
                     </Slide>
                     <Slide right when={this.props.backend.connected}>
-                        <Toolbar ref={(n) => {this.setToolbarRef(n)}} backend={this.backend} cmake={new CMakeToolbarEvents()}/>
+                        <Toolbar dict={this.dict} ref={(n) => {this.setToolbarRef(n)}} backend={this.backend} cmake={new CMakeToolbarEvents()}/>
                     </Slide>
                 </div>
                 <div id='SplitterContainer'>
@@ -394,8 +446,9 @@ class MainWindow extends React.Component
                             </SplitterLayout>
                         </div>
                     </SplitterLayout>
-                    <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
                 </div>
+                <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
+                <MessageBox boxStyle="Ok" dict={this.dict} visible={this.state.okBoxVisible} message={this.state.okBoxMessage} onButtonPress={(wb)=>{this.onOkBoxClose(wb);}}/>
             </div>
         )
     }
@@ -407,6 +460,8 @@ export default connect(state => {
         activeFile: state.openFiles.activeFile,
         shortcuts: state.shortcuts,
         locale: state.locale,
-        backend: state.backend
+        backend: state.backend,
+        activeProject: state.workspace.activeProject,
+        workspaceRoot: state.workspace.root
     }
 })(MainWindow);

@@ -14,6 +14,7 @@ namespace Streaming::Messages
         return json{
             {"type", "file_content"s},
             {"chunks", chunks},
+            {"flag", flag},
             {"path", path}
         }.dump();
     }

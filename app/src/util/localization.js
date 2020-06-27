@@ -57,7 +57,8 @@ class Dictionary
                     "$UnknownSchemeType": "Unknown Type for Form",
                     "$UnfitRequirements": "Requirements not met",
                     "$MayNotBeEmpty": "May not be empty",
-                    "$Save": "Save"
+                    "$Save": "Save",
+                    "$NoActiveProject": "No active project"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Set as Active Project",
@@ -65,6 +66,10 @@ class Dictionary
                     "$DeleteFile": "Delete",
                     "$OpenToTheSide": "Open in Split View",
                     "$RenameFile": "Rename File"
+                },
+                "toolbar": {
+                    "$Save": "Speichern",
+                    "$ProjectSettings": "Project Settings"
                 }
             },
             "de_DE": {
@@ -116,7 +121,8 @@ class Dictionary
                     "$UnknownSchemeType": "Unbekannter Typ für Formular",
                     "$UnfitRequirements": "Bedingungen für Eingabe nicht eingehalten",
                     "$MayNotBeEmpty": "Darf nicht leer sein",
-                    "$Save": "Speichern"
+                    "$Save": "Speichern",
+                    "$NoActiveProject": "Kein aktives Projekt"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Als aktives Projekt wählen",
@@ -124,6 +130,10 @@ class Dictionary
                     "$DeleteFile": "Löschen",
                     "$OpenToTheSide": "Parallel Öffnen",
                     "$RenameFile": "Datei Umbennen"
+                },
+                "toolbar": {
+                    "$Save": "Speichern",
+                    "$ProjectSettings": "Projekteinstellungen"
                 }
             }    
         }
@@ -136,6 +146,15 @@ class Dictionary
 
     translate(key, dict) 
     {
+        if (key === undefined)
+            return;
+
+        if (key.length === 0)
+            return;
+        
+        if (key[0] !== '$')
+            return key;
+
         if (dict === undefined) {
             dict = 'merged'            
         }
@@ -151,7 +170,6 @@ class Dictionary
 
     load(path) 
     {
-        //console.log("not implemented");
         for (let lang in this.dicts) {
             let merged = {}
             for (let group in this.dicts[lang]) {
