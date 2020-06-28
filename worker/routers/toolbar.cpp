@@ -14,6 +14,7 @@
 using json = nlohmann::json;
 
 using namespace Toolbars;
+using namespace std::string_literals;
 
 namespace Routers
 {
@@ -68,7 +69,8 @@ namespace Routers
                 (
                     sess,
                     req->get_cookie_value("aSID").value(),
-                    &collection_->streamer()
+                    &collection_->streamer(),
+                    &collection_->settingsProv()
                 );
                 sess.save();
 
@@ -157,7 +159,7 @@ namespace Routers
                 auto session = this_session(req);
                 auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
                 if (toolbar == nullptr)
-                    return res->status(400).send("toolbar with given id not found");
+                    return res->status(400).send("toolbar with given id not found: "s + body["toolbarId"].get<std::string>());
 
                 auto resultMessage = toolbar->loadCombobox
                 (
@@ -202,7 +204,7 @@ namespace Routers
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Toolbar::loadToolbars(Session& session, std::string const& id, DataStreamer* streamer)
+    void Toolbar::loadToolbars(Session& session, std::string const& id, DataStreamer* streamer, SettingsProvider* settingsProv)
     {
         auto toolbars = inHomeDirectory() / "toolbars";
         session.toolbarStore.reset();
@@ -214,7 +216,8 @@ namespace Routers
                 (
                     p.path(),
                     SessionObtainer(server_->get_installed_session_manager(), id),
-                    streamer
+                    streamer,
+                    settingsProv
                 ));
         }
     }

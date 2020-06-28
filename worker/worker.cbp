@@ -169,6 +169,7 @@
 		<Unit filename="routers/router_base.hpp" />
 		<Unit filename="routers/settings_provider.cpp" />
 		<Unit filename="routers/settings_provider.hpp" />
+		<Unit filename="routers/settings_provider_fwd.hpp" />
 		<Unit filename="routers/streamer.cpp" />
 		<Unit filename="routers/streamer.hpp" />
 		<Unit filename="routers/streamer_fwd.hpp" />
@@ -189,6 +190,8 @@
 		<Unit filename="scripting_engine/script.hpp" />
 		<Unit filename="scripting_engine/script_view.cpp" />
 		<Unit filename="scripting_engine/script_view.hpp" />
+		<Unit filename="scripting_engine/settings_provider.cpp" />
+		<Unit filename="scripting_engine/settings_provider.hpp" />
 		<Unit filename="scripting_engine/state.hpp" />
 		<Unit filename="scripting_engine/streamer_access.cpp" />
 		<Unit filename="scripting_engine/streamer_access.hpp" />

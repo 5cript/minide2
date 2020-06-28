@@ -6,6 +6,7 @@
 #include "../public_settings.hpp"
 #include "../workspace/workspace.hpp"
 #include "../routers/streamer_fwd.hpp"
+#include "../routers/settings_provider_fwd.hpp"
 
 #include "../json.hpp"
 #include "../filesystem/filesystem.hpp"
@@ -18,7 +19,13 @@ namespace Toolbars
     class ScriptedToolbar : public BasicToolbar
     {
     public:
-        ScriptedToolbar(sfs::path const& root, SessionObtainer const& obtainer, Routers::DataStreamer* streamer);
+        ScriptedToolbar
+        (
+            sfs::path const& root,
+            SessionObtainer const& obtainer,
+            Routers::DataStreamer* streamer,
+            Routers::SettingsProvider* settingsProv
+        );
         ~ScriptedToolbar();
 
         std::string id() const;
@@ -30,7 +37,12 @@ namespace Toolbars
         json getJson() const;
 
     private:
-        void initialize(SessionObtainer const& obtainer, Routers::DataStreamer* streamer);
+        void initialize
+        (
+            SessionObtainer const& obtainer,
+            Routers::DataStreamer* streamer,
+            Routers::SettingsProvider* settingsProv
+        );
 
     private:
         struct Implementation;

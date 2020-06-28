@@ -1,5 +1,6 @@
 #pragma once
 
+#include "settings_provider_fwd.hpp"
 #include "router_base.hpp"
 
 #include "../config.hpp"

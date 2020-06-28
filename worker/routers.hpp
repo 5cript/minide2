@@ -22,6 +22,7 @@ public:
      *  Get streamer interface
      */
     Routers::DataStreamer& streamer();
+    Routers::SettingsProvider& settingsProv();
 
 private:
     attender::tcp_server* server_;

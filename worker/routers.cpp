@@ -25,4 +25,9 @@ Routers::DataStreamer& RouterCollection::streamer()
 {
     return streamer_;
 }
+//---------------------------------------------------------------------------------------------------------------------
+Routers::SettingsProvider& RouterCollection::settingsProv()
+{
+    return settingsProvider_;
+}
 //#####################################################################################################################

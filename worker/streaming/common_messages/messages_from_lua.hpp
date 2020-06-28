@@ -72,14 +72,14 @@ namespace Streaming::Messages
     struct LuaProcessOutputMessage : public JsonSerializable
     {
         bool stdErr;
-        std::string programName;
+        std::string processName;
         std::string message;
         SubprocessOutputType type;
 
         LuaProcessOutputMessage() = default;
         LuaProcessOutputMessage(bool stdErr, std::string name, std::string message, SubprocessOutputType type)
             : stdErr{stdErr}
-            , programName{std::move(name)}
+            , processName{std::move(name)}
             , message{std::move(message)}
             , type{type}
         {
@@ -101,6 +101,22 @@ namespace Streaming::Messages
         {
         }
         LuaRemoteProcedureCall(LuaRemoteProcedureCall&&) = default;
+
+        std::string toJson() const override;
+    };
+
+    struct LuaProcessInfo : public JsonSerializable
+    {
+        std::string processName;
+        std::string formattedData;
+
+        LuaProcessInfo() = default;
+        LuaProcessInfo(std::string processName, std::string formattedData)
+            : processName{std::move(processName)}
+            , formattedData{std::move(formattedData)}
+        {
+        }
+        LuaProcessInfo(LuaProcessInfo&&) = default;
 
         std::string toJson() const override;
     };

@@ -157,6 +157,25 @@ namespace MinIDE::Scripting
         );
         return true;
     }
+//---------------------------------------------------------------------------------------------------------------------
+    bool LuaStreamer::sendProcessInfo(std::string const& programName, std::string const& formattedData)
+    {
+        auto s = impl_->sessionAccess.session();
+        if (!s)
+            return false;
+        impl_->streamer->send
+        (
+            StreamChannel::Control,
+            s.value().remoteAddress,
+            s.value().controlId,
+            Streaming::makeMessage<Streaming::Messages::LuaProcessInfo>
+            (
+                programName,
+                formattedData
+            )
+        );
+        return true;
+    }
 //#####################################################################################################################
     void loadStreamerAccess
     (
@@ -185,6 +204,7 @@ namespace MinIDE::Scripting
             "send_info", &LuaStreamer::sendInformation,
             "send_subprocess_stdout", &LuaStreamer::sendSubprocessStdout,
             "send_subprocess_stderr", &LuaStreamer::sendSubprocessStderr,
+            "send_subprocess_info", &LuaStreamer::sendProcessInfo,
             "remote_call", &LuaStreamer::remoteProcedureRequest
         );
 

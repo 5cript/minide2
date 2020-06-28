@@ -38,7 +38,7 @@ namespace Streaming::Messages
         return json{
             {"type", "lua_process"s},
             {"isStdErr", stdErr},
-            {"programName", programName},
+            {"processName", processName},
             {"message", message},
             {"kind", static_cast <int> (type)}
         }.dump();
@@ -49,6 +49,15 @@ namespace Streaming::Messages
         return json{
             {"type", "lua_rpc"s},
             {"functionName", fname},
+            {"data", formattedData}
+        }.dump();
+    }
+//#####################################################################################################################
+    std::string LuaProcessInfo::toJson() const
+    {
+        return json{
+            {"type", "lua_process_info"s},
+            {"processName", processName},
             {"data", formattedData}
         }.dump();
     }

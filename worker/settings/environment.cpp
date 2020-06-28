@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/range/as_literal.hpp>
+#include <iostream>
 
 // Case-insensitive generic string comparator.
 namespace
@@ -37,7 +38,7 @@ namespace SettingParts
     {
         std::string pathStr{};
         for (auto const& elem : path)
-            pathStr += elem + ':';
+            pathStr += elem + pathSplit;
         pathStr.pop_back();
         return pathStr;
     }
@@ -60,16 +61,20 @@ namespace SettingParts
         auto mergePath = [](auto set, std::vector <std::string> const& lhs, std::vector <std::string> const& rhs)
         {
             for (auto const& l : lhs)
+            {
                 set.insert(l);
+            }
             for (auto const& r : rhs)
+            {
                 set.insert(r);
+            }
             return std::vector <std::string>{std::begin(set), std::end(set)};
         };
 
         if (pathsAreCaseInsensitive)
-            merged.path = mergePath(iset <std::string>{}, merged.path, other.path);
+            merged.path = mergePath(iset <std::string>{}, path, other.path);
         else
-            merged.path = mergePath(std::set <std::string>{}, merged.path, other.path);
+            merged.path = mergePath(std::set <std::string>{}, path, other.path);
         return merged;
     }
 //#####################################################################################################################

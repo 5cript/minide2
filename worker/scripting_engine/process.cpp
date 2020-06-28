@@ -6,12 +6,16 @@
 #include <mutex>
 #include <algorithm>
 #include <cctype>
+#include <iomanip>
+#include <thread>
+#include <chrono>
 
 #ifdef _WIN32
 #   include <windows.h>
 #endif
 
 using namespace std::string_literals;
+using namespace std::chrono_literals;
 
 namespace MinIDE::Scripting
 {
@@ -20,44 +24,79 @@ namespace MinIDE::Scripting
     {
         std::weak_ptr <StateCollection> weakStateRef;
         std::unique_ptr <TinyProcessLib::Process> process;
-        sol::function onStdOut;
-        sol::function onStdErr;
+        sol::protected_function onStdOut;
+        sol::protected_function onStdErr;
+        sol::protected_function onExit;
+        std::thread lifetimeControl;
+        std::atomic <bool> kill;
+        int exitStatus;
+        std::atomic <bool> ended;
+
+        bool runCheckAndJoin();
 
         Implementation(std::weak_ptr <StateCollection>&& stateRef)
             : weakStateRef{std::move(stateRef)}
             , process{}
             , onStdOut{}
             , onStdErr{}
+            , lifetimeControl{}
+            , kill{false}
+            , exitStatus{0}
+            , ended{false}
         {
         }
     };
+//---------------------------------------------------------------------------------------------------------------------
+    bool LuaProcess::Implementation::runCheckAndJoin()
+    {
+        auto const joinable = lifetimeControl.joinable();
+        auto const hasEnded = ended.load();
+        if (joinable && hasEnded)
+        {
+            lifetimeControl.join();
+            return true;
+        }
+        else if (joinable && !hasEnded)
+            return false;
+        else /*if (!joinable)*/
+            return true;
+    }
 //#####################################################################################################################
     LuaProcess::LuaProcess(std::weak_ptr <StateCollection> weakStateRef)
         : impl_{new LuaProcess::Implementation(std::move(weakStateRef))}
     {
     }
 //---------------------------------------------------------------------------------------------------------------------
-    LuaProcess::~LuaProcess() = default;
+    LuaProcess::~LuaProcess()
+    {
+        impl_->kill.store(true);
+        if (impl_->lifetimeControl.joinable())
+            impl_->lifetimeControl.join();
+    }
 //---------------------------------------------------------------------------------------------------------------------
     int LuaProcess::executeShort
     (
         std::string const& command,
         std::string const& execDir,
-        sol::table environment
+        std::map <std::string, std::string> const& environment
     )
     {
+        if (!impl_->runCheckAndJoin())
+            return -1;
+
         int error = 0;
         std::unordered_map <std::string, std::string> env;
         for (auto const& [key, value] : environment)
         {
-            auto modKey = key.as<std::string>();
+            auto modKey = key;
+            std::cout << key << ": " << value << "\n";
 #ifdef _WIN32
             std::transform(std::begin(modKey), std::end(modKey), std::begin(modKey), [](auto c)
             {
                 return std::toupper(c);
             });
 #endif
-            auto pair = std::make_pair(modKey, value.as<std::string>());
+            auto pair = std::make_pair(modKey, value);
             env.emplace(pair);
         }
 
@@ -107,6 +146,50 @@ namespace MinIDE::Scripting
         else
             environmentLockedDo(runProcess);
 
+        if (error == 0)
+        {
+            impl_->lifetimeControl = std::thread{[this]()
+            {
+                auto whenExit = [this](int status)
+                {
+                    impl_->ended.store(true);
+                    if (impl_->onExit)
+                    {
+                        auto ptr = impl_->weakStateRef.lock();
+                        if (ptr)
+                        {
+                            std::lock_guard <StateCollection::mutex_type> guard{ptr->globalMutex};
+                            impl_->onExit(status);
+                        }
+                    }
+                };
+
+                impl_->ended.store(false);
+                for (;impl_->kill.load() == false;)
+                {
+                    int status = 0;
+                    if (impl_->process->try_get_exit_status(status))
+                    {
+                        impl_->exitStatus = status;
+                        whenExit(status);
+                        return;
+                    }
+
+                    std::this_thread::yield();
+                    std::this_thread::sleep_for(100ms);
+                }
+                int status = 0;
+                if (!impl_->process->try_get_exit_status(status))
+                {
+                    impl_->process->kill(true);
+                    auto status = impl_->process->get_exit_status();
+                    whenExit(status);
+                }
+                else
+                    whenExit(status);
+            }};
+        }
+
         return error;
     }
 //---------------------------------------------------------------------------------------------------------------------
@@ -114,28 +197,37 @@ namespace MinIDE::Scripting
     (
         std::string const& command,
         std::string const& execDir,
-        sol::table environment,
-        sol::function const& onStdOut,
-        sol::function const& onStdErr
+        std::map <std::string, std::string> const& environment,
+        sol::protected_function const& onStdOut,
+        sol::protected_function const& onStdErr,
+        sol::protected_function const& onExit
     )
     {
+        if (!impl_->runCheckAndJoin())
+            return -1;
+
         impl_->onStdOut = onStdOut;
         impl_->onStdErr = onStdErr;
+        impl_->onExit = onExit;
         return executeShort(command, execDir, environment);
     }
 //---------------------------------------------------------------------------------------------------------------------
-    sol::table LuaProcess::tryGetExitStatus()
+    std::optional <int> LuaProcess::tryGetExitStatus()
     {
-        int status = 0;
-        sol::table tab;
-        tab["hasEnded"] = impl_->process->try_get_exit_status(status);
-        tab["status"] = status;
-        return tab;
+        if (!impl_->runCheckAndJoin())
+            return std::nullopt;
+
+        return impl_->exitStatus;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    int LuaProcess::getExitStatus()
+    void LuaProcess::kill(bool force)
     {
-        return impl_->process->get_exit_status();
+        if (impl_->lifetimeControl.joinable())
+        {
+            impl_->kill.store(true);
+            impl_->lifetimeControl.join();
+            impl_->process.reset(nullptr);
+        }
     }
 //#####################################################################################################################
     void loadProcessUtility(std::weak_ptr <StateCollection> state)
@@ -156,7 +248,7 @@ namespace MinIDE::Scripting
                 }
             ),
             "try_get_exit_status", &LuaProcess::tryGetExitStatus,
-            "get_exit_status", &LuaProcess::getExitStatus,
+            "kill", &LuaProcess::kill,
             "execute", sol::overload
             (
                 &LuaProcess::execute,

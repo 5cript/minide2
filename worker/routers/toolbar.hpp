@@ -4,6 +4,7 @@
 
 #include "../toolbars/basic_toolbar.hpp"
 #include "../routers/streamer.hpp"
+#include "../routers/settings_provider_fwd.hpp"
 #include "../config.hpp"
 
 #include <memory>
@@ -18,7 +19,13 @@ namespace Routers
 
     private:
         void registerRoutes(attender::tcp_server& server);
-        void loadToolbars(Session& session, std::string const& id, DataStreamer* streamer);
+        void loadToolbars
+        (
+            Session& session,
+            std::string const& id,
+            DataStreamer* streamer,
+            SettingsProvider* settingsProv
+        );
 
     private:
         struct Implementation;

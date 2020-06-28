@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <memory>
 #include <functional>
+#include <map>
 
 namespace MinIDE::Scripting
 {
@@ -22,27 +23,25 @@ namespace MinIDE::Scripting
         (
             std::string const& command,
             std::string const& execDir,
-            sol::table environment
+            std::map <std::string, std::string> const& environment
         );
 
         int execute
         (
             std::string const& command,
             std::string const& execDir,
-            sol::table environment,
-            sol::function const& onStdOut,
-            sol::function const& onStdErr
+            std::map <std::string, std::string> const& environment,
+            sol::protected_function const& onStdOut,
+            sol::protected_function const& onStdErr,
+            sol::protected_function const& onExit
         );
 
         /**
          *  @return pair of <has returned?, exit status>
          */
-        sol::table tryGetExitStatus();
+        std::optional <int> tryGetExitStatus();
 
-        /**
-         *  @warn BLOCKS!
-         */
-        int getExitStatus();
+        void kill(bool force);
 
     private:
         struct Implementation;

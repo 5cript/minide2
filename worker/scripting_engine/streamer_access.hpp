@@ -61,6 +61,11 @@ namespace MinIDE::Scripting
          */
         bool remoteProcedureRequest(std::string const& fname, std::string const& formattedData);
 
+        /**
+         *  Request a remote procedure call passing formattedData (json) to it.
+         */
+        bool sendProcessInfo(std::string const& programName, std::string const& formattedData);
+
     private:
         struct Implementation;
         std::unique_ptr <Implementation> impl_;

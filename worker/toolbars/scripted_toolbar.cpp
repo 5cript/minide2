@@ -4,6 +4,7 @@
 #include "../scripting_engine/process.hpp"
 #include "../scripting_engine/project_control.hpp"
 #include "../scripting_engine/streamer_access.hpp"
+#include "../scripting_engine/settings_provider.hpp"
 #include "../session/session_obtainer.hpp"
 #include "../routers/streamer.hpp"
 
@@ -80,11 +81,17 @@ namespace Toolbars
         return {"item id not found", {}};
     }
 //#####################################################################################################################
-    ScriptedToolbar::ScriptedToolbar(sfs::path const& root, SessionObtainer const& obtainer, Routers::DataStreamer* streamer)
+    ScriptedToolbar::ScriptedToolbar
+    (
+        sfs::path const& root,
+        SessionObtainer const& obtainer,
+        Routers::DataStreamer* streamer,
+        Routers::SettingsProvider* settingsProv
+    )
         : BasicToolbar{""}
         , impl_{new ScriptedToolbar::Implementation(root)}
     {
-        initialize(obtainer, streamer);
+        initialize(obtainer, streamer, settingsProv);
     }
 //---------------------------------------------------------------------------------------------------------------------
     ScriptedToolbar::~ScriptedToolbar() = default;
@@ -99,7 +106,12 @@ namespace Toolbars
         return impl_->id;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void ScriptedToolbar::initialize(SessionObtainer const& obtainer, Routers::DataStreamer* streamer)
+    void ScriptedToolbar::initialize
+    (
+        SessionObtainer const& obtainer,
+        Routers::DataStreamer* streamer,
+        Routers::SettingsProvider* settingsProv
+    )
     {
         auto mainScript = MinIDE::Scripting::Script{impl_->toolbarRoot / "main.lua"};
 
@@ -115,6 +127,7 @@ namespace Toolbars
             // Load APIs
             loadProjectControl(impl_->engine, obtainer);
             loadStreamerAccess(impl_->engine, obtainer, streamer);
+            loadSettingsProvider(impl_->engine, obtainer, streamer, settingsProv);
 
             lua["debugging"] = false;
             lua.script(mainScript.script());
