@@ -75,6 +75,17 @@ class Backend extends Router
         this.dataCallback(json);
     }
 
+    authenticate(continuation) 
+    {
+        debugger;
+        let url = this.url("/api/authenticate");
+
+        this.authFetch(url).then((res) => {
+            if (res.status < 300)
+                continuation();
+        })
+    }
+
     readControl()
     {
         let url = this.url("/api/streamer/control");

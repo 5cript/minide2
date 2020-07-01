@@ -172,7 +172,6 @@ class Toolbar extends React.Component {
             const item = toolbar.items[i]
             const mapper = item => 
             {
-                console.log('id: ' + item.id);
                 switch(item.type)
                 {
                     case("IconButton"):
@@ -294,8 +293,8 @@ class Toolbar extends React.Component {
                         }} />}
                     >
                     {
-                        Object.values(this.props.toolbars).map(toolbar => {
-                            return <MenuItem key={toolbar.id} value={
+                        Object.values(this.props.toolbars).map((toolbar, i) => {
+                            return <MenuItem key={i} value={
                                 toolbar.id
                             }>{toolbar.name}</MenuItem>
                         })

@@ -22,7 +22,7 @@ class Preferences extends React.Component
 
     state = 
     {
-        settings: {},
+        preferences: {},
         yesNoBoxVisible: false,
         yesNoMessage: 'You should never see this',
         okBoxVisible: false,
@@ -42,7 +42,7 @@ class Preferences extends React.Component
                 this.cancel();
 
             // any unchanged files?
-            if (_.isEqual(this.state.settings, this.origSettings))
+            if (_.isEqual(this.state.preferences, this.origSettings))
                 this.cancel();
             else
             {
@@ -55,6 +55,11 @@ class Preferences extends React.Component
                 })
             }
         });
+
+        ipcRenderer.on('preferences', (event, arg) => {
+            this.fromJson(arg);
+            return null;
+        })
     }
 
     /**
@@ -66,33 +71,52 @@ class Preferences extends React.Component
         if (this.flatForm)
         {
             json.preferences = {};
-            this.flatForm.getValues().map(item => {
-                json.preferences[item.key] = (() => {
-                    if (item.value === undefined)
-                    {
-                        switch(item.type)
+            const categories = this.flatForm.getValues();
+            for (let catIt in categories)
+            {
+                json.preferences[catIt] = {}
+                for (let fieldIt in categories[catIt])
+                {
+                    const field = categories[catIt][fieldIt]
+                    json.preferences[catIt][field.key] = (() => {
+                        if (field.value === undefined)
                         {
-                            case "input": return '';
-                            case "boolbox": return false;
-                            default: return undefined;
+                            switch(field.type)
+                            {
+                                case "input": return '';
+                                case "boolbox": return false;
+                                default: return undefined;
+                            }
                         }
-                    }
-                    else
-                        return item.value
-                })();
-            })
+                        else
+                            return field.value
+                    })();
+                }
+            }
         }
         
         if (notAsString)
             return json;
         return JSON.stringify(json, null, 4);
     }
-
-    /**
-     * Transform actual representation to enforced representation by table.
-     */
-    fromJson = (json, initial) => 
+    
+    fromJson = (jsonString) => 
     {
+        const json = JSON.parse(jsonString)
+        this.setState({settings: json});
+        let idValueList = {}
+        console.log(json)
+        for (const catId in json.preferences)
+        {
+            for (const fieldId in json.preferences[catId])
+            {
+                idValueList[fieldId] = json.preferences[catId][fieldId]
+            }
+        }
+        if (this.flatForm)
+        {
+            this.flatForm.setValues(idValueList);
+        }
     }
 
     showYesNoBox(message, yesAction, noAction) 
@@ -135,8 +159,9 @@ class Preferences extends React.Component
     }
 
     save = (successAction) => 
-    {
-        
+    {        
+        ipcRenderer.sendSync('applicationPreferencesSaved', this.toJson(true));
+        return '';
     }
 
     cancel = () => 
@@ -170,13 +195,19 @@ class Preferences extends React.Component
                     onSave={() => {this.save()}}
                     onCancel={() => {this.cancel()}}
                 >
-                    <FlatForm
-                        className={"preferencesForm"}
-                        ref={this.setFormRef}
-                        dict={this.props.dict}
-                        schema={this.schema}
-                    >
-                    </FlatForm>
+                    <div className={"preferencesScrollArea"}>
+                        <FlatForm
+                            className={"preferencesForm"}
+                            ref={this.setFormRef}
+                            dict={this.props.dict}
+                            schema={this.schema}
+                            onChange={() => {
+                                this.setState({settings: this.toJson()})
+                            }}
+                        >
+                        </FlatForm>
+                        <div style={{height: '20px'}}></div>
+                    </div>
                 </JsonOptions>
                 <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onYesNoBoxClose(wb);}}/>
                 <MessageBox boxStyle="Ok" dict={this.dict} visible={this.state.okBoxVisible} message={this.state.okMessage} onButtonPress={(wb)=>{this.onOkBoxClose(wb);}}/>

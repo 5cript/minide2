@@ -11,9 +11,11 @@
 #include "../workspace/stream_messages/directory_contents.hpp"
 #include "../workspace/stream_messages/file_content.hpp"
 #include "../workspace/hashed_file.hpp"
+#include "../workspace/workspace_persistence.hpp"
 
 #include <string>
 #include <fstream>
+#include <sstream>
 
 using namespace std::string_literals;
 
@@ -89,6 +91,8 @@ namespace Routers
 
                 sess.workspace.root = root;
                 sess.save();
+                auto sess2 = this_session(req);
+                sess2.dump();
                 res->status(204).end();
             });
         });
@@ -172,27 +176,6 @@ namespace Routers
             });
         });
 
-        cors_options(server, "/api/workspace/project/activate", "POST", impl_->config.corsOption);
-        server.post("/api/workspace/project/activate", [this](auto req, auto res)
-        {
-            enable_cors(req, res, impl_->config.corsOption);
-
-            auto sess = this_session(req);
-            if (sess.workspace.root.empty())
-                return res->status(400).send("open a workspace first");
-
-            readJsonBody(req, res, [this, req, res](json const& body)
-            {
-                if (!body.contains("project"))
-                    return res->status(400).send("need 'project' in json body.");
-
-                auto sess = this_session(req);
-                sess.workspace.activeProject = body["project"].get<std::string>();
-
-                res->status(500).end();
-            });
-        });
-
         /**
          *  Get Information about the workspace.
          */
@@ -208,6 +191,27 @@ namespace Routers
             std::cout << "---\n";
 
             res->status(200).send("ok dokey");
+        });
+
+        cors_options(server, "/api/workspace/loadWorkspaceMeta", "GET", impl_->config.corsOption);
+        server.get("/api/workspace/loadWorkspaceMeta", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            auto sess = this_session(req);
+            if (sess.workspace.root.empty())
+                return res->status(400).send("open a workspace first");
+
+            WorkspacePersistence wspace{sess.workspace.root};
+            try
+            {
+                wspace.load();
+                res->status(200).send(wspace.raw());
+            }
+            catch(std::exception const& exc)
+            {
+                return res->status(500).send(exc.what());
+            }
         });
 
         cors_options(server, "/api/workspace/loadFile", "POST", impl_->config.corsOption);
@@ -402,6 +406,7 @@ namespace Routers
             enable_cors(req, res, impl_->config.corsOption);
 
             auto sess = this_session(req);
+            sess.dump();
             if (sess.workspace.root.empty())
                 return res->status(400).send("open a workspace first");
 
@@ -422,7 +427,11 @@ namespace Routers
 
                 sess.workspace.activeProject = veri.second;
                 sess.save();
-                std::cout << sess.workspace.activeProject << "\n";
+                WorkspacePersistence wspace{sess.workspace.root};
+                wspace.load();
+                wspace.lastActiveProject = sess.workspace.activeProject.string();
+                wspace.save();
+                std::cout << "Opened workspace: " << sess.workspace.activeProject << "\n";
 
                 res->status(200).end();
             });

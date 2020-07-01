@@ -165,6 +165,14 @@ namespace Routers
                 connectionBasedStreamer->detach();
         };
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        cors_options(server, "/api/authenticate", "GET", config_.corsOption);
+        server.get("/api/authenticate", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
+        {
+            enable_cors(req, res, config_.corsOption);
+            if (server.authenticate_session(req, res))
+                res->status(200).end();
+        });
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         cors_options(server, "/api/streamer/control", "GET", config_.corsOption);
         server.get("/api/streamer/control", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
         {

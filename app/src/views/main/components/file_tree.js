@@ -143,8 +143,17 @@ class FileView extends PureComponent
         let contextItem = _.clone(this.contextItem);
 
         this.props.backend.workspace().setActiveProject(contextItem.key, () => {
+            this.props.persistence.setLastActive(this.currentHost(), contextItem.key);
             this.props.dispatch(setActiveProject(contextItem.key))
         });
+    }
+
+    currentHost = () => 
+    {
+        return {
+            host: this.props.backendState.ip,
+            port: this.props.backendState.port
+        };
     }
     
     render(){
@@ -229,6 +238,7 @@ export default connect(state => {
     return {
         fileTree: state.workspace.fileTree, 
         root: state.workspace.root,
-        openFiles: state.openFiles.openFiles
+        openFiles: state.openFiles.openFiles,
+        backendState: state.backend
     }
 })(FileView);

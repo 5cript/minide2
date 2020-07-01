@@ -3,32 +3,40 @@ const PreferencesSchema = (dict) =>
     return {
         fields: [
             {
+                key: 'host',
+                label: dict.translate('$Host', 'preferences'),
+                type: 'input',
+                category: 'backend'
+            },
+            {
+                key: 'port',
+                label: dict.translate('$Port', 'preferences'),
+                type: 'numberInput',
+                category: 'backend'
+            },
+            {
+                key: 'spacer1',
+                type: 'spacer',
+                category: 'backend'
+            },
+            {
                 key: 'autoConnect',
-                label: dict.translate('$AutoConnectToLocalBackend', 'preferences'),
+                label: dict.translate('$AutoConnectToBackend', 'preferences'),
                 type: 'boolbox',
-                category: 'localBackend'
+                category: 'backend'
             },
             {
                 key: 'autoLoadWorkspace',
-                label: dict.translate('$AutoReloadLastLocalWorkspace', 'preferences'),
+                label: dict.translate('$AutoReloadLastWorkspace', 'preferences'),
                 type: 'boolbox',
-                category: 'localBackend'
-            },
-            {
-                key: 'xd',
-                label: dict.translate('$AutoReloadLastLocalWorkspace', 'preferences'),
-                type: 'boolbox',
-                category: 'subcat'
+                category: 'backend'
             }
         ],
-        categories: {
-            id: 'localBackend',
-            caption: dict.translate('$LocalBackendSettings', 'preferences'),
-            fields: [],
-            categories: [{
-                id: 'subcat'
-            }]
-        }
+        categories: [{
+            id: 'backend',
+            caption: dict.translate('$BackendSettings', 'preferences'),
+            fields: []
+        }]
     }
 }
 

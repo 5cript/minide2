@@ -77,10 +77,12 @@ class Dictionary
                     "$ProcessStartFail": "could not be started, error code: ",
                     "$ProcessNotFound": "Process not found"
                 },
-                "preferences": {
-                    "$AutoReloadLastLocalWorkspace": "Reload last opened local workspace",
-                    "$AutoConnectToLocalBackend": "Automatically connect to local backend",
-                    "$LocalBackendSettings": "Local Backend"
+                "preferences": {                    
+                    "$AutoReloadLastWorkspace": "Reload last opened workspace",
+                    "$AutoConnectToBackend": "Automatically connect to local backend",
+                    "$BackendSettings": "Backend",
+                    "$Host": "Host",
+                    "$Port": "Port"
                 }
             },
             "de_DE": {
@@ -153,9 +155,11 @@ class Dictionary
                     "$ProcessNotFound": "Programm nicht gefunden"
                 },
                 "preferences": {
-                    "$AutoReloadLastLocalWorkspace": "Zuletzt geöffneten Arbeitsraum automatisch öffnen",
-                    "$AutoConnectToLocalBackend": "Automatisch mit lokalem Backend verbinden",
-                    "$LocalBackendSettings": "Lokales Backend"
+                    "$AutoReloadLastWorkspace": "Zuletzt geöffneten Arbeitsraum automatisch öffnen",
+                    "$AutoConnectToBackend": "Automatisch mit Backend verbinden",
+                    "$BackendSettings": "Backend",
+                    "$Host": "Host",
+                    "$Port": "Port"
                 }
             }    
         }

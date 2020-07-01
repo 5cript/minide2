@@ -35,7 +35,7 @@ template <typename SessionStoreT, typename ServerT, typename... StoreConstruct>
 void installSessionHandler(ServerT& server, std::string const& corsOrigin, StoreConstruct&&... constructionArgs)
 {
     server.install_session_control
-    (
+    ({
         std::make_unique <SessionStoreT>(std::forward <StoreConstruct&&>(constructionArgs)...),
         std::make_unique <AuthenticateEveryone>(),
         "aSID",
@@ -49,7 +49,9 @@ void installSessionHandler(ServerT& server, std::string const& corsOrigin, Store
         [corsOrigin](auto req, auto res)
         {
             Routers::enable_cors(req, res, corsOrigin);
-        }
-    );
+        },
+        true,
+        "/api/authenticate"
+    });
 }
 

@@ -1,12 +1,14 @@
-const electron = require('electron')
-const { ipcMain } = require('electron')
-const BrowserWindow = electron.BrowserWindow
+const electron = require('electron');
+const {ipcMain} = require('electron');
+const {minIdeHome} = require('./util/path_util');
+const fs = require('fs');
+const BrowserWindow = electron.BrowserWindow;
 
 let preferencesWindow = undefined;
 let isVisible = false;
 let forceQuit = false;
 
-export default function createPreferencesWindow(path, parentCenter, server)
+export default function createPreferencesWindow(path, parentCenter)
 {
     const w = 1400;
     const h = 950;
@@ -32,12 +34,12 @@ export default function createPreferencesWindow(path, parentCenter, server)
 		preferencesWindow.webContents.openDevTools();
 		preferencesWindow.loadURL(path);
 
-        /*
 		preferencesWindow.webContents.on('did-finish-load', e => 
 		{
-			preferencesWindow.webContents.send('loadEnvironment', server);
+            const home = minIdeHome(require('fs'));
+            const preferences = fs.readFileSync(home + "/preferences.json", 'utf8');
+			preferencesWindow.webContents.send('preferences', preferences);
         });
-        */
 
 		preferencesWindow.on('close', (e) => 
 		{
@@ -68,7 +70,15 @@ export default function createPreferencesWindow(path, parentCenter, server)
 			{
 
 			}
-		});
+        });
+        
+        ipcMain.on('applicationPreferencesSaved', (event, preferences) => 
+        {
+            const home = minIdeHome(require('fs'));
+            fs.writeFileSync(home + "/preferences.json", JSON.stringify(preferences, null, 4));
+
+            event.returnValue = '';
+        })
 	}
 	else
 		envWindow.focus();

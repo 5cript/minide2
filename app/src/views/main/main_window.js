@@ -18,11 +18,13 @@ import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} 
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
 import {addToLog, clearLog, focusLogByName} from '../../actions/log_actions.js';
+import {setPreferences} from '../../actions/preferences_actions.js';
 
 // Other
 import Backend from '../../backend_connector';
 import _ from 'lodash';
 import Dictionary from '../../util/localization';
+import LocalPersistence from '../../util/persistence';
 
 // Style
 import './styles/main.css'
@@ -205,6 +207,14 @@ class MainWindow extends React.Component
                         this.initToolbars(json);
                     })
                 });
+                if (this.props.preferences.backend.autoLoadWorkspace === true)
+                {
+                    const wspace = this.persistence.getLastWorspace(this.currentHost())
+                    if (wspace !== undefined && wspace !== null && wspace !== '')
+                    {
+                        this.backend.workspace().openWorkspace(wspace);
+                    }
+                }
             }
         }
         catch(e)
@@ -330,7 +340,6 @@ class MainWindow extends React.Component
             // on Connection Loss
             (...args) => {this.onConnectionLoss(...args);}
         );
-
         this.throttledHeightUpdate = _.throttle((h) => {
             this.setState({logsHeight: h});
             if (this.term)
@@ -348,6 +357,14 @@ class MainWindow extends React.Component
         this.props.dispatch(setTryingToConnect(false));
     }
 
+    currentHost = () => 
+    {
+        return {
+            host: this.props.backend.ip,
+            port: this.props.backend.port
+        };
+    }
+
     registerIpcHandler = () => 
     {
         ipcRenderer.on('openWorkspace', (event, arg) => 
@@ -355,14 +372,38 @@ class MainWindow extends React.Component
             if (arg.canceled)
                 return;
             this.backend.workspace().openWorkspace(arg.filePaths[0]);
+            this.persistence.setLastWorkspace(this.currentHost(), arg.filePaths[0]);
+        })
+
+        ipcRenderer.on('setHome', (event, arg) => {
+            this.home = arg
+
+            this.persistence = new LocalPersistence(this.home, window.require('fs'));
+            try
+            {
+                this.persistence.load();
+            }
+            catch(e)
+            {
+                try
+                {
+                    this.persistence.save();
+                }
+                catch(e)
+                {}
+            }
+        })
+
+        ipcRenderer.on('preferences', (event, arg) => {
+            this.props.dispatch(setPreferences(arg));
         })
 
         ipcRenderer.on('setBackend', (event, arg) =>
         {
             this.props.dispatch(setBackendIp(arg.ip));
             this.props.dispatch(setBackendPort(arg.port));
-            if (this.props.backend.connected === false)
-                this.backend.readControl();
+            if (arg.autoConnect && this.props.backend.connected === false)
+                this.backend.authenticate(() => {this.backend.readControl()});
         })
 
         ipcRenderer.on('connectBackend', (event, arg) => 
@@ -406,7 +447,6 @@ class MainWindow extends React.Component
         })
 
         ipcRenderer.on('cookie', (event, arg) => {
-            console.log(arg);
             if (arg.name === 'aSID')
             {
                 this.props.dispatch(setSessionId(arg.value));
@@ -475,7 +515,7 @@ class MainWindow extends React.Component
                 <div id='SplitterContainer'>
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={60}>
                         <div>
-                            <Explorer dict={this.dict} backend={this.backend}/>
+                            <Explorer persistence={this.persistence} dict={this.dict} backend={this.backend}/>
                         </div>
                         <div id='RightOfExplorer'>
                             <SplitterLayout 
@@ -511,6 +551,7 @@ export default connect(state => {
         locale: state.locale,
         backend: state.backend,
         activeProject: state.workspace.activeProject,
-        workspaceRoot: state.workspace.root
+        workspaceRoot: state.workspace.root,
+        preferences: state.preferences.preferences
     }
 })(MainWindow);

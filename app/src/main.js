@@ -1,20 +1,20 @@
+import createEnvironmentWindow from './environment_settings';
+import createPreferencesWindow from './preferences_window';
+import Dictionary from './util/localization.js';
+
 const electron = require('electron')
-const app = electron.app
-const path = require('path')
 const isDev = require('electron-is-dev')
 const shortcut = require('electron-localshortcut');
 const BrowserWindow = electron.BrowserWindow
+const {ipcMain} = require('electron')
+const {minIdeHome} = require('./util/path_util');
+const fs = require('fs');
 
 require('electron-reload')
-const { ipcMain } = require('electron')
 
+const app = electron.app
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
-
-import createEnvironmentWindow from './environment_settings';
-import createPreferencesWindow from './preferences_window';
-
-import Dictionary from './util/localization.js';
-let dict = new Dictionary();
+const dict = new Dictionary();
 
 let mainWindow;
 
@@ -162,7 +162,18 @@ function createWindow()
 	
 	mainWindow.webContents.on('did-finish-load', e => 
 	{
-		mainWindow.webContents.send('setBackend', server);
+		const home = minIdeHome(require('fs'));
+		let preferences;
+		if (fs.existsSync(home + "/preferences.json"))
+			preferences = JSON.parse(fs.readFileSync(home + "/preferences.json", 'utf8')).preferences;
+
+		mainWindow.webContents.send('setHome', home);
+		mainWindow.webContents.send('preferences', preferences);
+		mainWindow.webContents.send('setBackend', {
+			ip: preferences.backend.host,
+			port: preferences.backend.port,
+			autoConnect: preferences.backend.autoConnect
+		});
 	});
 
 	ipcMain.on('closeNow', (event, arg) => 

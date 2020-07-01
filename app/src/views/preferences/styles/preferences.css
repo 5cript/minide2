@@ -1,5 +1,7 @@
-.preferencesForm
+.preferencesScrollArea
 {
+    overflow-y: auto;
     padding: 5px;
     width: calc(100% - 30px);
+    height: 100%;
 }

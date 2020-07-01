@@ -38,9 +38,14 @@ export class FlatForm extends React.Component
         super(props)
         
         this.state = {
-            values: this.props.initialValues ? this.props.initialValues : {},
+            values: {},
             animates: {}
         }
+
+        if (this.props.onChange)
+            this.onAnyChange = this.props.onChange;
+        else
+            this.onAnyChange = () => {};
 
         if (this.props.key !== undefined)
             this.idPrefix = '__fform_' + this.props.key + '_';
@@ -53,17 +58,25 @@ export class FlatForm extends React.Component
         return !(scheme.requirements && scheme.requirements(this.state.values[this.qualifyId(scheme.key)]) !== true);
     }
 
-    inputField = (scheme) => 
+    inputField = (scheme, options) => 
     {
         return (
-            <div className="formInputField">
+            <div className="formInputField" key={scheme.key}>
                 <div className="formLabel">{scheme.label}</div>
                 <Jello key={this.qualifyId(scheme.key) + 'j'} when={this.state.animates[this.qualifyId(scheme.key)] === true}>
                     <div className="formInputGroup">
                         <input 
                             {...scheme.properties} 
                             id={this.idPrefix + scheme.key} 
-                            onChange={e => this.setValue(e.target.id, e.target.value)}
+                            onChange={e => {
+                                if (options && options.numberOnly)
+                                {
+                                    if (e.target.value === '' || /^[0-9\b]+$/.test(e.target.value))
+                                        this.setValue(e.target.id, e.target.value);
+                                }
+                                else
+                                    this.setValue(e.target.id, e.target.value)
+                            }}
                             value={this.state.values[this.qualifyId(scheme.key)] === undefined ? '' : this.state.values[this.qualifyId(scheme.key)]}
                             className={
                                 classNames("formInput", (() => {
@@ -93,7 +106,7 @@ export class FlatForm extends React.Component
     boolbox = (scheme) => 
     {
         return (
-            <div className="formBoolbox">
+            <div className="formBoolbox" key={scheme.key}>
                 <ThemedSwitch
                     id={this.qualifyId(scheme.key)}
                     checked={this.state.values[this.qualifyId(scheme.key)] === undefined ? false : this.state.values[this.qualifyId(scheme.key)]}
@@ -106,10 +119,17 @@ export class FlatForm extends React.Component
         )
     }
 
+    spacer = (scheme) => 
+    {
+        return <div className="formSpacer"></div>
+    }
+
     setValue = (id, value) => 
     {
         let vals = _.cloneDeep(this.state.values);
         vals[id] = value;
+
+        this.onAnyChange(id, value);
 
         this.setState({
             values: vals
@@ -128,18 +148,52 @@ export class FlatForm extends React.Component
 
     getInput = () => 
     {
-        const r = this.props.schema.fields.map(scheme => {
-            return {
-                ...scheme,
-                value: this.state.values[this.qualifyId(scheme.key)]
+        if (this.props.schema.categories === undefined)
+        {
+            const r = this.props.schema.fields.map(scheme => {
+                return {
+                    ...scheme,
+                    value: this.state.values[this.qualifyId(scheme.key)]
+                }
+            });
+            return r;
+        }
+        else
+        {
+            let categorizedValues = {}
+            for (const categoryIter in this.props.schema.categories) 
+            {
+                const category = this.props.schema.categories[categoryIter];
+                categorizedValues[category.id] = {}
+                for (const field of this.props.schema.fields)
+                {
+                    if (field.category === category.id)
+                    {
+                        categorizedValues[category.id][field.key] = {
+                            ...field,
+                            value: this.state.values[this.qualifyId(field.key)]
+                        };
+                    }
+                }
             }
-        });
-        return r;
+            return categorizedValues;
+        }
     }
 
     getValues = () => 
     {
         return this.getInput();
+    }
+
+    setValues = (idValueList) => 
+    {
+        let values = _.clone(this.state.values);
+
+        for (const id in idValueList)
+        {
+            values[this.qualifyId(id)] = idValueList[id];
+        }
+        this.setState({values: values});
     }
 
     allRequirementsSatisfied = () =>
@@ -176,7 +230,7 @@ export class FlatForm extends React.Component
 
     renderWithCategories()
     {
-        let reorganized = this.props.schema.categories;
+        let reorganized = _.cloneDeep(this.props.schema.categories);
 
         const findAndInsert = (currentCategory) => 
         {
@@ -193,21 +247,49 @@ export class FlatForm extends React.Component
             {
                 for (let subcat of currentCategory.categories)
                 {
-                    findAndInsert(subcat);
+                    subcat = findAndInsert(subcat);
                 }
             }
+            return currentCategory
         }
-        findAndInsert(reorganized);
+        for (let cat of reorganized)
+        {
+            cat = findAndInsert(cat);
+        }
+
+        const renderCategory = (cat, i) =>
+        {
+            return (
+                <div className="formCategoryOutward" key={i}>
+                    <span className="formCategoryCaption">{cat.caption}</span>
+                    <div className="formCategoryInward">
+                    {
+                        cat.fields.map(scheme => this.fieldToComponent(scheme))
+                    }
+                    </div>
+                </div>
+            )
+        }
 
         return (
-            <div>
+            <div className={this.props.className}>
             {
-                (() => {
-                    return <div></div>
-                })()
+                reorganized.map((category, i) => renderCategory(category, i))
             }
             </div>
         )
+    }
+
+    fieldToComponent = (scheme) => 
+    {
+        switch(scheme.type)
+        {
+            case('input'): return this.inputField(scheme);
+            case('boolbox'): return this.boolbox(scheme);
+            case('numberInput'): return this.inputField(scheme, {numberOnly: true});
+            case('spacer'): return this.spacer(scheme);
+            default: return this.unknownType(scheme);
+        }
     }
 
     renderWithoutCategories()
@@ -215,12 +297,7 @@ export class FlatForm extends React.Component
         return (
             <div className={this.props.className}>
                 {this.props.schema.fields.map(scheme => {
-                    switch(scheme.type)
-                    {
-                        case('input'): return this.inputField(scheme);
-                        case('boolbox'): return this.boolbox(scheme);
-                        default: return this.unknownType(scheme);
-                    }
+                    return this.fieldToComponent(scheme);
                 })}
             </div>
         )

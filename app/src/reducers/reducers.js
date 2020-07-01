@@ -7,6 +7,7 @@ import shortcuts from './shortcuts';
 import toolbars from './toolbars';
 import locale from './locale';
 import logs from './logs';
+import preferences from './preferences';
 
 export default combineReducers({
     openFiles,
@@ -15,5 +16,6 @@ export default combineReducers({
     shortcuts,
     toolbars,
     locale,
-    logs
+    logs,
+    preferences
 })
