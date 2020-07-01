@@ -122,7 +122,7 @@ namespace Routers
                 if (stream.queue.consumeableCount(id) == 0)
                 {
                     ++idleCounter;
-                    if (idleCounter > 100)
+                    if (idleCounter > 20)
                     {
                         idleCounter = 0;
                         writeMessage
@@ -131,11 +131,16 @@ namespace Routers
                             Streaming::Message{std::make_unique <Streaming::Messages::KeepAlive>()}
                         );
                     }
-                    std::this_thread::sleep_for(200ms);
+                    std::this_thread::yield();
+                    if (idleCounter < 5)
+                        std::this_thread::sleep_for(20ms);
+                    else if (idleCounter > 5)
+                        std::this_thread::sleep_for(50ms);
                     continue;
                 }
                 idleCounter = 0;
 
+                std::cout << "popMessage\n";
                 auto iter = stream.queue.popMessage(id);
                 writeMessage(*produ, iter->msg);
                 stream.queue.unrefMessage(iter);

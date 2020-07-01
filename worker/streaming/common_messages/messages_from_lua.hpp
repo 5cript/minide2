@@ -16,7 +16,8 @@ namespace Streaming::Messages
     enum class SubprocessOutputType
     {
         Other,
-        Build
+        Build,
+        CMake
     };
 
     struct LuaInfoMessage : public JsonSerializable

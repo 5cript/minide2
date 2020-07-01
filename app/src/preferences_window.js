@@ -2,21 +2,21 @@ const electron = require('electron')
 const { ipcMain } = require('electron')
 const BrowserWindow = electron.BrowserWindow
 
-let envWindow = undefined;
+let preferencesWindow = undefined;
 let isVisible = false;
 let forceQuit = false;
 
-export default function createEnvironmentWindow(path, parentCenter, server)
+export default function createPreferencesWindow(path, parentCenter, server)
 {
-    const w = 800;
-    const h = 600;
+    const w = 1400;
+    const h = 950;
 
 	if (isVisible === false)
 	{
 		isVisible = true;
 		forceQuit = false;
 
-		envWindow = new BrowserWindow({
+		preferencesWindow = new BrowserWindow({
 			x: parentCenter.x - w / 2,
 			y: parentCenter.y - h / 2,
 			width: w,
@@ -28,22 +28,24 @@ export default function createEnvironmentWindow(path, parentCenter, server)
 			}
 		})
 		
-		envWindow.removeMenu();		
-		//envWindow.webContents.openDevTools();
-		envWindow.loadURL(path);
+		preferencesWindow.removeMenu();		
+		preferencesWindow.webContents.openDevTools();
+		preferencesWindow.loadURL(path);
 
-		envWindow.webContents.on('did-finish-load', e => 
+        /*
+		preferencesWindow.webContents.on('did-finish-load', e => 
 		{
-			envWindow.webContents.send('loadEnvironment', server);
-		});
+			preferencesWindow.webContents.send('loadEnvironment', server);
+        });
+        */
 
-		envWindow.on('close', (e) => 
+		preferencesWindow.on('close', (e) => 
 		{
 			try
 			{
 				if (!forceQuit) 
 				{
-					envWindow.webContents.send('closeIssued');
+					preferencesWindow.webContents.send('closeIssued');
 					e.preventDefault();
 				}
 				else
@@ -55,12 +57,12 @@ export default function createEnvironmentWindow(path, parentCenter, server)
 			}
 		});
 
-		ipcMain.on('closeEnvWindow', (event, arg) => 
+		ipcMain.on('closePrefWindow', (event, arg) => 
 		{
 			try
 			{
 				forceQuit = true;
-				envWindow.close();
+				preferencesWindow.close();
 			}
 			catch(e)
 			{

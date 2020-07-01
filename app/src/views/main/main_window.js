@@ -1,4 +1,5 @@
 import React from 'react';
+import {connect} from 'react-redux';
 
 // Components
 import Toolbar from './components/toolbar';
@@ -7,7 +8,6 @@ import Explorer from './components/explorer';
 import SplitterLayout from 'react-splitter-layout';
 import Editor from './components/editor';
 import LogsAndOthers from './components/logs_and_term';
-import {connect} from 'react-redux';
 import MessageBox from '../../elements/message_box';
 import Blocker from './components/toolbar_blocker';
 import Slide from 'react-reveal/Slide';
@@ -17,6 +17,7 @@ import {setFileTreeBranch} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
+import {addToLog, clearLog, focusLogByName} from '../../actions/log_actions.js';
 
 // Other
 import Backend from '../../backend_connector';
@@ -90,7 +91,8 @@ class MainWindow extends React.Component
         yesNoBoxVisible: false,
         yesNoMessage: '',
         okBoxVisible: false,
-        okBoxMessage: ''
+        okBoxMessage: '',
+        logsHeight: 200
     }
 
     isShortcut(event, shortcutDefinition)
@@ -243,6 +245,8 @@ class MainWindow extends React.Component
                     data.itemId,
                     data.targets
                 )
+            default:
+                return;
         }
     }
 
@@ -257,6 +261,34 @@ class MainWindow extends React.Component
             else if (head.type === "lua_rpc")
             {
                 this.handleLuaRpc(head.functionName, JSON.parse(head.data))
+            }
+            else if (head.type === "lua_process")
+            {
+                if (head.message === "\x1b[2J")
+                {
+                    this.props.dispatch(clearLog(head.processName));
+                    this.props.dispatch(focusLogByName(head.processName));
+                }
+                else
+                    this.props.dispatch(addToLog(head.processName, head.message));
+            }
+            else if (head.type === "lua_process_info")
+            {
+                const info = JSON.parse(head.data);
+                if (info.what === "processEnded")
+                {
+                    let message = head.processName + " " + this.dict.translate("$ProcessEnded", "lua") + " " + info.status + "\n";
+                    this.props.dispatch(addToLog(head.processName, message));
+                }
+                else if (info.what === "processStartFailure")
+                {
+                    let message = head.processName + " " + this.dict.translate("$ProcessStartFail", "lua") + " " + info.error + "\n";
+                    this.props.dispatch(addToLog(head.processName, message));
+                    if (info.error === 2)
+                        this.props.dispatch(addToLog(head.processName, this.dict.translate("$ProcessNotFound", "lua") + "\n"));
+                    if (info.command !== undefined)
+                        this.props.dispatch(addToLog(head.processName, info.command));
+                }
             }
             else
             {
@@ -298,6 +330,12 @@ class MainWindow extends React.Component
             // on Connection Loss
             (...args) => {this.onConnectionLoss(...args);}
         );
+
+        this.throttledHeightUpdate = _.throttle((h) => {
+            this.setState({logsHeight: h});
+            if (this.term)
+                this.term.refit()
+        }, 100)
     }
 
     onConnectionLoss(which)
@@ -440,9 +478,20 @@ class MainWindow extends React.Component
                             <Explorer dict={this.dict} backend={this.backend}/>
                         </div>
                         <div id='RightOfExplorer'>
-                            <SplitterLayout vertical={true} secondaryInitialSize={250}>
+                            <SplitterLayout 
+                                vertical={true} 
+                                secondaryInitialSize={250}
+                                onSecondaryPaneSizeChange={p => {this.throttledHeightUpdate(p)}}
+                            >
                                 <Editor dict={this.dict} className='Editor' monacoOptions={this.state.monacoOptions}></Editor>
-                                <LogsAndOthers dict={this.dict} className="logsAndOthers"></LogsAndOthers>
+                                <LogsAndOthers 
+                                    dict={this.dict} 
+                                    height={this.state.logsHeight} 
+                                    className="logsAndOthers"
+                                    onTermRef={term => {
+                                        this.term = term;
+                                    }}
+                                ></LogsAndOthers>
                             </SplitterLayout>
                         </div>
                     </SplitterLayout>

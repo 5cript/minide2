@@ -1,10 +1,8 @@
 import React from 'react';
 //import { connect } from 'react-redux';
-import Scrollbar from 'react-scrollbars-custom';
 
 import {Terminal} from 'xterm/lib/xterm';
 import {FitAddon } from 'xterm-addon-fit';
-import ResizeObserver from 'react-resize-observer';
 
 // style
 import './styles/terminal.css';
@@ -79,13 +77,6 @@ class TerminalInstance extends React.Component
         return (
             <div className='terminalInstance'>
                 <div id="Terminal">
-                    <ResizeObserver
-                        onResize={(rect) => {
-                            this.refit();
-                        }}
-                        onPosition={(rect) => {
-                        }}
-                    />
                 </div>
             </div>
         );

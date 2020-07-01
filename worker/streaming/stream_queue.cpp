@@ -6,8 +6,8 @@ namespace Streaming
     StreamQueue::message_cache_type::const_iterator StreamQueue::popMessage(id_type retriever)
     {
         std::lock_guard <std::mutex> assignmentGuard{assignmentLock_};
-        auto accessor = assignments_[retriever].back();
-        assignments_[retriever].pop_back();
+        auto accessor = assignments_[retriever].front();
+        assignments_[retriever].pop_front();
         return accessor;
     }
 //---------------------------------------------------------------------------------------------------------------------

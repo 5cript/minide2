@@ -9,7 +9,7 @@ class Router
     {
         return this.getHost() + url;
     }
-    authFetch(url, obj)
+    authInfo(obj)
     {
         if (obj === undefined)
             obj = {}
@@ -23,6 +23,11 @@ class Router
         else
             obj.headers["Authorization"] = "Basic " + btoa("admin:dummy");
         obj.credentials = 'include';
+        return obj
+    }
+    authFetch(url, obj)
+    {
+        obj = this.authInfo(obj);
         return fetch(url, obj)
     }
     getHost()

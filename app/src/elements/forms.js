@@ -3,39 +3,44 @@ import React from 'react';
 // Other
 import classNames from 'classnames';
 import _ from 'lodash';
+import { withStyles } from '@material-ui/core/styles';
 
 // Components
 import Tooltip from '@material-ui/core/Tooltip';
 import Jello from 'react-reveal/Jello';
 import WarningSharpIcon from '@material-ui/icons/WarningSharp';
+import Switch from '@material-ui/core/Switch';
 
 // Styles
 import './styles/forms.css';
 
-let exampleDescription = 
-{
-    fields: [
-        {
-            key: 'firstName',
-            label: 'First Name',
-            type: 'input',
-            properties: {},
-            requirements: (value) => {return false;}
+const ThemedSwitch = withStyles({
+    switchBase: {
+        color: 'var(--foreground-color)',
+        '&$checked': {
+            color: 'var(--theme-color-extreme)',
         },
-    ]
-}
+        '&$checked + $track': {
+            backgroundColor: 'var(--theme-darker)',
+        },
+        '& + $track': {
+            backgroundColor: 'var(--foreground-disabled)',
+        },
+    },
+    checked: {},
+    track: {},
+})(Switch);
 
 export class FlatForm extends React.Component
 {
-    state = 
-    {
-        values: {},
-        animates: {}
-    }
-
     constructor(props)
     {
         super(props)
+        
+        this.state = {
+            values: this.props.initialValues ? this.props.initialValues : {},
+            animates: {}
+        }
 
         if (this.props.key !== undefined)
             this.idPrefix = '__fform_' + this.props.key + '_';
@@ -85,6 +90,22 @@ export class FlatForm extends React.Component
         );
     }
 
+    boolbox = (scheme) => 
+    {
+        return (
+            <div className="formBoolbox">
+                <ThemedSwitch
+                    id={this.qualifyId(scheme.key)}
+                    checked={this.state.values[this.qualifyId(scheme.key)] === undefined ? false : this.state.values[this.qualifyId(scheme.key)]}
+                    onChange={e => {
+                        this.setValue(e.target.id, e.target.checked);
+                    }}
+                ></ThemedSwitch>
+                <div className="formBoolboxLabel">{scheme.label}</div>
+            </div>
+        )
+    }
+
     setValue = (id, value) => 
     {
         let vals = _.cloneDeep(this.state.values);
@@ -114,6 +135,11 @@ export class FlatForm extends React.Component
             }
         });
         return r;
+    }
+
+    getValues = () => 
+    {
+        return this.getInput();
     }
 
     allRequirementsSatisfied = () =>
@@ -148,18 +174,63 @@ export class FlatForm extends React.Component
         })
     }
 
-    render()
+    renderWithCategories()
     {
+        let reorganized = this.props.schema.categories;
+
+        const findAndInsert = (currentCategory) => 
+        {
+            if (currentCategory.fields === undefined)
+                currentCategory.fields = [];
+
+            for (let field of this.props.schema.fields)
+            {
+                if (field.category === currentCategory.id)
+                    currentCategory.fields.push(field);
+            }
+
+            if (currentCategory.categories !== undefined)
+            {
+                for (let subcat of currentCategory.categories)
+                {
+                    findAndInsert(subcat);
+                }
+            }
+        }
+        findAndInsert(reorganized);
+
         return (
             <div>
+            {
+                (() => {
+                    return <div></div>
+                })()
+            }
+            </div>
+        )
+    }
+
+    renderWithoutCategories()
+    {
+        return (
+            <div className={this.props.className}>
                 {this.props.schema.fields.map(scheme => {
                     switch(scheme.type)
                     {
                         case('input'): return this.inputField(scheme);
+                        case('boolbox'): return this.boolbox(scheme);
                         default: return this.unknownType(scheme);
                     }
                 })}
             </div>
         )
+    }
+
+    render()
+    {
+        if (this.props.schema.categories !== undefined)
+            return this.renderWithCategories();
+        else
+            return this.renderWithoutCategories();
     }
 }

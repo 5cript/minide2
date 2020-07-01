@@ -71,11 +71,6 @@ class Toolbar extends React.Component {
         comboboxes: {}
     }
 
-    constructor(props)
-    {
-        super(props);
-    }
-
     buttonAction = (toolbar, item) => 
     {
         if (item.special_actions && item.special_actions.length > 0)
@@ -177,6 +172,7 @@ class Toolbar extends React.Component {
             const item = toolbar.items[i]
             const mapper = item => 
             {
+                console.log('id: ' + item.id);
                 switch(item.type)
                 {
                     case("IconButton"):
@@ -266,7 +262,7 @@ class Toolbar extends React.Component {
                         )
                     }
                     default:
-                        return <div key={item.id} >{item.id}</div>
+                        return <div key={item.id}>{item.id}</div>
                 }
             }
             components.push(mapper(item));
@@ -299,7 +295,7 @@ class Toolbar extends React.Component {
                     >
                     {
                         Object.values(this.props.toolbars).map(toolbar => {
-                            return <MenuItem value={
+                            return <MenuItem key={toolbar.id} value={
                                 toolbar.id
                             }>{toolbar.name}</MenuItem>
                         })

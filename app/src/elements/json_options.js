@@ -27,6 +27,8 @@ class JsonOptions extends React.Component
             boxMessage: '',
             lastKnownCorrect: this.props.json.length === 0 ? '{}' : this.props.json
         }
+
+
     }
 
     onJsonChange(text)
@@ -45,7 +47,10 @@ class JsonOptions extends React.Component
     {
         if (to !== "toLeft")
         {
-            this.setState({editorText: this.props.json});
+            if (this.props.provideJson)
+                this.setState({editorText: this.props.provideJson()});
+            else
+                this.setState({editorText: this.props.json});
             return true;
         }
         try

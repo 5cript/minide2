@@ -16,7 +16,8 @@ class Dictionary
                     "$File": "File",
                     "$OpenWorkspace": "Open Workspace",
                     "$Settings": "Settings",
-                    "$Environment": "Environment"
+                    "$Environment": "Environment",
+                    "$Preferences": "Preferences"
                 },
                 "explorer": {
                     "$OpenFiles": "Open Files",
@@ -70,6 +71,16 @@ class Dictionary
                 "toolbar": {
                     "$Save": "Speichern",
                     "$ProjectSettings": "Project Settings"
+                },
+                "lua": {
+                    "$ProcessEnded": "ended with status",
+                    "$ProcessStartFail": "could not be started, error code: ",
+                    "$ProcessNotFound": "Process not found"
+                },
+                "preferences": {
+                    "$AutoReloadLastLocalWorkspace": "Reload last opened local workspace",
+                    "$AutoConnectToLocalBackend": "Automatically connect to local backend",
+                    "$LocalBackendSettings": "Local Backend"
                 }
             },
             "de_DE": {
@@ -80,7 +91,8 @@ class Dictionary
                     "$File": "Datei",
                     "$OpenWorkspace": "Arbeitsraum Öffnen",
                     "$Settings": "Einstellungen",
-                    "$Environment": "Ausführumgebung"
+                    "$Environment": "Ausführumgebung",
+                    "$Preferences": "Lokale Einstellungen"
                 },
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
@@ -134,6 +146,16 @@ class Dictionary
                 "toolbar": {
                     "$Save": "Speichern",
                     "$ProjectSettings": "Projekteinstellungen"
+                },
+                "lua": {
+                    "$ProcessEnded": "wurde beendet mit Status",
+                    "$ProcessStartFail": "konnte nicht gestartet werden, Fehler: ",
+                    "$ProcessNotFound": "Programm nicht gefunden"
+                },
+                "preferences": {
+                    "$AutoReloadLastLocalWorkspace": "Zuletzt geöffneten Arbeitsraum automatisch öffnen",
+                    "$AutoConnectToLocalBackend": "Automatisch mit lokalem Backend verbinden",
+                    "$LocalBackendSettings": "Lokales Backend"
                 }
             }    
         }

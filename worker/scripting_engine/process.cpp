@@ -89,7 +89,6 @@ namespace MinIDE::Scripting
         for (auto const& [key, value] : environment)
         {
             auto modKey = key;
-            std::cout << key << ": " << value << "\n";
 #ifdef _WIN32
             std::transform(std::begin(modKey), std::end(modKey), std::begin(modKey), [](auto c)
             {

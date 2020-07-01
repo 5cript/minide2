@@ -11,6 +11,7 @@ const { ipcMain } = require('electron')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 import createEnvironmentWindow from './environment_settings';
+import createPreferencesWindow from './preferences_window';
 
 import Dictionary from './util/localization.js';
 let dict = new Dictionary();
@@ -42,6 +43,22 @@ const menuTemplate = [
 	{
 		label: dict.translate('$Settings', 'menu'),
 		submenu: [
+			{
+				label: dict.translate('$Preferences', 'menu'),
+				click: async e => 
+				{
+					const path = isDev
+						? `http://localhost:${port}?preferences`
+						: `file://${__dirname}/../public/index.html?preferences`
+					
+					const pos = mainWindow.getPosition();
+					const size = mainWindow.getSize();
+					createPreferencesWindow(path, {
+						x: pos[0] + size[0] / 2,
+						y: pos[1] + size[1] / 2
+					}, server);
+				}
+			},
 			{
 				label: dict.translate('$Environment', 'menu'),
 				click: async e => 
@@ -93,7 +110,8 @@ function createWindow()
 
 	electron.Menu.setApplicationMenu(menu);
 
-	const screen = 0;
+	//const screen = 0;
+	const screen = 1;
 
 	let windowWidth = 1500;
 	let windowHeight = 900;

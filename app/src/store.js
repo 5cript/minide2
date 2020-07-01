@@ -8,6 +8,6 @@ import reducer from './reducers/reducers';
 import { default as thunk} from 'redux-thunk';
 
 const middleware = applyMiddleware(createPromise(), thunk, createLogger());
-//let middleware = {};
+//const middleware = {};
 
 export default createStore(reducer, middleware);

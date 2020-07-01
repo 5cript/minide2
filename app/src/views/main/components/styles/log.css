@@ -1,0 +1,22 @@
+.logPanel
+{
+    height: 100%;
+}
+
+.logPanelHead
+{
+    height: 15px;
+    background-color: var(--background-color-brighter);
+}
+
+.logPanelContent
+{
+    background-color: var(--background-color-darker);
+    height: calc(100% - 15px);
+}
+
+.logTextField
+{
+    width: 100%;
+    height: calc(100% - 10px);
+}

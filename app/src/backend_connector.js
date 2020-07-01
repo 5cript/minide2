@@ -86,7 +86,6 @@ class Backend extends Router
                 });
                 return;
             }
-            console.log(res.headers.get('Set-Cookie'));
             let reader = res.body.getReader();
             let decoder = new TextDecoder();
             let read = () => 
@@ -116,6 +115,8 @@ class Backend extends Router
                     }
                     
                     return read();
+                }).catch(reject => {
+                    this.onConnectionLoss('control_error: ' + reject.message);
                 })
             };
             return read();
@@ -124,6 +125,64 @@ class Backend extends Router
             this.onConnectionLoss('control_error');
         });
     }
+
+    /*
+    readControl()
+    {
+        let url = this.url("/api/streamer/control");
+
+        let options = {
+            method: 'GET',
+            url: url,
+            responseType: 'stream',
+            adapter: httpAdapter
+        }
+        options = this.authInfo(options)
+        let decoder = new TextDecoder();
+
+        console.log('boop')
+        axios.get(url, options)
+        .then(response => 
+        {
+            const stream = response.data;
+            stream.on('data', value => 
+            {
+                console.log(value)
+                if (value)
+                    this.controlBuffer += decoder.decode(value, {stream: true});
+                let size = parseInt(this.controlBuffer.substr(0, 10));
+                if (isNaN(size)) 
+                {
+                    console.error('oh big no! expected number in stream');
+                    return;
+                }
+                if (this.controlBuffer.length >= size + 12) 
+                {
+                    try 
+                    {
+                        let json = JSON.parse(this.controlBuffer.substr(11, size));
+                        this.controlBuffer = this.controlBuffer.slice(12 + size);
+                        this.handleControlMessage(json);
+                    }
+                    catch(e) 
+                    {
+                        console.error("error in control stream reader",e);
+                    }
+                }
+            })
+            stream.on('end', () => 
+            {
+                console.log('end')
+                this.onConnectionLoss('control');
+            })
+        })
+        .catch(reason => 
+        {
+            console.log(reason)
+            this.onConnectionLoss('control_error');
+        });
+    }
+    */
 
     readData()
     {

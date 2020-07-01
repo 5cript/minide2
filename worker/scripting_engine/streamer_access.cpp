@@ -220,7 +220,8 @@ namespace MinIDE::Scripting
         strongRef->lua.new_enum(
             "OutputType",
             "other", Streaming::Messages::SubprocessOutputType::Other,
-            "build", Streaming::Messages::SubprocessOutputType::Build
+            "build", Streaming::Messages::SubprocessOutputType::Build,
+            "cmake", Streaming::Messages::SubprocessOutputType::CMake
         );
     }
 //#####################################################################################################################

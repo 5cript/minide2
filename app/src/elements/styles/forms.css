@@ -1,16 +1,20 @@
-.formInputField
-{
-
-}
-
-.formLabel
-{
-
-}
-
 .formInputGroup
 {
     display: flex;
+}
+
+.formBoolbox
+{
+    display: flex;
+    align-items: center;
+    background: var(--background-color-darker);
+    margin-bottom: 2px;
+}
+
+.formBoolboxLabel
+{
+    position: relative;
+    top: -2px;
 }
 
 .formInput
