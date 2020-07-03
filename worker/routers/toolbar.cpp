@@ -72,7 +72,10 @@ namespace Routers
                     &collection_->streamer(),
                     &collection_->settingsProv()
                 );
-                sess.save();
+                sess.save_partial([](auto& toSave, auto& from)
+                {
+                    toSave.toolbarStore = from.toolbarStore;
+                });
 
                 json toolbars = json::object();
                 toolbars["toolbars"] = json::array();

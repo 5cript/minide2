@@ -64,7 +64,12 @@ class Explorer extends React.Component {
                         </AccordionItemHeading>
                         <AccordionItemPanel style={{height: "100%", width: "100%", position: "absolute"}}>
                             <PerfectScrollbar className="scrollbox">
-                                <FileTree persistence={this.props.persistence} dict={this.props.dict} backend={this.props.backend} />
+                                <FileTree 
+                                    persistence={this.props.persistence} 
+                                    dict={this.props.dict} 
+                                    backend={this.props.backend} 
+                                    onActiveProjectSet={this.props.onActiveProjectSet}
+                                />
                             </PerfectScrollbar>
                         </AccordionItemPanel>
                     </AccordionItem>

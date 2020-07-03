@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useDebugValue } from 'react';
 import {connect} from 'react-redux';
 
 // Styling
@@ -71,6 +71,27 @@ class Toolbar extends React.Component {
         comboboxes: {}
     }
 
+    skipOpen = []
+
+    onActiveProjectChange = (proj) => 
+    {
+        this.setState({
+            comboboxes: {}
+        })
+        
+        const toolbar = this.props.toolbars[this.state.shownBarId];
+        if (toolbar === undefined || _.isEmpty(toolbar))
+            return;
+        for (let i in toolbar.items)
+        {
+            const item = toolbar.items[i]
+            if (item.type !== "ComboBox")
+                continue;
+            this.skipOpen.push(item.id);
+            this.onOpenCombox(this.state.shownBarId, item.id)
+        }
+    }
+
     buttonAction = (toolbar, item) => 
     {
         if (item.special_actions && item.special_actions.length > 0)
@@ -104,27 +125,48 @@ class Toolbar extends React.Component {
 
     comboboxLoaded = (toolbarId, itemId, elements) =>
     {
-        const id = toolbarId + "_" + itemId;
-        if (elements === undefined)
-            return this.setState({
+        try
+        {
+            const id = toolbarId + "_" + itemId;
+            if (elements === undefined)
+                return this.setState({
+                    busyComboxes: _.filter(this.state.busyComboxes, item =>
+                        item !== id
+                    ),
+                })
+            const names = elements.map(elem => {
+                return elem.name
+            })
+            let boxes = _.clone(this.state.comboboxes);
+            if (boxes[id] === undefined)
+                boxes[id] = {}
+            boxes[id].items = names
+            if (names.length > 0 && (boxes[id].selected === undefined || boxes[id].selected === null))
+            {
+                boxes[id].selected = names[0]
+                this.props.backend.toolbar().comboxSelect(toolbarId, itemId, names[0]);
+            }
+
+            const openCombox = 
+                (this.skipOpen.findIndex(elem => itemId === elem) === -1) ?
+                id : 
+                null
+            if (openCombox === null)
+                this.skipOpen = _.filter(this.skipOpen, elem => {
+                    return elem !== itemId
+                })
+            this.setState({
                 busyComboxes: _.filter(this.state.busyComboxes, item =>
                     item !== id
                 ),
-            })
-        const names = elements.map(elem => {
-            return elem.name
-        })
-        let boxes = _.clone(this.state.comboboxes);
-        if (boxes[id] === undefined)
-            boxes[id] = {}
-        boxes[id].items = names
-        this.setState({
-            busyComboxes: _.filter(this.state.busyComboxes, item =>
-                item !== id
-            ),
-            comboboxes: boxes,
-            openCombobox: id
-        });
+                comboboxes: boxes,
+                openCombobox: openCombox
+            });       
+        }
+        catch (e)
+        {
+            console.log(e)
+        }
     }
 
     closeComboBox = (toolbarId, itemId, selected) => 
@@ -154,7 +196,8 @@ class Toolbar extends React.Component {
                 toolbarId + "_" + itemId
             ]
         })
-        this.props.backend.toolbar().loadCombobox(toolbarId, itemId);
+        if (toolbarId && itemId)
+            this.props.backend.toolbar().loadCombobox(toolbarId, itemId);
     }
 
     buildToolbar = (id) => 
@@ -197,15 +240,25 @@ class Toolbar extends React.Component {
                                 onToggle={aboutToShow => {
                                     if (aboutToShow)
                                         this.onOpenCombox(toolbar.id, item.id)
+                                    else
+                                    this.setState({
+                                        openCombobox: undefined
+                                    })
                                 }}
                                 data={
                                     this.state.comboboxes[toolbar.id + "_" + item.id] ?
                                     this.state.comboboxes[toolbar.id + "_" + item.id].items :
                                     []
                                 }
+                                value={
+                                    this.state.comboboxes[toolbar.id + "_" + item.id] ? 
+                                    this.state.comboboxes[toolbar.id + "_" + item.id].selected : 
+                                    null
+                                }
                                 onSelect={selected => {
                                     this.closeComboBox(toolbar.id, item.id, selected)
                                 }}
+                                onChange={()=>{}}
                             />
                         </div>
                     }

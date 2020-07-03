@@ -90,7 +90,10 @@ namespace Routers
                     return res->status(400).send("please first listen to the data stream or provide correct listener id");
 
                 sess.workspace.root = root;
-                sess.save();
+                sess.save_partial([](auto& toSave, auto& from)
+                {
+                    toSave.workspace.root = from.workspace.root;
+                });
                 auto sess2 = this_session(req);
                 sess2.dump();
                 res->status(204).end();
@@ -405,10 +408,12 @@ namespace Routers
         {
             enable_cors(req, res, impl_->config.corsOption);
 
-            auto sess = this_session(req);
-            sess.dump();
-            if (sess.workspace.root.empty())
-                return res->status(400).send("open a workspace first");
+            {
+                auto sess = this_session(req);
+                sess.dump();
+                if (sess.workspace.root.empty())
+                    return res->status(400).send("open a workspace first");
+            }
 
             readJsonBody(req, res, [this, req, res](json const& body)
             {
@@ -426,7 +431,11 @@ namespace Routers
                     return res->status(400).send("is not a directory");
 
                 sess.workspace.activeProject = veri.second;
-                sess.save();
+                sess.save_partial([](auto& toSave, auto& from)
+                {
+                    toSave.workspace.activeProject = from.workspace.activeProject;
+                });
+
                 WorkspacePersistence wspace{sess.workspace.root};
                 wspace.load();
                 wspace.lastActiveProject = sess.workspace.activeProject.string();

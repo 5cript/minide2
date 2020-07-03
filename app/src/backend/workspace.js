@@ -11,7 +11,7 @@ class Workspace extends Router
         this.errorCallback = errorCallback;
     }
 
-    openWorkspace(path)
+    openWorkspace(path, onSuccess)
     {
         let url = this.url("/api/workspace/open");
         this.authFetch(
@@ -34,6 +34,8 @@ class Workspace extends Router
                 });
                 return;
             }
+            if (onSuccess)
+                onSuccess(path);
         });
     }    
 

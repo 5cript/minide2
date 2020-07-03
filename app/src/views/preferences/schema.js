@@ -30,6 +30,12 @@ const PreferencesSchema = (dict) =>
                 label: dict.translate('$AutoReloadLastWorkspace', 'preferences'),
                 type: 'boolbox',
                 category: 'backend'
+            },
+            {
+                key: 'autoLoadLastProject',
+                label: dict.translate('$AutoLoadLastProject', 'preferences'),
+                type: 'boolbox',
+                category: 'backend'
             }
         ],
         categories: [{

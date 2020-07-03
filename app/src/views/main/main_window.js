@@ -13,7 +13,7 @@ import Blocker from './components/toolbar_blocker';
 import Slide from 'react-reveal/Slide';
 
 // Actions
-import {setFileTreeBranch} from '../../actions/workspace_actions';
+import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
@@ -28,6 +28,7 @@ import LocalPersistence from '../../util/persistence';
 
 // Style
 import './styles/main.css'
+import { ThemeConsumer } from 'styled-components';
 
 // requires
 const {ipcRenderer} = window.require('electron');
@@ -167,10 +168,28 @@ class MainWindow extends React.Component
 
     handleTreeUpdates(head, data)
     {
+        let firstLoad = false
+        if (_.isEmpty(this.props.workspaceRoot))
+        {
+            firstLoad = true;
+        }
+
         if (head.tree.flat === true) 
         {
-            console.log(head.origin);
             this.props.dispatch(setFileTreeBranch(head.origin, head.tree.files, head.tree.directories));
+        }
+
+        if (firstLoad && this.props.preferences.backend.autoLoadLastProject)
+        {
+            const lastActive = this.persistence.getLastActive(this.currentHost());
+            console.log(lastActive)
+            if (lastActive)
+            {
+                this.backend.workspace().setActiveProject(lastActive, () => {
+                    this.props.dispatch(setActiveProject(lastActive))
+                    this.onActiveProjectChange(lastActive);
+                });
+            }
         }
     }
 
@@ -237,13 +256,11 @@ class MainWindow extends React.Component
         if (this.props.workspaceRoot === undefined || this.props.workspaceRoot === null || this.props.workspaceRoot === '')
             return;
 
-        console.log(this.props.activeProject + "/.minIDE/" + settingsFile)
         this.backend.workspace().loadFile(this.props.activeProject + "/.minIDE/" + settingsFile, "projectSettings");
     }
 
     handleLuaRpc(func, data)
     {
-        console.log(data);
         switch (func)
         {
             case('showProjectSettings'):
@@ -367,6 +384,10 @@ class MainWindow extends React.Component
 
     registerIpcHandler = () => 
     {
+        this.debouncedStart = _.debounce(() => {
+            this.backend.authenticate(() => {this.backend.readControl()});
+        }, 300)
+
         ipcRenderer.on('openWorkspace', (event, arg) => 
         {
             if (arg.canceled)
@@ -403,13 +424,13 @@ class MainWindow extends React.Component
             this.props.dispatch(setBackendIp(arg.ip));
             this.props.dispatch(setBackendPort(arg.port));
             if (arg.autoConnect && this.props.backend.connected === false)
-                this.backend.authenticate(() => {this.backend.readControl()});
+                this.debouncedStart()
         })
 
         ipcRenderer.on('connectBackend', (event, arg) => 
         {
-            this.backend.readControl();
             this.props.dispatch(setTryingToConnect(true));
+            this.backend.authenticate(() => {this.backend.readControl()});
         })
         
         ipcRenderer.on('testBackend', (event, arg) => 
@@ -500,6 +521,19 @@ class MainWindow extends React.Component
         this.toolbar = node;
     }
 
+    onActiveProjectChange = (proj) => 
+    {
+        try
+        {
+            if (this.toolbar)
+                this.toolbar.onActiveProjectChange(proj)
+        }
+        catch(err)
+        {
+            console.log(err);
+        }
+    }
+
     render = () => 
     {
         return (
@@ -515,7 +549,7 @@ class MainWindow extends React.Component
                 <div id='SplitterContainer'>
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={60}>
                         <div>
-                            <Explorer persistence={this.persistence} dict={this.dict} backend={this.backend}/>
+                            <Explorer onActiveProjectSet={this.onActiveProjectChange} persistence={this.persistence} dict={this.dict} backend={this.backend}/>
                         </div>
                         <div id='RightOfExplorer'>
                             <SplitterLayout 

@@ -77,7 +77,6 @@ class Backend extends Router
 
     authenticate(continuation) 
     {
-        debugger;
         let url = this.url("/api/authenticate");
 
         this.authFetch(url).then((res) => {

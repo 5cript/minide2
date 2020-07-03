@@ -212,7 +212,11 @@ namespace Routers
                 auto session = this_session(req);
                 session.controlId = id;
                 session.remoteAddress = req->ip();
-                session.save();
+                session.save_partial([](auto& toSave, auto& from)
+                {
+                    toSave.controlId = from.controlId;
+                    toSave.remoteAddress = from.remoteAddress;
+                });
             }
 
             res->send_chunked(*produ, [produ, connectionBasedStreamer, id, commonCleanup, this](auto e)
@@ -285,7 +289,10 @@ namespace Routers
             {
                 auto session = this_session(req);
                 session.dataId = id;
-                session.save();
+                session.save_partial([](auto& toSave, auto& from)
+                {
+                    toSave.dataId = from.dataId;
+                });
             }
 
             res->send_chunked(*produ, [produ, connectionBasedStreamer, commonCleanup, id, this](auto e)

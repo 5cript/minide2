@@ -47,6 +47,7 @@ class LocalPersistence
                 lastActiveOfLastWorkspace: activeProject
             })
         }
+        this.save();
     }
     getLastActive(currentHost)
     {
@@ -78,7 +79,6 @@ class LocalPersistence
     }
     save()
     {
-        console.log(this.home + "/local_persistence.json")
         this.fs.writeFileSync(this.home + "/local_persistence.json", JSON.stringify(this.persistence, null, 4));
     }
 }

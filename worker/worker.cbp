@@ -237,6 +237,8 @@
 		<Unit filename="workspace/stream_messages/file_content.hpp" />
 		<Unit filename="workspace/workspace.cpp" />
 		<Unit filename="workspace/workspace.hpp" />
+		<Unit filename="workspace/workspace_persistence.cpp" />
+		<Unit filename="workspace/workspace_persistence.hpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

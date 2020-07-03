@@ -1,6 +1,9 @@
 #include "router_base.hpp"
 
 #include "../json.hpp"
+#include "../session/session_storage.hpp"
+
+#include <attender/attender/session/uuid_session_cookie_generator.hpp>
 
 namespace Routers
 {
@@ -40,6 +43,16 @@ namespace Routers
     void TemporarySession::save()
     {
         setSession(*server_, *this);
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void TemporarySession::save_partial(std::function <void(Session& toSave, Session const& toReadFrom)> const& extractor)
+    {
+        auto* manager = server_->get_session_manager();
+        if (manager != nullptr)
+
+        manager->get_storage<
+            timed_memory_session_storage <attender::uuid_generator, Session>
+        >()->partially_save_session(id(), *this, extractor);
     }
 //---------------------------------------------------------------------------------------------------------------------
     TemporarySession::~TemporarySession()

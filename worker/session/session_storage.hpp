@@ -70,6 +70,21 @@ public:
         iter->second = *sess;
         return true;
     }
+    bool partially_save_session
+    (
+        std::string const& id,
+        attender::session const& session,
+        std::function <void(session_type& toSave, session_type const& toReadFrom)> const& partialExtractor)
+    {
+        std::lock_guard <std::recursive_mutex> guard{lock_};
+        session_type toSave;
+        if (!get_session(id, &toSave))
+            return false;
+
+        session_type const* toReadFrom = static_cast <session_type const*> (&session);
+        partialExtractor(toSave, *toReadFrom);
+        return set_session(id, toSave);
+    }
     void remove_timed_out()
     {
         std::lock_guard <std::recursive_mutex> guard{lock_};

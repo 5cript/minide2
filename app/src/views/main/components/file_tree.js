@@ -144,6 +144,7 @@ class FileView extends PureComponent
 
         this.props.backend.workspace().setActiveProject(contextItem.key, () => {
             this.props.persistence.setLastActive(this.currentHost(), contextItem.key);
+            this.props.onActiveProjectSet(contextItem.key);
             this.props.dispatch(setActiveProject(contextItem.key))
         });
     }

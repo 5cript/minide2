@@ -71,6 +71,8 @@ namespace Routers
          */
         void save();
 
+        void save_partial(std::function <void(Session& toSave, Session const& toReadFrom)> const& extractor);
+
         ~TemporarySession();
 
     private:

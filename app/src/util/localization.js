@@ -80,6 +80,7 @@ class Dictionary
                 "preferences": {                    
                     "$AutoReloadLastWorkspace": "Reload last opened workspace",
                     "$AutoConnectToBackend": "Automatically connect to local backend",
+                    "$AutoLoadLastProject": "Automatically activate last active project",
                     "$BackendSettings": "Backend",
                     "$Host": "Host",
                     "$Port": "Port"
@@ -157,6 +158,7 @@ class Dictionary
                 "preferences": {
                     "$AutoReloadLastWorkspace": "Zuletzt geöffneten Arbeitsraum automatisch öffnen",
                     "$AutoConnectToBackend": "Automatisch mit Backend verbinden",
+                    "$AutoLoadLastProject": "Letztes Aktives Projekt wieder setzen",
                     "$BackendSettings": "Backend",
                     "$Host": "Host",
                     "$Port": "Port"
