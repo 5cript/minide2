@@ -1,47 +1,6 @@
-.terminalInstance {
-    height: 100%;
-    width: 100%;
-}
-
-.terminalFrame {
-    display: relative;
-    height: calc(100% - 30px);
-    background: var(--background-color-darker);
-    width: calc(100% - 8px);
-    padding: 5px;
-    color: var(--foreground);
-}
-
-.terminalTextBox {
-    user-select: text;
-    width: inherit;
-    width: 100%;
-}
-
-.terminalPs1 {
-    color: var(--foreground)
-}
-
-.terminalInputContainer {
-    width: inherit;
-    display: flex;
-}
-
-.terminalInput {
-    background: var(--background-color-darker);
-    color: var(--foreground);
-    border: none;
-    width: 100%;
-    outline: none;
-    margin-left: 2px;
-    font-family: 'Consolas';
-    font-size: var(--terminal-font-size);
-}
-
-@keyframes terminalBlink {
-    0%{opacity: 1;}
-    50%{opacity: 0;}
-    100%{opacity: 1;}
+.terminalInstance
+{
+    height: calc(100% - 40px);
 }
 
 #Terminal

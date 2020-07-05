@@ -1,6 +1,8 @@
-.logPanel
+.logPanelContainer
 {
-    height: 100%;
+    width: 100%;
+    height: calc(100% - 40px);
+    cursor: pointer;
 }
 
 .logPanelHead
@@ -12,11 +14,22 @@
 .logPanelContent
 {
     background-color: var(--background-color-darker);
-    height: calc(100% - 15px);
+    height: 100%;
+}
+
+.logPanelContent > div
+{
+    cursor: pointer;
 }
 
 .logTextField
 {
     width: 100%;
     height: calc(100% - 10px);
+}
+
+.logTerminalHost
+{
+    height: calc(100% - 30px);
+    width: 100%;
 }

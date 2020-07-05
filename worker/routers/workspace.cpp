@@ -286,6 +286,8 @@ namespace Routers
 
             auto sess = this_session(req);
 
+            std::cout << "0\n";
+
             if (sess.workspace.root.empty())
                 return res->status(400).send("open a workspace first");
 
@@ -306,11 +308,15 @@ namespace Routers
             else
                 return res->status(411).end();
 
+            std::cout << "1\n";
+
             if (len > impl_->config.maxFileWriteSize)
                 return res->status(413).end();
 
             if (len < 13)
                 return res->status(400).send("Content-Length is too small to be correct (10 bytes hex json len + | + json + data)");
+
+            std::cout << "2\n";
 
             std::shared_ptr <HashedFile> file = std::make_shared <HashedFile>();
             std::shared_ptr <JsonDataHybridSink> sink{std::make_shared <JsonDataHybridSink>(
@@ -319,6 +325,8 @@ namespace Routers
                 {
                     try
                     {
+                        std::cout << "4\n";
+
                         if (!jsonPart.contains("path"))
                             return res->status(400).send("need path in json body part");
 
@@ -332,10 +340,14 @@ namespace Routers
                         if (!error.empty())
                             return res->status(400).send(error);
 
+                        std::cout << "5\n";
+
                         // FIXME: dont save in same dir??
                         file->open(path, hash);
                         if (!file->good())
                             return res->status(400).send("cannot open file");
+
+                        std::cout << "7\n";
                     }
                     catch(std::exception const& exc)
                     {
@@ -347,10 +359,13 @@ namespace Routers
                 {
                     try
                     {
+                        std::cout << "3: " << amount << " \n";
                         if (!file->good())
                             return;
 
                         file->write(data, amount);
+
+                        std::cout << "8\n";
                     }
                     catch(std::exception const& exc)
                     {
@@ -360,46 +375,54 @@ namespace Routers
                 // expectation failure
                 [res](std::string const& msg)
                 {
+                    std::cout << "6\n";
                     res->status(400).send(msg);
                 },
                 static_cast <std::size_t> (len)
             )};
 
-            //std::cout.put('a');
+            std::cout.put('a');
 
             if (observer->has_concluded())
+            {
+                std::cout << "hasConcluded\n";
                 return;
+            }
 
             req->read_body(sink).then([sink, file, res, observer]()
             {
-                //std::cout.put('b');
+                std::cout.put('b');
                 try
                 {
                     auto success = file->testAndMove();
 
-                    //std::cout.put('c');
+                    std::cout.put('c');
 
                     // only execute this when no other send exit path was taken
                     if (observer->has_concluded())
                         return;
 
-                    //std::cout.put('d');
+                    std::cout << "d\n";
 
                     if (success)
                         res->status(204).end();
                     else
                         res->status(500).send("transfered file does not match sent hash.");
 
-                    //std::cout.put('e');
+                    std::cout.put('e');
                 }
                 catch(...)
                 {
-                    //std::cout.put('f');
+                    std::cout.put('f');
                     if (observer->has_concluded())
                         return;
-                    //std::cout.put('g');
+                    std::cout.put('g');
                     res->status(500).end();
                 }
+            })
+            .except([](...)
+            {
+                std::cout << "huh?\n";
             });
         });
 

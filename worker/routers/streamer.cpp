@@ -106,9 +106,37 @@ namespace Routers
         };
 
         /**
+         *  Returns true if there is a consumable item.
+         */
+        auto keepAlive = [this](auto const& id, auto& stream, auto& produ, auto& idleCounter)
+        {
+            if (stream.queue.consumeableCount(id) == 0)
+            {
+                ++idleCounter;
+                if (idleCounter > 20)
+                {
+                    idleCounter = 0;
+                    writeMessage
+                    (
+                        *produ,
+                        Streaming::Message{std::make_unique <Streaming::Messages::KeepAlive>()}
+                    );
+                }
+                std::this_thread::yield();
+                if (idleCounter < 5)
+                    std::this_thread::sleep_for(20ms);
+                else if (idleCounter > 5)
+                    std::this_thread::sleep_for(50ms);
+                return false;
+            }
+            idleCounter = 0;
+            return true;
+        };
+
+        /**
          *  Consume Loop for stream requests
          */
-        auto consumeLoop = [this](auto id, auto& stream, auto& produ)
+        auto consumeLoop = [this, keepAlive](auto id, auto& stream, auto& produ)
         {
             for(int idleCounter = 0; produ->has_consumer_attached(); ++idleCounter)
             {
@@ -119,28 +147,9 @@ namespace Routers
                     return;
                 }
 
-                if (stream.queue.consumeableCount(id) == 0)
-                {
-                    ++idleCounter;
-                    if (idleCounter > 20)
-                    {
-                        idleCounter = 0;
-                        writeMessage
-                        (
-                            *produ,
-                            Streaming::Message{std::make_unique <Streaming::Messages::KeepAlive>()}
-                        );
-                    }
-                    std::this_thread::yield();
-                    if (idleCounter < 5)
-                        std::this_thread::sleep_for(20ms);
-                    else if (idleCounter > 5)
-                        std::this_thread::sleep_for(50ms);
+                if (!keepAlive(id, stream, produ, idleCounter))
                     continue;
-                }
-                idleCounter = 0;
 
-                std::cout << "popMessage\n";
                 auto iter = stream.queue.popMessage(id);
                 writeMessage(*produ, iter->msg);
                 stream.queue.unrefMessage(iter);
@@ -228,7 +237,7 @@ namespace Routers
         });
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         cors_options(server, "/api/streamer/data", "GET", config_.corsOption);
-        server.get("/api/streamer/data", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
+        server.get("/api/streamer/data", [this, &server, commonStreamSetup, consumeLoop, commonCleanup, keepAlive](auto req, auto res)
         {
             auto id = commonStreamSetup(req, res, dataStream_);
             if (id == -1) return;
@@ -236,7 +245,7 @@ namespace Routers
             std::shared_ptr <brotli_encoder> produ;
             produ.reset(new brotli_encoder);
 
-            std::shared_ptr <std::thread> connectionBasedStreamer{new std::thread([produ, &server, id, consumeLoop, this]()
+            std::shared_ptr <std::thread> connectionBasedStreamer{new std::thread([produ, &server, id, keepAlive, this]()
             {
                 produ->wait_for_consumer();
 
@@ -262,22 +271,8 @@ namespace Routers
                         return;
                     }
 
-                    if (dataStream_.queue.consumeableCount(id) == 0)
-                    {
-                        ++idleCounter;
-                        if (idleCounter > 100)
-                        {
-                            idleCounter = 0;
-                            writeMessage
-                            (
-                                *produ,
-                                Streaming::Message{std::make_unique <Streaming::Messages::KeepAlive>()}
-                            );
-                        }
-                        std::this_thread::sleep_for(200ms);
+                    if (!keepAlive(id, dataStream_, produ, idleCounter))
                         continue;
-                    }
-                    idleCounter = 0;
 
                     auto iter = dataStream_.queue.popMessage(id);
                     writeMessage(*produ, iter->msg);

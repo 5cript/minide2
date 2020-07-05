@@ -15,6 +15,16 @@ export function setActiveLog(index)
     }
 }
 
+export function setLogType(name, type) 
+{
+    return {
+        type: 'SET_LOG_TYPE',
+        logName: name,
+        logType: type
+    }
+}
+
+
 export function clearLog(name) 
 {
     return {

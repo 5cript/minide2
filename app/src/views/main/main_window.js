@@ -17,7 +17,7 @@ import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actio
 import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
-import {addToLog, clearLog, focusLogByName} from '../../actions/log_actions.js';
+import {addToLog, clearLog, focusLogByName, setLogType} from '../../actions/log_actions.js';
 import {setPreferences} from '../../actions/preferences_actions.js';
 
 // Other
@@ -293,6 +293,7 @@ class MainWindow extends React.Component
             {
                 if (head.message === "\x1b[2J")
                 {
+                    this.props.dispatch(setLogType(head.processName, head.kind));
                     this.props.dispatch(clearLog(head.processName));
                     this.props.dispatch(focusLogByName(head.processName));
                 }
@@ -359,8 +360,8 @@ class MainWindow extends React.Component
         );
         this.throttledHeightUpdate = _.throttle((h) => {
             this.setState({logsHeight: h});
-            if (this.term)
-                this.term.refit()
+            if (this.logsAndTerminal)
+                this.logsAndTerminal.refit()
         }, 100)
     }
 
@@ -534,6 +535,11 @@ class MainWindow extends React.Component
         }
     }
 
+    setLogsRef = (node) => 
+    {
+        this.logsAndTerminal = node;
+    }
+
     render = () => 
     {
         return (
@@ -560,11 +566,9 @@ class MainWindow extends React.Component
                                 <Editor dict={this.dict} className='Editor' monacoOptions={this.state.monacoOptions}></Editor>
                                 <LogsAndOthers 
                                     dict={this.dict} 
+                                    ref={this.setLogsRef}
                                     height={this.state.logsHeight} 
                                     className="logsAndOthers"
-                                    onTermRef={term => {
-                                        this.term = term;
-                                    }}
                                 ></LogsAndOthers>
                             </SplitterLayout>
                         </div>

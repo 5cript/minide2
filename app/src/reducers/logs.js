@@ -43,6 +43,21 @@ export default function reducer(state={
                 otherLogState
             }
         }
+        case 'SET_LOG_TYPE':
+        {
+            let update = {}
+            if (state[action.logName] !== undefined)
+                update[action.logName] = _.cloneDeep(state[action.logName]);
+            else
+                update[action.logName] = {data: ''}
+
+            update[action.logName].type = action.logType;
+
+            return {
+                ...state,
+                ...update
+            }
+        }
         case 'CLEAR_LOG': 
         {
             let update = {}

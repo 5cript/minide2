@@ -27,6 +27,7 @@
 #include <thread>
 #include <chrono>
 #include <sstream>
+#include <atomic>
 
 using namespace std::chrono_literals;
 using namespace std::string_literals;
@@ -89,10 +90,28 @@ int main(int argc, char** argv)
 
     //Filesystem::DirectoryCache cache{"D:/Development/IDE2/test-project"};
     std::cout << "Waiting for enter\n";
-    std::cin.get();
+
+    std::atomic_bool exit{false};
+    std::thread enterWait {[&exit](){
+        std::cin.get();
+        exit.store(true);
+    }};
+
+    for (int i = 0;!exit.load();++i)
+    {
+        std::this_thread::sleep_for(100ms);
+        if (i == 10)
+        {
+            std::cout << "connection count: " << server.get_connections()->count() << "\n";
+            i = 0;
+        }
+    }
 
     routers.streamer().shutdownAll();
     std::this_thread::sleep_for(100ms);
+    if (enterWait.joinable())
+        enterWait.join();
+    return 0;
 }
 
 void setupLog()

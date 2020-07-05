@@ -86,6 +86,8 @@
     {
         // cannot have 0 states, so value is always assigned.
         auto activeState = automat_.getCurrentStateName().value();
+        written_bytes_ += size;
+
         if (activeState != "DataPhase")
         {
             auxBuffer_.append(data, size);

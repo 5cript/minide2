@@ -1,66 +1,177 @@
 import React from 'react';
 import {connect} from 'react-redux';
 
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-
-import {setActiveLog} from '../../../actions/log_actions.js';
+// Components
+/*import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';*/
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 
 import TerminalInstance from './terminal';
 import LogPanel from './log';
 
+// Actions
+import {setActiveLog} from '../../../actions/log_actions.js';
+
+// Other
+import _ from 'lodash'
+import { withStyles } from '@material-ui/core/styles';
+
+// Styles
 import './styles/logs_and_term.css';
 import './styles/tabs.css';
 
+const LeanTabs = withStyles({
+    root: {
+        height: '25px',
+        minHeight: 0,
+        backgroundColor: 'var(--background-color-darker)'
+    },
+    indicator: {
+        backgroundColor: 'var(--theme-color-brighter)',
+    },
+})(Tabs);
+
+const LeanTab = withStyles((theme) => ({
+    root: {
+        textTransform: 'none',
+        minWidth: 50,
+        height: 25,
+        paddingTop: 0,
+        minHeight: 0,
+        fontFamily: [
+            '-apple-system',
+            'BlinkMacSystemFont',
+            '"Segoe UI"',
+            'Roboto',
+            '"Helvetica Neue"',
+            'Arial',
+            'sans-serif',
+            '"Apple Color Emoji"',
+            '"Segoe UI Emoji"',
+            '"Segoe UI Symbol"',
+        ].join(','),
+        '&:hover': {
+            opacity: 0.8,
+        },
+        '&$selected': {
+            color: 'var(--theme-color)',
+            fontWeight: theme.typography.fontWeightMedium,
+            backgroundColor: 'var(--background-color-very-dark)'
+        },
+        '&:focus': {
+            color: 'var(--theme-color)',
+            backgroundColor: 'var(--background-color-very-dark)'
+        },
+    },
+    selected: {},
+}))((props) => <Tab disableRipple {...props} />);
+
+function TabPanel(props)
+{
+    const { children, value, index, ...other } = props;
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            style={{widht: "100%", height: "100%"}}
+        >
+            {children}
+        </div>
+    )
+}
+
 class LogsAndOthers extends React.Component
 {
-    state = {
-        selectedTab: 0
+    panels = {}
+
+    setTermRef = (node) => 
+    {
+        this.term = node;
     }
 
-    setTermRef = node => 
+    setLogPanel = (panel, key, index) =>
     {
-        this.props.onTermRef(node);
+        if (panel === null)
+            return;
+        this.panels[key] = panel;
+        this.panels[key].index = index;
+    }
+
+    refit = () => 
+    {
+        if (this.term)
+            this.term.refit();
+        for (const panel in this.panels)
+        {
+            this.panels[panel].refit();
+        }
     }
     
     render = () => {
         return (
             <div className='tabContainer'>
-                <Tabs 
-                    selectedIndex={this.props.activeLog} 
-                    onSelect={tabIndex => {this.props.dispatch(setActiveLog(tabIndex))}}
+                <LeanTabs 
+                    value={this.props.activeLog}
+                    onChange={(event, tabIndex) => {this.props.dispatch(setActiveLog(tabIndex))}}
                     className={'ReactTabs'}
                 >
-                    <TabList>
-                        <Tab key="__terminal">Terminal</Tab>
-                        {(() => {
-                            let res = []
-                            for (const [key, ] of Object.entries(this.props.logs)) 
-                            {
-                                if (key !== "otherLogState")
-                                    res.push(
-                                        <Tab key={key}>{key}</Tab>
-                                    )
-                            }
-                            return res
-                        })()}
-                    </TabList>
-                    <TabPanel key="__terminalPanel" className='terminalPanel' style={{width: "100%", height: this.props.activeLog === 0 ? this.props.height: undefined}}>
-                        <TerminalInstance ref={this.setTermRef} height={this.props.height}></TerminalInstance>
-                    </TabPanel>
+                    <LeanTab key="__terminal" label="Terminal"></LeanTab>
                     {(() => {
                         let res = []
-                        for (const [key, value] of Object.entries(this.props.logs)) 
+                        for (const [key, ] of Object.entries(this.props.logs)) 
                         {
                             if (key !== "otherLogState")
                                 res.push(
-                                    <TabPanel key={key} style={{height: this.props.height}}>
-                                        <LogPanel data={value.data}></LogPanel>
-                                    </TabPanel>
+                                    <LeanTab key={key} label={key}></LeanTab>
                                 )
                         }
                         return res
                     })()}
-                </Tabs>
+                </LeanTabs>
+                <div className={'panelContainer'}>
+                    <TabPanel 
+                        key="__terminalPanel" 
+                        className='terminalPanel'
+                        value={this.props.activeLog}
+                        index={0}
+                        isVisible={0 === this.props.activeLog}
+                    >
+                        <TerminalInstance 
+                            ref={this.setTermRef} 
+                            height={this.props.height}
+                        ></TerminalInstance>
+                    </TabPanel>
+                    {
+                        Object.entries(this.props.logs).filter(e => e[0] !== "otherLogState").map((elem, i) => 
+                        {
+                            return <TabPanel 
+                                key={elem[0]} 
+                                index={i+1}
+                                value={this.props.activeLog}
+                            >
+                                <LogPanel 
+                                    ref={panel => this.setLogPanel(panel, elem[0], i)} 
+                                    data={elem[1].data}
+                                    className='logPanel'
+                                    onDoubleClick={(x, y) => {
+                                        if (elem[1].type === 1)
+                                        {
+                                            const panel = this.panels[elem[0]];
+                                            if (panel)
+                                            {
+                                                console.log(panel.getSelection());
+                                            }
+                                        }
+                                    }}
+                                    isVisible={i + 1 === this.props.activeLog}
+                                >
+                                </LogPanel>
+                            </TabPanel>
+                        })
+                    }
+                </div>
             </div>
         );
     }
@@ -71,4 +182,4 @@ export default connect(state => {
         logs: state.logs,
         activeLog: state.logs.otherLogState.activeLog
     }
-})(LogsAndOthers);
+}, null, null, {forwardRef: true})(LogsAndOthers);

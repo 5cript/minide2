@@ -6,7 +6,7 @@ import {FitAddon } from 'xterm-addon-fit';
 
 // style
 import './styles/terminal.css';
-import 'xterm/css/xterm.css';
+import './styles/xterm.css';
 
 class TerminalInstance extends React.Component 
 {
@@ -46,11 +46,12 @@ class TerminalInstance extends React.Component
 
     initTerminal()
     {
-        this.fitAddon = new FitAddon();
         this.term = new Terminal();
-        this.term.loadAddon(this.fitAddon);
         const termContainer = document.getElementById('Terminal');
         this.term.open(termContainer);
+
+        this.fitAddon = new FitAddon();
+        this.term.loadAddon(this.fitAddon);
         this.writePs1();
         
         // events:
@@ -63,7 +64,7 @@ class TerminalInstance extends React.Component
 
     refit()
     {
-        if (this.fitAddon)
+        if (this.props.isVisible && this.fitAddon)
             this.fitAddon.fit();
     }
 

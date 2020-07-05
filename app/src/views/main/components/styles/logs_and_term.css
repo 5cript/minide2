@@ -1,24 +1,15 @@
-.tabContainer {
-    display: contents;
+.logPanel 
+{
     height: 100%;
     width: 100%;
 }
 
-.anyLogPanel {
-    /*height: 100%;*/
-}
-
-.ReactTabs {
+.tabContainer
+{
     height: 100%;
 }
 
-.tabContainer > div {
+.panelContainer
+{
     height: 100%;
 }
-
-/*
-.terminalPanel {
-    height: 100%;
-    width: 100%;
-}
-*/
