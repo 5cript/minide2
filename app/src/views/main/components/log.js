@@ -39,12 +39,8 @@ class LogPanel extends React.Component
         this.mounted = true;
     }
 
-    componentDidUpdate = () => 
+    transferText = () => 
     {
-        setTimeout(() => {
-            this.init();
-        }, 200);
-
         if (this.term === undefined || this.term === null)
             return;
 
@@ -65,6 +61,16 @@ class LogPanel extends React.Component
             this.write(this.textArea.value.substr(this.lastText.length, this.textArea.value.length - this.lastText.length))
             this.lastText = this.textArea.value;
         }
+
+    }
+
+    componentDidUpdate = () => 
+    {
+        setTimeout(() => {
+            this.init();
+        }, 200);
+
+        this.transferText();
         //this.refit();
     }
 
@@ -104,6 +110,8 @@ class LogPanel extends React.Component
             const offset = totalRows;
             thisDeleg.scrollOffset = offset;
         });
+
+        this.transferText();
     }
 
     onMouseClick = (viewX, viewY) => 
@@ -117,7 +125,7 @@ class LogPanel extends React.Component
             return;
         const x = Math.floor(viewX / cellWidth);
         const y = Math.floor(viewY / cellHeight);
-        this.onLineClick(x, Math.floor(y + this.scrollOffset));
+        this.onLineClick(x, Math.floor(y + (this.scrollOffset ? this.scrollOffset : 0)));
     }
 
     onLineClick = (x, line) => 
