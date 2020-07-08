@@ -47,6 +47,16 @@ class ToolbarApi extends Router
             selected: selected
         })
     }
+
+    logDoubleClick(toolbarId, logName, lineNumber, lineString)
+    {
+        this.postJson(this.url("/api/toolbar/logDoubleClick"), {
+            toolbarId: toolbarId,
+            logName: logName,
+            lineNumber: lineNumber,
+            lineString: lineString
+        });
+    }
 }
 
 export default ToolbarApi;

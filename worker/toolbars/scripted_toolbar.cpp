@@ -30,14 +30,16 @@ namespace Toolbars
         std::string id;
         attender::uuid_generator gen;
         bool loaded;
+        Config config;
 
-        Implementation(sfs::path const& toolbarRoot)
+        Implementation(sfs::path const& toolbarRoot, Config const& config)
             : toolbarRoot{toolbarRoot}
             , engine{new StateCollection}
             , jsonRepresentation{}
             , id{}
             , gen{}
             , loaded{false}
+            , config{config}
         {
         }
 
@@ -86,10 +88,11 @@ namespace Toolbars
         sfs::path const& root,
         SessionObtainer const& obtainer,
         Routers::DataStreamer* streamer,
-        Routers::SettingsProvider* settingsProv
+        Routers::SettingsProvider* settingsProv,
+        Config const& config
     )
         : BasicToolbar{""}
-        , impl_{new ScriptedToolbar::Implementation(root)}
+        , impl_{new ScriptedToolbar::Implementation(root, config)}
     {
         initialize(obtainer, streamer, settingsProv);
     }
@@ -125,7 +128,7 @@ namespace Toolbars
             addToPackagePath(lua, impl_->toolbarRoot);
 
             // Load APIs
-            loadProjectControl(impl_->engine, obtainer);
+            loadProjectControl(impl_->engine, obtainer, streamer, impl_->config);
             loadStreamerAccess(impl_->engine, obtainer, streamer);
             loadSettingsProvider(impl_->engine, obtainer, streamer, settingsProv);
 
@@ -209,6 +212,25 @@ namespace Toolbars
 
             impl_->loaded = true;
         }
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    std::string ScriptedToolbar::onLogDoubleClick(std::string const& logName, int lineNumber, std::string lineString)
+    {
+        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+        auto& lua = impl_->engine->lua;
+
+        if (!impl_->loaded)
+            return "not loaded (how did this happen?) "s + __FILE__ + ":" + std::to_string(__LINE__);
+
+        if (!lua["get_toolbar"].valid())
+            return "missing get_toolbar function";
+
+        sol::object interface = lua["get_toolbar"]();
+        sol::table tablified = interface;
+
+        tablified["on_log_double_click"](interface, logName, lineNumber, lineString);
+
+        return "";
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::string ScriptedToolbar::clickAction(std::string const& id)

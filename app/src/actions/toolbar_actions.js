@@ -19,3 +19,11 @@ export function initializeToolbars(objectFromServer)
         lookup: lookup
     }
 }
+
+export function setActiveToolbar(toolbarId)
+{
+    return {
+        type: 'SET_ACTIVE_TOOLBAR',
+        activeToolbar: toolbarId
+    }
+}

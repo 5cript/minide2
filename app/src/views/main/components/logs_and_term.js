@@ -161,7 +161,7 @@ class LogsAndOthers extends React.Component
                                             const panel = this.panels[elem[0]];
                                             if (panel)
                                             {
-                                                console.log(panel.getSelection());
+                                                this.props.backend.toolbar().logDoubleClick(this.props.activeToolbar, elem[0], y, panel.getSelection());
                                             }
                                         }
                                     }}
@@ -180,6 +180,7 @@ class LogsAndOthers extends React.Component
 export default connect(state => {
     return {
         logs: state.logs,
-        activeLog: state.logs.otherLogState.activeLog
+        activeLog: state.logs.otherLogState.activeLog,
+        activeToolbar: state.toolbars.activeToolbar
     }
 }, null, null, {forwardRef: true})(LogsAndOthers);

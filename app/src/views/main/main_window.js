@@ -567,6 +567,7 @@ class MainWindow extends React.Component
                                 <LogsAndOthers 
                                     dict={this.dict} 
                                     ref={this.setLogsRef}
+                                    backend={this.backend}
                                     height={this.state.logsHeight} 
                                     className="logsAndOthers"
                                 ></LogsAndOthers>

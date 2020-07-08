@@ -102,7 +102,7 @@ int main(int argc, char** argv)
         std::this_thread::sleep_for(100ms);
         if (i == 10)
         {
-            std::cout << "connection count: " << server.get_connections()->count() << "\n";
+            //std::cout << "connection count: " << server.get_connections()->count() << "\n";
             i = 0;
         }
     }

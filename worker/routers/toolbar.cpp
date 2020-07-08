@@ -205,6 +205,48 @@ namespace Routers
                     res->status(400).send(resultMessage);
             });
         });
+
+        cors_options(server, "/api/toolbar/logDoubleClick", "POST", impl_->config.corsOption);
+        server.post("/api/toolbar/logDoubleClick", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            readJsonBody(req, res, [req, res, this](json const& body)
+            {
+                std::cout << body.dump() << "\n";
+
+                if (!body.contains("toolbarId"))
+                    return res->status(400).send("need toolbarId");
+
+                std::string logName = "";
+                if (body.contains("logName"))
+                    logName = body["logName"].get<std::string>();
+                else
+                    return res->status(400).send("need logName");
+
+                int lineNumber = -1;
+                if (body.contains("lineNumber"))
+                    lineNumber = body["lineNumber"].get<int>();
+                else
+                    return res->status(400).send("need lineNumber");
+
+                std::string lineString;
+                if (body.contains("lineString"))
+                    lineString = body["lineString"].get<std::string>();
+                else
+                    return res->status(400).send("need lineString");
+
+                auto session = this_session(req);
+                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
+                if (toolbar == nullptr)
+                    return res->status(400).send("toolbar with given id not found");
+
+                auto result = toolbar->onLogDoubleClick(logName, lineNumber, lineString);
+                if (result.empty())
+                    return res->status(204).end();
+                res->status(200).send(result);
+            });
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
     void Toolbar::loadToolbars(Session& session, std::string const& id, DataStreamer* streamer, SettingsProvider* settingsProv)
@@ -220,7 +262,8 @@ namespace Routers
                     p.path(),
                     SessionObtainer(server_->get_installed_session_manager(), id),
                     streamer,
-                    settingsProv
+                    settingsProv,
+                    impl_->config
                 ));
         }
     }

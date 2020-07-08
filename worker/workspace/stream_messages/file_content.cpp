@@ -11,12 +11,19 @@ namespace Streaming::Messages
 //#####################################################################################################################
     std::string FileContent::toJson() const
     {
-        return json{
+        auto j = json{
             {"type", "file_content"s},
             {"chunks", chunks},
             {"flag", flag},
-            {"path", path}
-        }.dump();
+            {"path", path},
+        };
+
+        if (line)
+            j["line"] = line.value();
+        if (linePos)
+            j["linePos"] = linePos.value();
+
+        j.dump();
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::string FileContent::load(std::string const& file, bool forceLoad, long long max, long long forceMax, long long chunkSize)

@@ -2,6 +2,7 @@
 
 #include "state.hpp"
 #include "../session/session_obtainer.hpp"
+#include "../config.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -16,7 +17,13 @@ namespace MinIDE::Scripting
     class LuaProjectControl
     {
     public:
-        LuaProjectControl(std::weak_ptr <StateCollection> weakStateRef, SessionObtainer sessionAccess);
+        LuaProjectControl
+        (
+            std::weak_ptr <StateCollection> weakStateRef,
+            SessionObtainer sessionAccess,
+            Routers::DataStreamer* streamer,
+            Config const& config
+        );
         ~LuaProjectControl();
 
         /**
@@ -65,10 +72,22 @@ namespace MinIDE::Scripting
          */
         int saveProjectFile(std::string const& fileName, std::string const& content);
 
+        /**
+         *  Send a file to the client and point out a position.
+         *  Useful for directing the user to the erros in the output log.
+         */
+        bool openFileAt(std::string const& fileName, int line, int linePos);
+
     private:
         struct Implementation;
         std::unique_ptr <Implementation> impl_;
     };
 
-    void loadProjectControl(std::weak_ptr <StateCollection> state, SessionObtainer sessionAccess);
+    void loadProjectControl
+    (
+        std::weak_ptr <StateCollection> state,
+        SessionObtainer sessionAccess,
+        Routers::DataStreamer* streamer,
+        Config const& config
+    );
 }

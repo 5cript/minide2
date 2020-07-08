@@ -10,6 +10,7 @@
 
 #include "../json.hpp"
 #include "../filesystem/filesystem.hpp"
+#include "../config.hpp"
 
 #include <string>
 #include <memory>
@@ -24,7 +25,8 @@ namespace Toolbars
             sfs::path const& root,
             SessionObtainer const& obtainer,
             Routers::DataStreamer* streamer,
-            Routers::SettingsProvider* settingsProv
+            Routers::SettingsProvider* settingsProv,
+            Config const& config
         );
         ~ScriptedToolbar();
 
@@ -33,6 +35,7 @@ namespace Toolbars
         std::string menuAction(std::string const& itemId, std::string const& menuEntryLabel);
         std::string loadCombobox(std::string const& itemId);
         std::string comboboxSelect(std::string const& itemId, std::string const& selected);
+        std::string onLogDoubleClick(std::string const& logName, int lineNumber, std::string lineString);
 
         json getJson() const;
 

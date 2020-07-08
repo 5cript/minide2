@@ -15,11 +15,15 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import HamburgerMenu from 'react-hamburger-menu';
 import ContextMenu from '../../../elements/context_menu';
 
+// Actions
+import {setActiveToolbar} from '../../../actions/toolbar_actions';
+
 // Other
 import _ from 'lodash';
 
 // Styles
 import './styles/toolbar.css'
+import { CancellationTokenSource } from 'monaco-editor';
 
 // Requires
 //let dict = require('../../../util/localization');
@@ -64,7 +68,6 @@ const HoverFix = createMuiTheme({
 
 class Toolbar extends React.Component {
     state = {
-        shownBarId: '',
         openMenuId: null,
         busyComboxes: [],
         openCombobox: null,
@@ -79,7 +82,7 @@ class Toolbar extends React.Component {
             comboboxes: {}
         })
         
-        const toolbar = this.props.toolbars[this.state.shownBarId];
+        const toolbar = this.props.toolbars[this.props.shownBarId];
         if (toolbar === undefined || _.isEmpty(toolbar))
             return;
         for (let i in toolbar.items)
@@ -88,7 +91,7 @@ class Toolbar extends React.Component {
             if (item.type !== "ComboBox")
                 continue;
             this.skipOpen.push(item.id);
-            this.onOpenCombox(this.state.shownBarId, item.id)
+            this.onOpenCombox(this.props.shownBarId, item.id)
         }
     }
 
@@ -327,7 +330,7 @@ class Toolbar extends React.Component {
     {
         for (let i in this.props.toolbars)
         {
-            this.setState({shownBarId: this.props.toolbars[i].id});
+            this.props.dispatch(setActiveToolbar(this.props.toolbars[i].id));
             break;
         }
     }
@@ -339,8 +342,10 @@ class Toolbar extends React.Component {
                     <StyledLabel id='toolbar-select-label'>Toolbar</StyledLabel>
                     <StyledSelect
                         labelId={'toolbar-select-label'}
-                        value={this.state.shownBarId}
-                        onChange={id => { this.setState({ shownBarId: id.target.value }) }}
+                        value={this.props.shownBarId}
+                        onChange={id => { 
+                            this.props.dispatch(setActiveToolbar(id.target.valu))
+                        }}
                         input={<Input classes={{
                             underline: StyledSelect.underline,
                         }} />}
@@ -358,7 +363,7 @@ class Toolbar extends React.Component {
                 <div id='ActualToolbar'>
                     <MuiThemeProvider theme={HoverFix}>
                     {
-                        this.buildToolbar(this.state.shownBarId)
+                        this.buildToolbar(this.props.shownBarId)
                     }
                     </MuiThemeProvider>
                 </div>
@@ -374,6 +379,7 @@ export default connect(state => {
         shortcuts: state.shortcuts,
         locale: state.locale,
         toolbars: state.toolbars.toolbars,
-        lookup: state.toolbars.lookup
+        lookup: state.toolbars.lookup,
+        shownBarId: state.toolbars.activeToolbar
     }
 }, null, null, {forwardRef: true})(Toolbar);

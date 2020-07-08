@@ -17,6 +17,8 @@ namespace Streaming::Messages
         std::vector <std::string> chunks;
         std::string path;
         std::string flag;
+        std::optional <int> line;
+        std::optional <int> linePos;
 
         std::string toJson() const override;
 

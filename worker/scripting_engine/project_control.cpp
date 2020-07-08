@@ -1,4 +1,6 @@
 #include "project_control.hpp"
+#include "../workspace/stream_messages/file_content.hpp"
+#include "../routers/streamer.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -10,16 +12,32 @@ namespace MinIDE::Scripting
     {
         std::weak_ptr <StateCollection> weakStateRef;
         SessionObtainer sessionAccess;
+        Routers::DataStreamer* streamer;
+        Config config;
 
-        Implementation(std::weak_ptr <StateCollection>&& stateRef, SessionObtainer&& sessionAccess)
+        Implementation
+        (
+            std::weak_ptr <StateCollection>&& stateRef,
+            SessionObtainer&& sessionAccess,
+            Routers::DataStreamer* streamer,
+            Config const& config
+        )
             : weakStateRef{std::move(stateRef)}
             , sessionAccess{std::move(sessionAccess)}
+            , streamer{streamer}
+            , config{config}
         {
         }
     };
 //#####################################################################################################################
-    LuaProjectControl::LuaProjectControl(std::weak_ptr <StateCollection> weakStateRef, SessionObtainer sessionAccess)
-        : impl_{new LuaProjectControl::Implementation(std::move(weakStateRef), std::move(sessionAccess))}
+    LuaProjectControl::LuaProjectControl
+    (
+        std::weak_ptr <StateCollection> weakStateRef,
+        SessionObtainer sessionAccess,
+        Routers::DataStreamer* streamer,
+        Config const& config
+    )
+        : impl_{new LuaProjectControl::Implementation(std::move(weakStateRef), std::move(sessionAccess), streamer, config)}
     {
     }
 //---------------------------------------------------------------------------------------------------------------------
@@ -129,8 +147,43 @@ namespace MinIDE::Scripting
         writer.write(formatted.c_str(), formatted.size());
         return 0;
     }
+//---------------------------------------------------------------------------------------------------------------------
+    bool LuaProjectControl::openFileAt(std::string const& fileName, int line, int linePos)
+    {
+        auto s = impl_->sessionAccess.session();
+        if (!s)
+            return false;
+
+        auto fc = std::make_unique <Streaming::Messages::FileContent>();
+        fc->load
+        (
+            fileName,
+            false,
+            impl_->config.maxFileReadSize,
+            impl_->config.maxFileReadSizeUnforceable,
+            impl_->config.fileChunkSize
+        );
+        fc->path = fileName;
+        fc->line = line;
+        fc->linePos = linePos;
+
+        auto result = impl_->streamer->send
+        (
+            Routers::StreamChannel::Data,
+            s.value().remoteAddress,
+            s.value().dataId,
+            fc.release()
+        );
+        return true;
+    }
 //#####################################################################################################################
-    void loadProjectControl(std::weak_ptr <StateCollection> state, SessionObtainer sessionAccess)
+    void loadProjectControl
+    (
+        std::weak_ptr <StateCollection> state,
+        SessionObtainer sessionAccess,
+        Routers::DataStreamer* streamer,
+        Config const& config
+    )
     {
         auto strongRef = state.lock();
         if (!strongRef)
@@ -142,9 +195,9 @@ namespace MinIDE::Scripting
             "ProjectControl",
             "new", sol::initializers
             (
-                [state, sessionAccess{std::move(sessionAccess)}](LuaProjectControl& p) -> void
+                [state, sessionAccess{std::move(sessionAccess)}, streamer, config](LuaProjectControl& p) -> void
                 {
-                    new (&p) LuaProjectControl(state, std::move(sessionAccess));
+                    new (&p) LuaProjectControl(state, std::move(sessionAccess), streamer, config);
                 }
             ),
             "get_project_directory", &LuaProjectControl::getProjectDirectory,
@@ -155,7 +208,8 @@ namespace MinIDE::Scripting
             "has_active_project", &LuaProjectControl::hasActiveProject,
             "update", &LuaProjectControl::reloadInformation,
             "read_project_file", &LuaProjectControl::readProjectFile,
-            "save_project_file", &LuaProjectControl::saveProjectFile
+            "save_project_file", &LuaProjectControl::saveProjectFile,
+            "open_file_at", &LuaProjectControl::openFileAt
         );
     }
 //#####################################################################################################################
