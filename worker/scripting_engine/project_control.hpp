@@ -76,7 +76,7 @@ namespace MinIDE::Scripting
          *  Send a file to the client and point out a position.
          *  Useful for directing the user to the erros in the output log.
          */
-        bool openFileAt(std::string const& fileName, int line, int linePos);
+        bool openFileAt(std::string const& fileName, int line, int linePos, std::string const& message);
 
     private:
         struct Implementation;

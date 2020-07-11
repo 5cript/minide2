@@ -27,6 +27,9 @@ const SimpleIconButton = styled(IconButton)({
 });
 */
 
+// README:
+// Multiple models/tabs/open_files: https://github.com/react-monaco-editor/react-monaco-editor/issues/67
+
 const HoverFix = createMuiTheme({
     overrides: {
         MuiIconButton: {

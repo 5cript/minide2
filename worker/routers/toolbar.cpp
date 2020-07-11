@@ -213,8 +213,6 @@ namespace Routers
 
             readJsonBody(req, res, [req, res, this](json const& body)
             {
-                std::cout << body.dump() << "\n";
-
                 if (!body.contains("toolbarId"))
                     return res->status(400).send("need toolbarId");
 

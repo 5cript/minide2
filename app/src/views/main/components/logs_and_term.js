@@ -155,13 +155,13 @@ class LogsAndOthers extends React.Component
                                     ref={panel => this.setLogPanel(panel, elem[0], i)} 
                                     data={elem[1].data}
                                     className='logPanel'
-                                    onDoubleClick={(x, y) => {
+                                    onDoubleClick={(x, y, yText) => {
                                         if (elem[1].type === 1)
                                         {
                                             const panel = this.panels[elem[0]];
                                             if (panel)
                                             {
-                                                this.props.backend.toolbar().logDoubleClick(this.props.activeToolbar, elem[0], y, panel.getSelection());
+                                                this.props.backend.toolbar().logDoubleClick(this.props.activeToolbar, elem[0], Number(y), yText);
                                             }
                                         }
                                     }}

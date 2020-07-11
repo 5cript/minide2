@@ -148,7 +148,7 @@ namespace MinIDE::Scripting
         return 0;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    bool LuaProjectControl::openFileAt(std::string const& fileName, int line, int linePos)
+    bool LuaProjectControl::openFileAt(std::string const& fileName, int line, int linePos, std::string const& message)
     {
         auto s = impl_->sessionAccess.session();
         if (!s)
@@ -166,6 +166,7 @@ namespace MinIDE::Scripting
         fc->path = fileName;
         fc->line = line;
         fc->linePos = linePos;
+        fc->message = message;
 
         auto result = impl_->streamer->send
         (
@@ -174,7 +175,7 @@ namespace MinIDE::Scripting
             s.value().dataId,
             fc.release()
         );
-        return true;
+        return result;
     }
 //#####################################################################################################################
     void loadProjectControl

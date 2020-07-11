@@ -19,6 +19,7 @@ namespace Streaming::Messages
         std::string flag;
         std::optional <int> line;
         std::optional <int> linePos;
+        std::optional <std::string> message;
 
         std::string toJson() const override;
 

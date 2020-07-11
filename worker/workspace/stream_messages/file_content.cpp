@@ -22,8 +22,10 @@ namespace Streaming::Messages
             j["line"] = line.value();
         if (linePos)
             j["linePos"] = linePos.value();
+        if (message)
+            j["message"] = message.value();
 
-        j.dump();
+        return j.dump();
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::string FileContent::load(std::string const& file, bool forceLoad, long long max, long long forceMax, long long chunkSize)

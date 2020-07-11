@@ -58,7 +58,8 @@ class LogPanel extends React.Component
         }
         if (copyOver)
         {
-            this.write(this.textArea.value.substr(this.lastText.length, this.textArea.value.length - this.lastText.length))
+            const freshPart = this.textArea.value.substr(this.lastText.length, this.textArea.value.length - this.lastText.length);
+            this.write(freshPart)
             this.lastText = this.textArea.value;
         }
 
@@ -114,6 +115,24 @@ class LogPanel extends React.Component
         this.transferText();
     }
 
+    getRealLineFromView = (viewY) =>
+    {
+        if (this.term === undefined)
+            return -1;
+
+        let width = this.term.cols;
+        const split = this.getTextLines();
+        let lineCount = 0;
+        let a = 0;
+        for (let i in split)
+        {
+            a += Math.ceil(split[i].length / width);
+            if (viewY + 1 <= a)
+                return i;
+        }
+        return -1;
+    }
+
     onMouseClick = (viewX, viewY) => 
     {
         if (this.term === undefined || this.term === null)
@@ -146,13 +165,31 @@ class LogPanel extends React.Component
         if (this.term === undefined || this.term === null)
             return;
 
+        const realY = this.getRealLineFromView(this.clickedLine);
         if (this.props.onDoubleClick)
-            this.props.onDoubleClick(this.clickedX, this.clickedLine);
+            this.props.onDoubleClick
+            (
+                this.clickedX, 
+                realY,
+                this.getRealLineText(realY)
+            );
+    }
+
+    getTextLines()
+    {
+        return this.textArea.value.split(/(?:\r\n|\r|\n)/g);
+    }
+
+    getRealLineText(realY)
+    {
+        const line = this.getTextLines()[realY];
+        const cleansed = line.replace(/(?:\x9b|\x1b|\u001b)\[(?:(?:(?:[A-Z]|[0-9])(?:(?:[0-9][A-Z])|[0-9])?)(?:;(?:[0-9]){1,2})?(?:;(?:[0-9]){3})?)?[m|K]?/g, '');
+        return cleansed;
     }
 
     getLine(y)
     {
-        const split = this.textArea.value.split(/(?:\r\n|\r|\n)/g);
+        const split = this.getTextLines();
         if (y >= split.length || y < 0)
             return "";
         return split[y];
