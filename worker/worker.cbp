@@ -154,6 +154,8 @@
 		<Unit filename="filesystem/filesystem.hpp" />
 		<Unit filename="filesystem/home_directory.cpp" />
 		<Unit filename="filesystem/home_directory.hpp" />
+		<Unit filename="filesystem/relations.cpp" />
+		<Unit filename="filesystem/relations.hpp" />
 		<Unit filename="hybrid_read_sink.cpp" />
 		<Unit filename="hybrid_read_sink.hpp" />
 		<Unit filename="json.hpp" />

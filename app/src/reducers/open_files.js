@@ -6,6 +6,7 @@ export default function reducer(state={
         {
             path:
             content:
+            isAbsolutePath: 
             synchronized:
         }
         */
@@ -30,6 +31,7 @@ export default function reducer(state={
                     activeFile = fileIndex;
                 openFiles[fileIndex].content = _.clone(action.file.content);
                 openFiles[fileIndex].synchronized = _.clone(action.file.synchronized);
+                openFiles[fileIndex].isAbsolutePath = _.clone(action.file.isAbsolutePath);
             }
             return {
                 ...state, 

@@ -193,55 +193,6 @@ class MainWindow extends React.Component
         }
     }
 
-    onDataStream(head, data)
-    {
-        try
-        {
-            if (head.type === undefined || head.type === null) 
-            {
-                console.error("backend didn't send a message type. notify this to the backend dev");
-                return;
-            }
-
-            if (head.type === "file_tree") 
-            {
-                this.handleTreeUpdates(head, data);
-                return;
-            }
-
-            if (head.type === "file_content") 
-            {
-                let data = '';
-                if (head.chunks !== undefined)
-                    data = head.chunks.join();
-                this.props.dispatch(addOpenFileWithContent(head.path, data));
-                return;
-            }
-
-            if (head.type === "welcome")
-            {
-                this.props.dispatch(setConnected(true));
-                this.backend.toolbar().loadAll(res => {
-                    res.json().then(json => {
-                        this.initToolbars(json);
-                    })
-                });
-                if (this.props.preferences.backend.autoLoadWorkspace === true)
-                {
-                    const wspace = this.persistence.getLastWorspace(this.currentHost())
-                    if (wspace !== undefined && wspace !== null && wspace !== '')
-                    {
-                        this.backend.workspace().openWorkspace(wspace);
-                    }
-                }
-            }
-        }
-        catch(e)
-        {
-            console.error(e);
-        }
-    }
-
     initToolbars = (json) =>
     {
         this.props.dispatch(initializeToolbars(json));
@@ -322,6 +273,55 @@ class MainWindow extends React.Component
             {
                 // Unhandled:
                 console.log(head);
+            }
+        }
+        catch(e)
+        {
+            console.error(e);
+        }
+    }
+
+    onDataStream(head, data)
+    {
+        try
+        {
+            if (head.type === undefined || head.type === null) 
+            {
+                console.error("backend didn't send a message type. notify this to the backend dev");
+                return;
+            }
+
+            if (head.type === "file_tree") 
+            {
+                this.handleTreeUpdates(head, data);
+                return;
+            }
+
+            if (head.type === "file_content") 
+            {
+                let data = '';
+                if (head.chunks !== undefined)
+                    data = head.chunks.join();
+                this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
+                return;
+            }
+
+            if (head.type === "welcome")
+            {
+                this.props.dispatch(setConnected(true));
+                this.backend.toolbar().loadAll(res => {
+                    res.json().then(json => {
+                        this.initToolbars(json);
+                    })
+                });
+                if (this.props.preferences.backend.autoLoadWorkspace === true)
+                {
+                    const wspace = this.persistence.getLastWorspace(this.currentHost())
+                    if (wspace !== undefined && wspace !== null && wspace !== '')
+                    {
+                        this.backend.workspace().openWorkspace(wspace);
+                    }
+                }
             }
         }
         catch(e)
@@ -553,7 +553,7 @@ class MainWindow extends React.Component
                     </Slide>
                 </div>
                 <div id='SplitterContainer'>
-                    <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={60}>
+                    <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={75}>
                         <div>
                             <Explorer onActiveProjectSet={this.onActiveProjectChange} persistence={this.persistence} dict={this.dict} backend={this.backend}/>
                         </div>

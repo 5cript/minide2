@@ -10,13 +10,14 @@ export function addOpenFile(file)
     }
 }
 
-export function addOpenFileWithContent(file, content) 
+export function addOpenFileWithContent(file, isAbsolutePath, content) 
 {
     return {
         type: 'ADD_OPEN_FILE',
         file: {
             path: file,
             content: content,
+            isAbsolutePath: isAbsolutePath,
             synchronized: true
         },
         focus: true

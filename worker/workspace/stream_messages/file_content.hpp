@@ -14,12 +14,13 @@ namespace Streaming::Messages
     class FileContent : public JsonSerializable
     {
     public:
-        std::vector <std::string> chunks;
-        std::string path;
-        std::string flag;
-        std::optional <int> line;
-        std::optional <int> linePos;
-        std::optional <std::string> message;
+        std::vector <std::string> chunks = {};
+        std::string path = "";
+        std::string flag = "";
+        std::optional <int> line = std::nullopt;
+        std::optional <int> linePos = std::nullopt;
+        std::optional <std::string> message = std::nullopt;
+        bool isAbsolutePath = false;
 
         std::string toJson() const override;
 

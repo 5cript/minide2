@@ -1,6 +1,7 @@
 #include "project_control.hpp"
 #include "../workspace/stream_messages/file_content.hpp"
 #include "../routers/streamer.hpp"
+#include "../filesystem/relations.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -154,6 +155,17 @@ namespace MinIDE::Scripting
         if (!s)
             return false;
 
+        std::optional <sfs::path> relative;
+        try
+        {
+            relative = s.value().workspace.rootJail().relativeToRoot(fileName, true);
+            if (relative)
+                std::cout << relative.value() << "\n";
+        }
+        catch(...)
+        {
+        }
+
         auto fc = std::make_unique <Streaming::Messages::FileContent>();
         fc->load
         (
@@ -163,10 +175,11 @@ namespace MinIDE::Scripting
             impl_->config.maxFileReadSizeUnforceable,
             impl_->config.fileChunkSize
         );
-        fc->path = fileName;
+        fc->path = relative ? relative.value().generic_string() : fileName;
         fc->line = line;
         fc->linePos = linePos;
         fc->message = message;
+        fc->isAbsolutePath = relative.operator bool();
 
         auto result = impl_->streamer->send
         (

@@ -91,13 +91,15 @@ class FileView extends PureComponent
         if (this.hoveredNode === undefined)
             return;
 
+        const nodeKey = _.clone(this.hoveredNode.key);
+
         let file = this.props.openFiles.find(file => file.path === this.hoveredNode.key);
         if (file === undefined)
             this.props.backend.workspace().loadFile(this.hoveredNode.key);
         else
         {
             this.showYesNoBox(this.props.dict.translate("$ReloadFileFromServer", "dialog"), () => {
-                this.props.backend.workspace().loadFile(this.hoveredNode.key);
+                this.props.backend.workspace().loadFile(nodeKey);
             });
         }
     }

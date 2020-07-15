@@ -16,6 +16,7 @@ namespace Streaming::Messages
             {"chunks", chunks},
             {"flag", flag},
             {"path", path},
+            {"isAbsolutePath", isAbsolutePath}
         };
 
         if (line)

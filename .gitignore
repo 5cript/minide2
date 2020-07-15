@@ -108,12 +108,15 @@ tiny-process-library
 SimpleJSON
 tab-complete
 test-project
+test-project-2
 filewatch
 worker/worker.cscope_file_list
 jstest
 special-paths
 automata
 sol2
+IDE2.workspace
+IDE2.workspace.layout
 
 build-*
 app_backup
