@@ -1,3 +1,38 @@
+.sleekTabs {
+    height: 100%;
+    width: 100%;
+}
+
+.tabHead {
+    padding-left: 6px;
+    padding-right: 6px;
+    font-size: 14px;
+}
+
+.tabPanelContainer
+{
+    height: 100%;
+}
+
+.tabHead:hover {
+    opacity: 0.8;
+}
+
+.tabHead:focus {
+    color: var(--theme-color);
+    background-color: var(--background-color-very-dark);
+    border-right: 1px solid black;
+}
+
+.tabContainer {
+    display: flex;
+    height: 100%;
+}
+
+.tabHeader {
+    width: 100%;
+}
+
 .react-tabs {
     -webkit-tap-highlight-color: transparent;
 }

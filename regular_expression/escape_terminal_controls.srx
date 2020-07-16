@@ -1,0 +1,70 @@
+#pragma once
+
+#include <fundamental/letter.srx>
+#include <fundamental/number.srx>
+#include <fundamental/alternative.srx>
+#include <fundamental/repeat.srx>
+
+#undef MAIN_REGEX_CLASS
+#define MAIN_REGEX_CLASS Main
+
+#define ESCAPED
+
+#ifdef ESCAPED
+#	define ESCAPE(X) \\X
+#else
+#	define ESCAPE(X) \X
+#endif
+
+group escape {
+	contains: any_of(ESCAPE(x9b), ESCAPE(x1b), ESCAPE(u001b));
+};
+
+set num {
+	contains: 0-9;
+}
+
+set char {
+	contains: A-Z;
+}
+
+group numFollowedByChar {
+	contains: ~num ~char;
+};
+
+group numOrChar {
+	contains: ~char | ~num;
+};
+
+group optionalExtension {
+	contains: ~numFollowedByChar | ~num;
+};
+
+group csiParam {
+	contains: ~numOrChar;
+	contains: ~optionalExtension?;
+};
+
+group options1 {
+	contains: ; repeat(~num, 1, 2);	
+}
+
+group options2 {
+	contains: ; repeat(~num, 3);
+}
+
+group controlSequence {
+	contains: ~csiParam;
+	contains: ~options1?;
+	contains: ~options2?;
+};
+
+set mOrK {
+	contains: m | K;
+}	
+
+regex Main {
+	contains: ~escape \[;
+	contains: ~controlSequence?;
+	contains: ~mOrK?;
+};

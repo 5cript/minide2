@@ -60,6 +60,8 @@ class TerminalInstance extends React.Component
         {
             //console.log(e);
         });
+
+        //this.term.cols
     }
 
     refit()
@@ -71,6 +73,19 @@ class TerminalInstance extends React.Component
     componentDidMount()
     {
         this.initTerminal();
+    }
+
+    resize()
+    {
+        if (this.props.isVisible)
+        {
+
+        }
+    }
+
+    componentDidUpdate()
+    {
+        this.refit();
     }
 
     // <Terminal data={this.state.data} onSubmit={this.onSubmit}></Terminal>

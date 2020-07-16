@@ -3,7 +3,8 @@ import React from 'react';
 import classNames from 'classnames';
 
 import {Terminal} from 'xterm/lib/xterm';
-import {FitAddon } from 'xterm-addon-fit';
+import {FitAddon} from 'xterm-addon-fit';
+import _ from 'lodash';
 
 // style
 import './styles/log.css';
@@ -32,6 +33,10 @@ class LogPanel extends React.Component
             background: style.getPropertyValue('--background-color-darker'),
             color: style.getPropertyValue('--foreground-color'),
         }
+
+        this.slowRefit = _.debounce(() => {
+            this.refit();
+        }, 300);
     }
 
     componentDidMount = () =>
@@ -67,12 +72,16 @@ class LogPanel extends React.Component
 
     componentDidUpdate = () => 
     {
-        setTimeout(() => {
+        if (this.delayer)
+            clearTimeout(this.delayer);
+        this.delayer = setTimeout(() => {
             this.init();
-        }, 200);
+            this.refit();
+        }, 250);
 
+        if (this.term)
+            this.slowRefit();
         this.transferText();
-        //this.refit();
     }
 
     init = () =>
@@ -204,8 +213,14 @@ class LogPanel extends React.Component
 
     refit()
     {
+        if (this.lastWidth === this.props.width && this.lastHeight === this.props.height)
+            return;
         if (this.props.isVisible && this.fitAddon)
+        {
+            this.lastHeight = this.props.height;
+            this.lastWidth = this.props.width;
             this.fitAddon.fit();
+        }
     }
 
     setTextAreaRef = (node) => 

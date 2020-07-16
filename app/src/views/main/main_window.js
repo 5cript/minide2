@@ -11,13 +11,14 @@ import LogsAndOthers from './components/logs_and_term';
 import MessageBox from '../../elements/message_box';
 import Blocker from './components/toolbar_blocker';
 import Slide from 'react-reveal/Slide';
+import {DragDropContext} from 'react-beautiful-dnd';
 
 // Actions
 import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
-import {addToLog, clearLog, focusLogByName, setLogType} from '../../actions/log_actions.js';
+import {addToLog, clearLog, focusLogByName, setLogType, swapLogs} from '../../actions/log_actions.js';
 import {setPreferences} from '../../actions/preferences_actions.js';
 
 // Other
@@ -28,7 +29,7 @@ import LocalPersistence from '../../util/persistence';
 
 // Style
 import './styles/main.css'
-import { ThemeConsumer } from 'styled-components';
+import ReactResizeDetector from 'react-resize-detector';
 
 // requires
 const {ipcRenderer} = window.require('electron');
@@ -358,11 +359,6 @@ class MainWindow extends React.Component
             // on Connection Loss
             (...args) => {this.onConnectionLoss(...args);}
         );
-        this.throttledHeightUpdate = _.throttle((h) => {
-            this.setState({logsHeight: h});
-            if (this.logsAndTerminal)
-                this.logsAndTerminal.refit()
-        }, 100)
     }
 
     onConnectionLoss(which)
@@ -540,10 +536,30 @@ class MainWindow extends React.Component
         this.logsAndTerminal = node;
     }
 
+    dndDragEnd = (dndOperation) =>
+    {
+        if (dndOperation.source === null || dndOperation.source === undefined || dndOperation.destination === null || dndOperation.destination === undefined)
+            return;
+
+        // drops in the same drop zone. for example for logtabs
+        if (dndOperation.source.droppableId === dndOperation.destination.droppableId)
+        {
+            if (dndOperation.source.droppableId === "dropzone_mainLogTabs")
+            {
+                this.props.dispatch(swapLogs(dndOperation.source.index, dndOperation.destination.index));
+            }
+        }
+    }
+
     render = () => 
     {
         return (
             <div id='Content'>
+                <DragDropContext
+                    onDragEnd={(...args) => {
+                        this.dndDragEnd(...args)
+                    }}
+                >
                 <div id='BlockerOrToolbar'>
                     <Slide left when={!this.props.backend.connected}>
                         <Blocker></Blocker>
@@ -561,22 +577,28 @@ class MainWindow extends React.Component
                             <SplitterLayout 
                                 vertical={true} 
                                 secondaryInitialSize={250}
-                                onSecondaryPaneSizeChange={p => {this.throttledHeightUpdate(p)}}
                             >
                                 <Editor dict={this.dict} className='Editor' monacoOptions={this.state.monacoOptions}></Editor>
-                                <LogsAndOthers 
-                                    dict={this.dict} 
-                                    ref={this.setLogsRef}
-                                    backend={this.backend}
-                                    height={this.state.logsHeight} 
-                                    className="logsAndOthers"
-                                ></LogsAndOthers>
+                                <ReactResizeDetector handleWidth handleHeight>
+                                    {({width, height}) =>
+                                        <LogsAndOthers 
+                                            dict={this.dict} 
+                                            ref={this.setLogsRef}
+                                            backend={this.backend}
+                                            width={width}
+                                            height={height} 
+                                            className="logsAndOthers"
+                                            tabsId="mainLogTabs"
+                                        ></LogsAndOthers>
+                                    }
+                                </ReactResizeDetector>
                             </SplitterLayout>
                         </div>
                     </SplitterLayout>
                 </div>
                 <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
                 <MessageBox boxStyle="Ok" dict={this.dict} visible={this.state.okBoxVisible} message={this.state.okBoxMessage} onButtonPress={(wb)=>{this.onOkBoxClose(wb);}}/>
+                </DragDropContext>
             </div>
         )
     }

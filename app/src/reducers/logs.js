@@ -4,10 +4,14 @@ export default function reducer(state={
     // will be populated like so:
     /*
         cmake: {
-            data: ''
+            data: '',
         }
     */
-
+    logs: [{
+        logName: 'Terminal',
+        data: '',
+        logType: '_terminal'
+    }],
     otherLogState: 
     {
         // 0 is the terminal
@@ -18,19 +22,26 @@ export default function reducer(state={
     {
         case 'ADD_TO_LOG': 
         {
-            let update = {}
-            if (state[action.logName] !== undefined)
-                update[action.logName] = _.cloneDeep(state[action.logName]);
-            else
-                update[action.logName] = {data: ''}
-            if (update[action.logName].data === undefined)
-                update[action.logName].data = action.data;
-            else
-                update[action.logName].data += action.data;
+            let logs = _.cloneDeep(state.logs);
+            const logIndex = logs.findIndex(log => log.logName === action.logName);
+            if (logIndex === -1)
+            {
+                logs.push({
+                    data: action.data,
+                    logName: action.logName
+                })
+            }
+            else 
+            {
+                if (logs[logIndex].data === undefined)
+                    logs[logIndex].data = action.data;
+                else
+                    logs[logIndex].data += action.data;
+            }
 
             return {
                 ...state,
-                ...update
+                logs: logs
             }
         }
         case 'SET_ACTIVE_LOG': 
@@ -45,33 +56,45 @@ export default function reducer(state={
         }
         case 'SET_LOG_TYPE':
         {
-            let update = {}
-            if (state[action.logName] !== undefined)
-                update[action.logName] = _.cloneDeep(state[action.logName]);
+            let logs = _.cloneDeep(state.logs);
+            const logIndex = logs.findIndex(log => log.logName === action.logName);
+            if (logIndex === -1)
+            {
+                logs.push({
+                    data: '',
+                    logName: action.logName,
+                    logType: action.logType
+                })
+            }
             else
-                update[action.logName] = {data: ''}
-
-            update[action.logName].type = action.logType;
+            {
+                logs[logIndex].logType = action.logType
+            }
 
             return {
                 ...state,
-                ...update
+                logs: logs
             }
         }
         case 'CLEAR_LOG': 
         {
-            let update = {}
-            if (state[action.logName] !== undefined)
+            let logs = _.cloneDeep(state.logs);
+            const logIndex = logs.findIndex(log => log.logName === action.logName);
+            if (logIndex === -1)
             {
-                update[action.logName] = _.cloneDeep(state[action.logName]);
-                update[action.logName].data = '';
+                logs.push({
+                    data: '',
+                    logName: action.logName
+                })
             }
             else
-                update[action.logName] = {data: ''}
+            {
+                logs[logIndex].data = ''
+            }
 
             return {
                 ...state,
-                ...update
+                logs: logs
             }
         }
         case 'SET_ACTIVE_LOG_BY_NAME': 
@@ -79,28 +102,31 @@ export default function reducer(state={
             let otherLogState = _.cloneDeep(state.otherLogState);
             //otherLogState.activeLog = action.index;
 
-            let c = 0;
-            let found = false;
-            for (const [key, ] of Object.entries(state)) 
-            {
-                if (key === "otherLogState")
-                    continue;
-                if (key === action.logName)
-                {
-                    found = true;
-                    break;
-                }
-                ++c;
-            }
+            const logIndex = state.logs.findIndex(log => log.logName === action.logName);
 
-            if (!found)
+            if (logIndex === -1)
                 return state;
 
-            otherLogState.activeLog = c + 1;
+            otherLogState.activeLog = logIndex;
 
             return {
                 ...state,
                 otherLogState
+            }
+        }
+        case 'SWAP_LOGS':
+        {
+            if (!(action.first >= 0 && action.first < state.logs.length && action.second >= 0 && action.second < state.logs.length))
+                return state;
+
+            let logs = _.cloneDeep(state.logs);            
+            const log = logs[action.first];
+            logs[action.first] = logs[action.second];
+            logs[action.second] = log;
+
+            return {
+                ...state,
+                logs: logs
             }
         }
         default:

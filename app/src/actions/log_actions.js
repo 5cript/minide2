@@ -40,3 +40,12 @@ export function focusLogByName(name)
         logName: name
     }
 }
+
+export function swapLogs(first, second)
+{
+    return {
+        type: 'SWAP_LOGS',
+        first: first,
+        second: second
+    }
+}

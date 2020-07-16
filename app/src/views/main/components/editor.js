@@ -17,7 +17,6 @@ import {setActiveFile, removeOpenFile, setActiveFileContent} from '../../../acti
 
 // Style
 import './styles/editor.css';
-import './styles/tabs.css';
 
 /*
 const SimpleIconButton = styled(IconButton)({
