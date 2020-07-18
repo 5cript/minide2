@@ -35,13 +35,22 @@ class LogPanel extends React.Component
         }
 
         this.slowRefit = _.debounce(() => {
-            this.refit();
+            if (this.term === undefined)
+                console.error('terminal is uninitialized')
+            else
+                this.refit();
         }, 300);
     }
 
     componentDidMount = () =>
     {
         this.mounted = true;
+        if (this.delayer)
+            clearTimeout(this.delayer);
+        this.delayer = setTimeout(() => {
+            this.init();
+            this.refit();
+        }, 250);
     }
 
     transferText = () => 
@@ -72,13 +81,6 @@ class LogPanel extends React.Component
 
     componentDidUpdate = () => 
     {
-        if (this.delayer)
-            clearTimeout(this.delayer);
-        this.delayer = setTimeout(() => {
-            this.init();
-            this.refit();
-        }, 250);
-
         if (this.term)
             this.slowRefit();
         this.transferText();
@@ -86,8 +88,10 @@ class LogPanel extends React.Component
 
     init = () =>
     {
+        console.log('tryinit');
         if (this.mounted !== true || this.term !== undefined)
             return;
+        console.log('actuallyinit');
 
         this.term = new Terminal({
             fontSize: 12,
@@ -131,13 +135,16 @@ class LogPanel extends React.Component
 
         let width = this.term.cols;
         const split = this.getTextLines();
-        let lineCount = 0;
-        let a = 0;
+        let virtualLinesPassed = 0;
+
         for (let i in split)
         {
-            a += Math.ceil(split[i].length / width);
-            if (viewY + 1 <= a)
-                return i;
+            const cleansed = this.cleanLine(split[i]);
+            let virtualLinesHere = Math.floor(cleansed.length / width);
+            virtualLinesPassed += virtualLinesHere;
+            if (viewY <= virtualLinesPassed)
+                return _.toNumber(i);
+            virtualLinesPassed += 1;
         }
         return -1;
     }
@@ -153,7 +160,7 @@ class LogPanel extends React.Component
             return;
         const x = Math.floor(viewX / cellWidth);
         const y = Math.floor(viewY / cellHeight);
-        this.onLineClick(x, Math.floor(y + (this.scrollOffset ? this.scrollOffset : 0)));
+        this.onLineClick(x, Math.round(y + (this.scrollOffset ? this.scrollOffset : 0)));
     }
 
     onLineClick = (x, line) => 
@@ -175,13 +182,17 @@ class LogPanel extends React.Component
             return;
 
         const realY = this.getRealLineFromView(this.clickedLine);
+        if (realY === -1)
+            return;
         if (this.props.onDoubleClick)
+        {
             this.props.onDoubleClick
             (
                 this.clickedX, 
                 realY,
                 this.getRealLineText(realY)
             );
+        }
     }
 
     getTextLines()
@@ -189,11 +200,15 @@ class LogPanel extends React.Component
         return this.textArea.value.split(/(?:\r\n|\r|\n)/g);
     }
 
+    cleanLine(lineWithInstructions)
+    {
+        return lineWithInstructions.replace(/(?:\x9b|\x1b|\u001b)\[(?:(?:(?:[A-Z]|[0-9])(?:(?:[0-9][A-Z])|[0-9])?)(?:;(?:[0-9]){1,2})?(?:;(?:[0-9]){3})?)?[m|K]?/g, '');        
+    }
+
     getRealLineText(realY)
     {
         const line = this.getTextLines()[realY];
-        const cleansed = line.replace(/(?:\x9b|\x1b|\u001b)\[(?:(?:(?:[A-Z]|[0-9])(?:(?:[0-9][A-Z])|[0-9])?)(?:;(?:[0-9]){1,2})?(?:;(?:[0-9]){3})?)?[m|K]?/g, '');
-        return cleansed;
+        return this.cleanLine(line);
     }
 
     getLine(y)

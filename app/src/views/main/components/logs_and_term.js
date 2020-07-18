@@ -9,7 +9,7 @@ import LogPanel from './log';
 import {TabPanel, SleekTabs} from '../../../elements/tabs';
 
 // Actions
-import {setActiveLog} from '../../../actions/log_actions';
+import {setActiveLog, focusLogByName} from '../../../actions/log_actions';
 
 // Other
 import _ from 'lodash'
@@ -35,13 +35,17 @@ class LogsAndOthers extends React.Component
     }
     
     render = () => {
-        let tabLabels = this.props.logs.logs.map(log => log.logName);
+        let tabLabels = []
+        let activeLabel = this.props.activeLog;
+        for (let i in this.props.logs.ordering)
+            tabLabels.push(this.props.logs.logs[this.props.logs.ordering[i]].logName)
+        activeLabel = this.props.logs.ordering.findIndex(elem => elem === activeLabel);
 
         return (
             <div className='tabContainer'>
                 <SleekTabs
-                    onChange={(tabIndex) => this.props.dispatch(setActiveLog(tabIndex))}
-                    value={this.props.activeLog}
+                    onChange={(viewIndex) => this.props.dispatch(focusLogByName(tabLabels[viewIndex]))}
+                    value={activeLabel}
                     tabLabels={tabLabels}
                     id={this.props.tabsId}
                 >
@@ -103,7 +107,7 @@ class LogsAndOthers extends React.Component
 export default connect(state => {
     return {
         logs: state.logs,
-        activeLog: state.logs.otherLogState.activeLog,
+        activeLog: state.logs.activeLog,
         activeToolbar: state.toolbars.activeToolbar
     }
 }, null, null, {forwardRef: true})(LogsAndOthers);

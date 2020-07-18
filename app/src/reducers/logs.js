@@ -1,22 +1,18 @@
 import _ from 'lodash'
 
 export default function reducer(state={
-    // will be populated like so:
-    /*
-        cmake: {
-            data: '',
-        }
-    */
+    // contains all logs        
     logs: [{
         logName: 'Terminal',
         data: '',
-        logType: '_terminal'
+        logType: '_terminal',
+        closeable: false
     }],
-    otherLogState: 
-    {
-        // 0 is the terminal
-        activeLog: 0
-    }
+
+    // what log is tab-selected?
+    activeLog: 0,
+
+    ordering: [0]
 }, action) {
     switch (action.type) 
     {
@@ -24,12 +20,14 @@ export default function reducer(state={
         {
             let logs = _.cloneDeep(state.logs);
             const logIndex = logs.findIndex(log => log.logName === action.logName);
+            let ordering = [...state.ordering];
             if (logIndex === -1)
             {
                 logs.push({
                     data: action.data,
                     logName: action.logName
                 })
+                ordering.push(logs.length - 1);
             }
             else 
             {
@@ -41,23 +39,22 @@ export default function reducer(state={
 
             return {
                 ...state,
-                logs: logs
+                logs: logs,
+                ordering: ordering
             }
         }
         case 'SET_ACTIVE_LOG': 
         {
-            let otherLogState = _.cloneDeep(state.otherLogState);
-            otherLogState.activeLog = action.index;
-
             return {
                 ...state,
-                otherLogState
+                activeLog: state.ordering.findIndex(elem => elem === action.index)
             }
         }
         case 'SET_LOG_TYPE':
         {
             let logs = _.cloneDeep(state.logs);
             const logIndex = logs.findIndex(log => log.logName === action.logName);
+            let ordering = [...state.ordering];
             if (logIndex === -1)
             {
                 logs.push({
@@ -65,6 +62,7 @@ export default function reducer(state={
                     logName: action.logName,
                     logType: action.logType
                 })
+                ordering.push(logs.length - 1);
             }
             else
             {
@@ -73,19 +71,22 @@ export default function reducer(state={
 
             return {
                 ...state,
-                logs: logs
+                logs: logs,
+                ordering: ordering
             }
         }
         case 'CLEAR_LOG': 
         {
             let logs = _.cloneDeep(state.logs);
             const logIndex = logs.findIndex(log => log.logName === action.logName);
+            let ordering = [...state.ordering];
             if (logIndex === -1)
             {
                 logs.push({
                     data: '',
                     logName: action.logName
                 })
+                ordering.push(logs.length - 1);
             }
             else
             {
@@ -94,39 +95,33 @@ export default function reducer(state={
 
             return {
                 ...state,
-                logs: logs
+                logs: logs,
+                ordering: ordering
             }
         }
         case 'SET_ACTIVE_LOG_BY_NAME': 
         {
-            let otherLogState = _.cloneDeep(state.otherLogState);
-            //otherLogState.activeLog = action.index;
-
             const logIndex = state.logs.findIndex(log => log.logName === action.logName);
 
             if (logIndex === -1)
                 return state;
 
-            otherLogState.activeLog = logIndex;
-
             return {
                 ...state,
-                otherLogState
+                activeLog: logIndex
             }
         }
         case 'SWAP_LOGS':
         {
-            if (!(action.first >= 0 && action.first < state.logs.length && action.second >= 0 && action.second < state.logs.length))
+            if (!(action.from >= 0 && action.from < state.logs.length && action.to >= 0 && action.to < state.logs.length))
                 return state;
 
-            let logs = _.cloneDeep(state.logs);            
-            const log = logs[action.first];
-            logs[action.first] = logs[action.second];
-            logs[action.second] = log;
+            let ordering = [...state.ordering];            
+            ordering.splice(action.to, 0, ordering.splice(action.from, 1)[0]);
 
             return {
                 ...state,
-                logs: logs
+                ordering: ordering
             }
         }
         default:

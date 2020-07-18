@@ -29,6 +29,9 @@ const SimpleIconButton = styled(IconButton)({
 // README:
 // Multiple models/tabs/open_files: https://github.com/react-monaco-editor/react-monaco-editor/issues/67
 
+// VERY NICE HELP:
+// https://microsoft.github.io/monaco-editor/playground.html#interacting-with-the-editor-rendering-glyphs-in-the-margin
+
 const HoverFix = createMuiTheme({
     overrides: {
         MuiIconButton: {
@@ -43,10 +46,32 @@ const HoverFix = createMuiTheme({
 
 class MonacoEditorComponent extends React.Component
 {
+    state = 
+    {
+        theme: 'vs-dark',
+        options: {
+            glyphMargin: true
+        },        
+    }
+
+    constructor(props)
+    {
+        super(props)
+
+        this.currentPath = null;
+        this.viewStates = {};
+        this.positions = {};
+        this.voidModel = null;
+        this.voidModelPath = '/_/mindide/voidmodel';
+    }
+
     onMount = (editor, monaco) => 
     {
         this.editor = editor;
+        this.monaco = monaco;
         editor.focus();
+        this.voidModel = this.monaco.editor.createModel('', undefined, this.monaco.Uri.parse(this.voidModelPath));
+        this.setModel(this.voidModelPath);
     }
 
     openFileContent = () => 
@@ -56,11 +81,72 @@ class MonacoEditorComponent extends React.Component
         return "";
     }
 
-    languageFromExtension = () => 
+    updateFileModel = ({uri, data, focusLineNumber, focusColumn}) => 
     {
-        let path = '';
-        if (this.props.activeFile > -1)
-            path = this.props.openFiles[this.props.activeFile].path;
+        if (this.monaco === undefined)
+            return;
+
+        const muri = this.monaco.Uri.parse(uri);
+        let model = this.monaco.editor.getModel(muri);
+        if (model === null)
+            model = this.monaco.editor.createModel(data, this.languageFromExtension(uri), muri);
+        else
+        {
+            this.resetViewState(uri);
+            model.setValue(data);
+        }
+        this.setModel(uri, model);
+
+        if (focusLineNumber !== undefined && focusLineNumber !== null)
+            this.jumpTo(focusLineNumber, focusColumn ? focusColumn : 0);
+    }
+    
+    setModel = (path, model) => 
+    {
+        if (model === null || model === undefined)
+            model = this.monaco.editor.getModel(this.monaco.Uri.parse(path));
+        if (model === null || model === undefined)
+            return;
+
+        // save current editor states
+        if (this.currentPath !== null)
+        {
+            this.positions[this.currentPath] = this.editor.getPosition();
+            this.viewStates[this.currentPath] = this.editor.saveViewState();
+        }
+        this.currentPath = path;
+        this.editor.setModel(model);
+
+        // restore states
+        if (this.viewStates[path])
+        {
+            this.editor.setPosition(this.positions[path]);
+            this.editor.restoreViewState(this.viewStates[path]);
+            this.editor.focus();
+        }
+    }
+
+    resetViewState = (path) => 
+    {
+        delete this.viewStates[path];
+        delete this.positions[path];
+    }
+
+    loadSelectedModel = () =>
+    {
+        if (this.props.activeFile === -1)
+        {
+            this.setModel(this.voidModelPath);
+            return;
+        }
+        const path = this.props.openFiles[this.props.activeFile].path;
+        const muri = this.monaco.Uri.parse(path);
+        let model = this.monaco.editor.getModel(muri);
+        this.setModel(path, model);
+    }
+
+    languageFromExtension = (path) => 
+    {
         const filename = path.substring(path.lastIndexOf("/") + 1, path.length);
 
         const dotPosFirst = filename.indexOf('.');
@@ -78,12 +164,45 @@ class MonacoEditorComponent extends React.Component
 
     onChange = (value, event) =>
     {
-        console.log(this.editor.getSelection());
         if (this.props.activeFile > -1)
             this.props.dispatch(setActiveFileContent(value));
     }
 
-    render() {
+    compileMonacoOptions = () =>
+    {
+        if (this.monaco === undefined || this.editor === undefined)
+            return this.state.options;
+
+        let optionAddtions = {
+            model: null
+        }
+
+        return {
+            ...this.state.options,
+            ...optionAddtions
+        }
+    }
+
+    jumpTo = (line, column) =>
+    {
+        if (this.editor)
+        {
+            this.editor.revealPositionInCenter({lineNumber: line, column: column});
+            this.editor.setPosition({lineNumber: line, column: column});
+            this.editor.focus();
+        }
+    }
+
+    componentDidUpdate = () =>
+    {
+        console.log('editor update');
+        this.loadSelectedModel();
+    }
+
+    render() 
+    {
+        const options = this.compileMonacoOptions();
+
         return (
             <ReactResizeDetector
                 handleHeight
@@ -94,13 +213,10 @@ class MonacoEditorComponent extends React.Component
                 }}
             >
                 <MonacoEditor
-                    disabled={true}
-                    language={this.languageFromExtension()}
-                    theme={this.props.monacoOptions.theme}
+                    theme={this.state.theme}
                     onChange={(v, e) => {this.onChange(v, e)}}
-                    value={this.openFileContent()}
                     editorDidMount={this.onMount}
-                    options={this.props.monacoOptions.options}
+                    options={options}
                 />
             </ReactResizeDetector>
         );
@@ -112,7 +228,7 @@ let ConnectedEditor = connect(state => {
         openFiles: state.openFiles.openFiles,
         activeFile: state.openFiles.activeFile
     }
-})(MonacoEditorComponent);
+}, null, null, {forwardRef: true})(MonacoEditorComponent);
 
 class CodeEditor extends React.Component 
 {
@@ -142,6 +258,16 @@ class CodeEditor extends React.Component
         });
         if (whatButton === "Yes")
             this.yesAction();
+    }
+
+    getMonaco = () =>
+    {
+        return this.monaco;
+    }
+
+    setMonacoRef = (monaco) => 
+    {
+        this.monaco = monaco;
     }
 
     render() 
@@ -188,7 +314,7 @@ class CodeEditor extends React.Component
                         }
                     </Tabs>
                 </MuiThemeProvider>
-                <ConnectedEditor monacoOptions={this.props.monacoOptions} id='MonacoWrap' language="javascript" />
+                <ConnectedEditor ref={this.setMonacoRef} id='MonacoWrap' language="javascript" />
                 <MessageBox boxStyle="YesNo" dict={this.props.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </div>
         )
@@ -202,4 +328,4 @@ export default connect(
             activeFile: state.openFiles.activeFile
         }
     }
-)(CodeEditor);
+, null, null, {forwardRef: true})(CodeEditor);

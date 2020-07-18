@@ -9,7 +9,7 @@
 const extensionToLanguage = (ext, filename, extraDefinitions, guess) =>
 {
     if (ext.length === 0)
-        return '';
+        return undefined;
 
     if (filename === 'CMakeLists.txt')
         return 'shell';
@@ -71,7 +71,7 @@ const extensionToLanguage = (ext, filename, extraDefinitions, guess) =>
     // dont know?
     if (guess === true)
         return ext;
-    return false;
+    return undefined;
 }
 
 export default extensionToLanguage;

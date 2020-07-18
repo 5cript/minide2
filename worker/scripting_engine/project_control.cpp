@@ -179,7 +179,7 @@ namespace MinIDE::Scripting
         fc->line = line;
         fc->linePos = linePos;
         fc->message = message;
-        fc->isAbsolutePath = relative.operator bool();
+        fc->isAbsolutePath = !relative.operator bool();
 
         auto result = impl_->streamer->send
         (

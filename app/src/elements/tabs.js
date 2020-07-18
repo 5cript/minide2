@@ -16,7 +16,9 @@ import './styles/tabs.css';
 const LeanTabs = withStyles({
     root: {
         height: '25px',
+        width: '100%',
         minHeight: 0,
+        margin: 0,
         backgroundColor: 'var(--background-color-darker)'
     },
     indicator: {
@@ -24,56 +26,22 @@ const LeanTabs = withStyles({
     },
 })(Tabs);
 
-const LeanTab = withStyles((theme) => ({
-    root: {
-        textTransform: 'none',
-        minWidth: 50,
-        height: 25,
-        paddingTop: 0,
-        minHeight: 0,
-        fontFamily: [
-            '-apple-system',
-            'BlinkMacSystemFont',
-            '"Segoe UI"',
-            'Roboto',
-            '"Helvetica Neue"',
-            'Arial',
-            'sans-serif',
-            '"Apple Color Emoji"',
-            '"Segoe UI Emoji"',
-            '"Segoe UI Symbol"',
-        ].join(','),
-        '&:hover': {
-            opacity: 0.8,
-        },
-        '&$selected': {
-            color: 'var(--theme-color)',
-            fontWeight: theme.typography.fontWeightMedium,
-            backgroundColor: 'var(--background-color-very-dark)'
-        },
-        '&:focus': {
-            color: 'var(--theme-color)',
-            backgroundColor: 'var(--background-color-very-dark)'
-        },
-    },
-    selected: {},
-}))((props) => <Tab disableRipple {...props} />);
-
 const getListStyle = isDraggingOver => ({
-    background: isDraggingOver ? 'var(--background-color-brighter)' : undefined,
     display: 'flex',
     paddingTop: '2px',
-    paddingBot: '2px',
+    paddingBot: '0px',
     paddingLeft: '0px',
     overflow: 'auto',
+    margin: '0px',
+    width: '100%'
 });
 
-const getItemStyle = (isDragging, draggableStyle) => ({
+const getItemStyle = (isDragging, isSelected, draggableStyle) => ({
     // some basic styles to make the items look a bit nicer
-    padding: '10px',
-    fontSize: 10,
     // change background colour if dragging
-    background: isDragging ? 'lightgreen' : undefined,
+    backgroundColor: isDragging ? 'transparent' : (isSelected ? 'var(--background-color-very-dark)' : undefined),
+    color: isSelected ? 'var(--theme-color)' : undefined,
+    height: '25px',
   
     // styles we need to apply on draggables
     ...draggableStyle,
@@ -102,12 +70,14 @@ class SleekTabs extends React.Component
 
     render = () => {
         const children = React.Children.toArray(this.props.children);
+        const value = this.props.value;
 
         return (
             <div className="sleekTabs">
                 <div className="tabHeader">
                     <Droppable
                         droppableId={"dropzone_" + this.id}
+                        direction='horizontal'
                     >
                         {(provided, snapshot) => 
                             <div
@@ -119,6 +89,11 @@ class SleekTabs extends React.Component
                                     <LeanTabs
                                         value={this.props.value}
                                         onChange={(e, tabIndex) => {this.props.onChange(tabIndex)}} 
+                                        TabIndicatorProps={{
+                                            style: {
+                                                display: snapshot.isDraggingOver ? 'none' : undefined
+                                            }
+                                        }}
                                     >
                                         {this.props.tabLabels.map((label, i) => {return (
                                             <Draggable key={label + i} draggableId={'' + i} index={i}>
@@ -128,7 +103,7 @@ class SleekTabs extends React.Component
                                                         className="tabHead"
                                                         {...prov.draggableProps}
                                                         {...prov.dragHandleProps}
-                                                        style={getItemStyle(snap.isDragging), prov.draggableProps.style}
+                                                        style={getItemStyle(snap.isDragging, value === i, prov.draggableProps.style)}
                                                         onClick={() => {this.props.onChange(i)}}
                                                     >
                                                     {(() => {

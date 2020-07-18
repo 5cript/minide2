@@ -7,6 +7,8 @@
     padding-left: 6px;
     padding-right: 6px;
     font-size: 14px;
+    margin: 0px;
+    padding-bottom: 0px;
 }
 
 .tabPanelContainer
@@ -25,8 +27,10 @@
 }
 
 .tabContainer {
-    display: flex;
     height: 100%;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
 }
 
 .tabHeader {

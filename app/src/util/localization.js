@@ -59,7 +59,8 @@ class Dictionary
                     "$UnfitRequirements": "Requirements not met",
                     "$MayNotBeEmpty": "May not be empty",
                     "$Save": "Save",
-                    "$NoActiveProject": "No active project"
+                    "$NoActiveProject": "No active project",
+					"$FileOutsideWorkspace": "File is outside of the workspace. Do you really want to save?"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Set as Active Project",
@@ -137,7 +138,8 @@ class Dictionary
                     "$UnfitRequirements": "Bedingungen für Eingabe nicht eingehalten",
                     "$MayNotBeEmpty": "Darf nicht leer sein",
                     "$Save": "Speichern",
-                    "$NoActiveProject": "Kein aktives Projekt"
+                    "$NoActiveProject": "Kein aktives Projekt",
+					"$FileOutsideWorkspace": "Die Datei ist außerhalb des Arbeitsrausm. Wollen sie sie wirklich speichern?"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Als aktives Projekt wählen",

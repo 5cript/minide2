@@ -41,11 +41,11 @@ export function focusLogByName(name)
     }
 }
 
-export function swapLogs(first, second)
+export function swapLogs(from, to)
 {
     return {
         type: 'SWAP_LOGS',
-        first: first,
-        second: second
+        from: from,
+        to: to
     }
 }

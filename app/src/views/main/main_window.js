@@ -87,11 +87,6 @@ class MainWindow extends React.Component
 {
     state = 
     {
-        monacoOptions: 
-        {
-            theme: 'vs-dark',
-            options: {}
-        },
         yesNoBoxVisible: false,
         yesNoMessage: '',
         okBoxVisible: false,
@@ -139,13 +134,28 @@ class MainWindow extends React.Component
                 if (this.props.activeFile >= 0) 
                 {
                     let file = this.props.openFiles[this.props.activeFile];
-                    this.backend.workspace().saveFile(file.path, file.content, () => 
+                    if (file.isAbsolutePath)
                     {
-                        this.props.dispatch(activeFileWasSynchronized());
-                    });
+                        this.showYesNoBox(this.dict.translate("$FileOutsideWorkspace", "dialog"), () => {
+                            this.backend.workspace().saveFile(file.path, file.content, () => 
+                            {
+                                this.props.dispatch(activeFileWasSynchronized());
+                            });
+                        })
+                    }
+                    else
+                    {
+                        this.backend.workspace().saveFile(file.path, file.content, () => 
+                        {
+                            this.props.dispatch(activeFileWasSynchronized());
+                        });
+                    }
                 }
                 else
-                    console.log('no open file');
+                {
+                    this.showOkBox('todo: implement save as for void model');
+                    return;
+                }
                 return;
             }
 
@@ -282,6 +292,19 @@ class MainWindow extends React.Component
         }
     }
 
+    callOnEditor = (fn) => 
+    {
+        if (this.editor)
+        {
+            console.log(this.editor)
+            const monaco = this.editor.getMonaco();
+            if (monaco)
+            {
+                fn(monaco);
+            }
+        }
+    }
+
     onDataStream(head, data)
     {
         try
@@ -303,6 +326,15 @@ class MainWindow extends React.Component
                 let data = '';
                 if (head.chunks !== undefined)
                     data = head.chunks.join();
+                this.callOnEditor(monaco => {
+                    monaco.updateFileModel({
+                        uri: head.path, 
+                        isAbsolute: head.isAbsolutePath, 
+                        data: data,
+                        focusLineNumber: head.line,
+                        focusColumn: head.linePos
+                    });
+                })
                 this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
                 return;
             }
@@ -496,7 +528,7 @@ class MainWindow extends React.Component
         this.setState({
             yesNoBoxVisible: false
         });
-        if (whatButton === "Yes" && this.okAction)
+        if (whatButton === "Yes" && this.yesAction)
             this.yesAction();
     }
 
@@ -551,6 +583,11 @@ class MainWindow extends React.Component
         }
     }
 
+    setEditorRef = (editor) => 
+    {
+        this.editor = editor;
+    }
+
     render = () => 
     {
         return (
@@ -578,7 +615,7 @@ class MainWindow extends React.Component
                                 vertical={true} 
                                 secondaryInitialSize={250}
                             >
-                                <Editor dict={this.dict} className='Editor' monacoOptions={this.state.monacoOptions}></Editor>
+                                <Editor ref={this.setEditorRef} dict={this.dict} className='Editor'></Editor>
                                 <ReactResizeDetector handleWidth handleHeight>
                                     {({width, height}) =>
                                         <LogsAndOthers 
