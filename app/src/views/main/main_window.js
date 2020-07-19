@@ -648,6 +648,13 @@ class MainWindow extends React.Component
         this.loadKeybindsIfPossible();
     }
 
+    onDeleteFile = (file) =>
+    {
+        this.showYesNoBox(this.dict.translate('$ReallyDeleteFile', 'file_tree') + "\n" + file, () => {
+            this.backend.workspace().deleteFile(file);
+        })
+    }
+
     render = () => 
     {
         return (
@@ -668,7 +675,13 @@ class MainWindow extends React.Component
                 <div id='SplitterContainer'>
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={75}>
                         <div>
-                            <Explorer onActiveProjectSet={this.onActiveProjectChange} persistence={this.persistence} dict={this.dict} backend={this.backend}/>
+                            <Explorer 
+                                onActiveProjectSet={this.onActiveProjectChange} 
+                                onDeleteFile={this.onDeleteFile}
+                                persistence={this.persistence} 
+                                dict={this.dict} 
+                                backend={this.backend}
+                            />
                         </div>
                         <div id='RightOfExplorer'>
                             <SplitterLayout 

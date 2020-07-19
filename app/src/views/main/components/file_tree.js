@@ -227,6 +227,7 @@ class FileView extends PureComponent
                         },
                         {
                             label: this.props.dict.translate("$RenameFile", "file_tree"),
+                            disabled: true,
                             onClick: () => {console.log('rename')},
                         },
                         {
@@ -234,7 +235,7 @@ class FileView extends PureComponent
                         },
                         {
                             label: this.props.dict.translate("$DeleteFile", "file_tree"),
-                            onClick: () => {console.log('delete')},
+                            onClick: () => {this.props.onDeleteFile(this.contextItem.key)},
                         }
                     ]}
                 />

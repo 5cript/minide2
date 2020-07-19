@@ -22,6 +22,8 @@ namespace Filesystem
          */
         std::optional <sfs::path> relativeToRoot(sfs::path const& other, bool fakeJailAsRoot = false) const;
 
+        sfs::path fakeJailAsRoot(sfs::path const& other) const;
+
     private:
         sfs::path jailRoot_;
     };

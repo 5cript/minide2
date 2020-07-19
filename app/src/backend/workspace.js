@@ -104,6 +104,13 @@ class Workspace extends Router
         );
     }
 
+    deleteFile(path)
+    {
+        this.postJson(this.url("/api/workspace/deleteFile"), {
+            path: path
+        });
+    }
+
     loadProjectMetafile(onSuccess, onFailure)
     {
         this.get

@@ -67,7 +67,8 @@ class Dictionary
                     "$OpenFile": "Open",
                     "$DeleteFile": "Delete",
                     "$OpenToTheSide": "Open in Split View",
-                    "$RenameFile": "Rename File"
+                    "$RenameFile": "Rename File",
+                    "$ReallyDeleteFile": "Really delete file? This cannot be undone"
                 },
                 "toolbar": {
                     "$Save": "Speichern",
@@ -151,7 +152,8 @@ class Dictionary
                     "$OpenFile": "Öffnen",
                     "$DeleteFile": "Löschen",
                     "$OpenToTheSide": "Parallel Öffnen",
-                    "$RenameFile": "Datei Umbennen"
+                    "$RenameFile": "Datei Umbennen",
+                    "$ReallyDeleteFile": "Datei wirklich unwiederbringlich löschen?"
                 },
                 "toolbar": {
                     "$Save": "Speichern",

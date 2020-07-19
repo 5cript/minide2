@@ -235,6 +235,8 @@
 		<Unit filename="variant.hpp" />
 		<Unit filename="workspace/hashed_file.cpp" />
 		<Unit filename="workspace/hashed_file.hpp" />
+		<Unit filename="workspace/project_persistence.cpp" />
+		<Unit filename="workspace/project_persistence.hpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.cpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.hpp" />
 		<Unit filename="workspace/stream_messages/file_content.cpp" />

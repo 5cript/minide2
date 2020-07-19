@@ -22,7 +22,7 @@ namespace Routers
         /**
          *  Returns an pair of <E, P>. There was an error if E is non-empty
          */
-        std::pair <std::string, std::string> verifyPath(std::string path, sfs::path const& root, bool mustExist = true);
+        std::tuple <std::string, std::string, json> verifyPath(std::string path, sfs::path const& root, bool mustExist = true, bool enforceWorkspaceRelative = false);
 
         std::tuple <
             sfs::path, // include/source path file (empty, if original is not within a include/source directory)

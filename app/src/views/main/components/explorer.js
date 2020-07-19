@@ -69,6 +69,7 @@ class Explorer extends React.Component {
                                     dict={this.props.dict} 
                                     backend={this.props.backend} 
                                     onActiveProjectSet={this.props.onActiveProjectSet}
+                                    onDeleteFile={this.props.onDeleteFile}
                                 />
                             </PerfectScrollbar>
                         </AccordionItemPanel>

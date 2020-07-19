@@ -15,7 +15,7 @@ namespace Filesystem
 {
 //#####################################################################################################################
     Jail::Jail(sfs::path const& jailRoot)
-        : jailRoot_{sfs::canonical(jailRoot)}
+        : jailRoot_{sfs::canonical(jailRoot).generic_string()}
     {
     }
 //---------------------------------------------------------------------------------------------------------------------
@@ -37,9 +37,14 @@ namespace Filesystem
                 return std::nullopt;
         }
         if (fakeJailAsRoot)
-            return {sfs::path{"/"s + jailRoot_.filename().string() + "/" + proxi.generic_string()}};
+            return this->fakeJailAsRoot(proxi);
         else
             return {proxi};
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    sfs::path Jail::fakeJailAsRoot(sfs::path const& other) const
+    {
+        return sfs::path{"/"s + jailRoot_.filename().string() + "/" + other.generic_string()};
     }
 //#####################################################################################################################
 }

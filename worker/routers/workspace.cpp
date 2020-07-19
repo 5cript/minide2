@@ -164,10 +164,10 @@ namespace Routers
                 std::string path = body["path"].get<std::string>();
 
                 auto veri = verifyPath(path, sess.workspace.root);
-                if (!veri.first.empty())
-                    return respondWithError(res, veri.first);
+                if (!std::get<0>(veri).empty())
+                    return respondWithError(res, std::get<0>(veri), std::get<2>(veri));
 
-                auto dir = std::make_unique <Streaming::Messages::DirectoryContent>(veri.second);
+                auto dir = std::make_unique <Streaming::Messages::DirectoryContent>(std::get<1>(veri));
                 dir->scan(recursive, "");
                 dir->origin = path;
                 auto result = collection_->streamer().send
@@ -250,7 +250,6 @@ namespace Routers
             }
         });
 
-
         cors_options(server, "/api/workspace/changeProjectMeta", "POST", impl_->config.corsOption);
         server.post("/api/workspace/changeProjectMeta", [this](auto req, auto res)
         {
@@ -282,6 +281,38 @@ namespace Routers
                 res->status(200).end();
             });
         });
+
+        cors_options(server, "/api/workspace/deleteFile", "POST", impl_->config.corsOption);
+        server.post("/api/workspace/deleteFile", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            {
+                auto sess = this_session(req);
+                if (sess.workspace.root.empty())
+                    return respondWithError(res, "open a workspace first");
+            }
+
+            readJsonBody(req, res, [this, req, res](json const& body)
+            {
+                if (!body.contains("path"))
+                    return respondWithError(res, "need path in json body");
+
+                auto sess = this_session(req);
+                if (sess.workspace.root.empty())
+                    return respondWithError(res, "open a workspace first");
+
+                std::string path = body["path"].get<std::string>();
+                auto veri = verifyPath(path, sess.workspace.root, true, true);
+                if (!std::get<0>(veri).empty())
+                    return respondWithError(res, std::get<0>(veri), std::get<2>(veri));
+
+                std::cout << "ordered to delete: " << std::get<1>(veri) << "\n";
+
+                return res->status(200).end();
+            });
+        });
+
         cors_options(server, "/api/workspace/loadFile", "POST", impl_->config.corsOption);
         server.post("/api/workspace/loadFile", [this](auto req, auto res)
         {
@@ -310,19 +341,16 @@ namespace Routers
                     force = body["force"].get<bool>();
 
                 auto veri = verifyPath(path, sess.workspace.root);
-                if (!veri.first.empty())
-                    return respondWithError(res, veri.first, json{
-                        {"fileNotFound", true},
-                        {"path", path}
-                    });
+                if (!std::get<0>(veri).empty())
+                    return respondWithError(res, std::get<0>(veri), std::get<2>(veri));
 
-                if (!sfs::is_regular_file(veri.second))
+                if (!sfs::is_regular_file(std::get<1>(veri)))
                     return respondWithError(res, "is not a regular file");
 
                 auto fc = std::make_unique <Streaming::Messages::FileContent>();
                 fc->load
                 (
-                    veri.second,
+                    std::get<1>(veri),
                     force,
                     impl_->config.maxFileReadSize,
                     impl_->config.maxFileReadSizeUnforceable,
@@ -398,9 +426,9 @@ namespace Routers
                         auto hash = jsonPart["sha256"].get<std::string>();
 
                         auto sess = this_session(req);
-                        auto const [error, path] = verifyPath(jsonPart["path"].get<std::string>(), sess.workspace.root, false);
+                        auto const [error, path, j] = verifyPath(jsonPart["path"].get<std::string>(), sess.workspace.root, false);
                         if (!error.empty())
-                            return respondWithError(res, error);
+                            return respondWithError(res, error, j);
 
                         // FIXME: dont save in same dir??
                         file->open(path, hash);
@@ -490,13 +518,13 @@ namespace Routers
 
                 auto sess = this_session(req);
                 auto veri = verifyPath(path, sess.workspace.root);
-                if (!veri.first.empty())
-                    return respondWithError(res, veri.first);
+                if (!std::get<0>(veri).empty())
+                    return respondWithError(res, std::get<0>(veri), std::get<2>(veri));
 
-                if (!sfs::is_directory(veri.second))
+                if (!sfs::is_directory(std::get<1>(veri)))
                     return respondWithError(res, "is not a directory");
 
-                sess.workspace.activeProject = veri.second;
+                sess.workspace.activeProject = std::get<1>(veri);
                 sess.save_partial([](auto& toSave, auto& from)
                 {
                     toSave.workspace.activeProject = from.workspace.activeProject;
@@ -725,23 +753,54 @@ namespace Routers
         };
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::pair <std::string, std::string> Workspace::verifyPath(std::string path, sfs::path const& root, bool mustExist)
+    std::tuple <std::string, std::string, json> Workspace::verifyPath
+    (
+        std::string path,
+        sfs::path const& root,
+        bool mustExist,
+        bool enforceWorkspaceRelative
+    )
     {
         if (path.empty())
-            return {"path cannot be empty"s, path};
-
-        if (path.find("//") != std::string::npos)
-            return {"not accepting double slashes in paths"s, path};
+            return {"path cannot be empty"s, path, json::object()};
 
         if (path[0] == '/')
             path = path.substr(1, path.size() - 1);
 
-        auto relativePath = sfs::path{root}.remove_filename() / path;
+        auto rootFilename = root.filename().string();
+        sfs::path resultPath;
+        if (path == rootFilename)
+        {
+            resultPath = root;
+        }
+        else if ((path.length() > rootFilename.length()) && path.substr(0, rootFilename.length()) == rootFilename)
+        {
+            Filesystem::Jail jail(root.parent_path());
+            auto relative = jail.relativeToRoot(path, false);
+            if (!relative && enforceWorkspaceRelative)
+                return {"path is not within workspace, and thats forbidden"s, path, json::object(
+                    {"pathNotInWorkspace", true}
+                )};
 
-        if (mustExist && !sfs::exists(relativePath))
-            return {"path does not exist", path};
+            if (relative)
+                resultPath = root.parent_path() / relative.value();
+            else
+                resultPath = path;
+        }
+        else if (enforceWorkspaceRelative)
+        {
+            return {"path is not within workspace, and thats forbidden"s, path, json::object(
+                {"pathNotInWorkspace", true}
+            )};
+        }
 
-        return {""s, relativePath.string()};
+        if (mustExist && !sfs::exists(resultPath))
+            return {"path does not exist", path, json{
+                {"fileNotFound", true},
+                {"path", path}
+            }};
+
+        return {""s, resultPath.generic_string(), json::object()};
     }
 //#####################################################################################################################
 }
