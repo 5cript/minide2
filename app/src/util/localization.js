@@ -85,6 +85,11 @@ class Dictionary
                     "$BackendSettings": "Backend",
                     "$Host": "Host",
                     "$Port": "Port"
+                },
+                "project": {
+                    "$LooksLikeSourceSplitButNotConfigured": "Looks like your project does a split by include and source by common convention, but your project is not configured accordingly. Do you want to change that?",
+                    "$FileNotFoundShallCreate": "File not found, do you want to create it?",
+                    "$CouldNotCreateFile": "Could not create file"
                 }
             },
             "de_DE": {
@@ -164,6 +169,11 @@ class Dictionary
                     "$BackendSettings": "Backend",
                     "$Host": "Host",
                     "$Port": "Port"
+                },
+                "project": {
+                    "$LooksLikeSourceSplitButNotConfigured": "Es sieht so aus als wäre dieses Projekt in 'include' und 'source' getrennt. Aber das Projekt ist nicht dahingehend konfiguriert. Wollen sie die Trennung aktivieren?",
+                    "$FileNotFoundShallCreate": "Datei nicht gefunden, soll sie erstellt werden?",
+                    "$CouldNotCreateFile": "Konnte datei nicht erstellen"
                 }
             }    
         }

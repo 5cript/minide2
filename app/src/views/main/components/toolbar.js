@@ -1,4 +1,4 @@
-import React, { useDebugValue } from 'react';
+import React from 'react';
 import {connect} from 'react-redux';
 
 // Styling
@@ -23,7 +23,6 @@ import _ from 'lodash';
 
 // Styles
 import './styles/toolbar.css'
-import { CancellationTokenSource } from 'monaco-editor';
 
 // Requires
 //let dict = require('../../../util/localization');

@@ -11,7 +11,29 @@ const initialState =
         typeSplitIndex: 0, // the position where the data goes from directories to files.
         children: []
     },
-    activeProject: undefined
+    activeProject: undefined,
+    hoveredNode: undefined
+};
+
+const findNodeAndSetStyle = (path, topNode, style, includeFiles) =>
+{
+    let originSplit = path.split('/');
+    originSplit.shift();
+
+    let curNode = topNode;
+    for (let depth = 1; depth !== originSplit.length; ++depth) 
+    {
+        let searchResult = binaryChildSearch(curNode, originSplit[depth]);
+        if (searchResult.match === false && includeFiles)
+        {
+            searchResult = binaryChildSearch(curNode, originSplit[depth], true);
+        }
+        if (searchResult.match === false) 
+            console.error('path not found in tree', curNode, originSplit[depth]);
+        else 
+            curNode = curNode.children[searchResult.index];
+    }
+    curNode.style = style;
 };
 
 export default function reducer(state = initialState, action) 
@@ -22,31 +44,45 @@ export default function reducer(state = initialState, action)
         {
             return {...state, root: action.payload}
         }
+        case 'SET_HOVERED_NODE': 
+        {
+            let res = _.cloneDeep(state.fileTree);
+
+            if (state.hoveredNode !== undefined)
+            {
+                if (state.hoveredNode !== state.activeProject)
+                    findNodeAndSetStyle(state.hoveredNode, res, undefined, true);
+                else
+                    findNodeAndSetStyle(state.hoveredNode, res, {
+                        fontWeight: 'bold',
+                        color: 'var(--theme-color)'
+                    });
+            }
+            
+            if (action.path !== undefined)
+            {
+                if (action.path === state.activeProject)
+                    findNodeAndSetStyle(action.path, res, {
+                        backgroundColor: 'var(--background-color-brighter)',
+                        fontWeight: 'bold',
+                        color: 'var(--theme-color)'
+                    }, true)
+                else
+                    findNodeAndSetStyle(action.path, res, {
+                        backgroundColor: 'var(--background-color-brighter)'
+                    }, true)
+            }
+
+            return {...state, fileTree: res, hoveredNode: action.path}; 
+        }
         case 'SET_ACTIVE_PROJECT':
         {
             let res = _.cloneDeep(state.fileTree);
 
-            const findNodeAndSetStyle = (path, style) =>
-            {
-                let originSplit = path.split('/');
-                originSplit.shift();
-
-                let curNode = res;
-                for (let depth = 1; depth !== originSplit.length; ++depth) 
-                {
-                    let searchResult = binaryChildSearch(curNode, originSplit[depth]);
-                    if (searchResult.match === false) 
-                        console.error('path not found in tree', curNode, originSplit[depth]);
-                    else 
-                        curNode = curNode.children[searchResult.index];
-                }
-                curNode.style = style;
-            };
-
             if (state.activeProject !== undefined)
-                findNodeAndSetStyle(state.activeProject, undefined);
+                findNodeAndSetStyle(state.activeProject, res, undefined);
 
-            findNodeAndSetStyle(action.path, {
+            findNodeAndSetStyle(action.path, res, {
                 fontWeight: 'bold',
                 color: 'var(--theme-color)'
             });

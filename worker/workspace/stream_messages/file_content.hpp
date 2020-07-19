@@ -21,6 +21,7 @@ namespace Streaming::Messages
         std::optional <int> linePos = std::nullopt;
         std::optional <std::string> message = std::nullopt;
         bool isAbsolutePath = false;
+        bool dontReloadIfAlreadyOpen = false;
 
         std::string toJson() const override;
 

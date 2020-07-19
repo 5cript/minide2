@@ -73,13 +73,71 @@ class Workspace extends Router
         });
     }
 
-    loadFile(path, optionalFlag)
+    createFile(path, onFailure)
+    {
+        this.saveFile(path, '', () => {
+            this.loadFile(path, undefined, fail => {
+                if (onFailure)
+                    onFailure(this.tryParseJson(fail));
+            });
+        })
+    }
+
+    loadFile(path, optionalFlag, onFailure)
     {
         const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
             ? optionalFlag
             : undefined
         ;
-        this.postJson(this.url("/api/workspace/loadFile"), {
+        this.postJson(
+            this.url("/api/workspace/loadFile"), 
+            {
+                path: path,
+                flag: flag
+            }, 
+            ()=>{}, 
+            fail => {
+                // assuming json, if it looks like json
+                if (onFailure)
+                    onFailure(this.tryParseJson(fail));
+            }
+        );
+    }
+
+    loadProjectMetafile(onSuccess, onFailure)
+    {
+        this.get
+        (
+            this.url("/api/workspace/loadProjectMeta"), 
+            (res) => 
+            {
+                if (onSuccess)
+                    res.json().then(json => {
+                        onSuccess(json);
+                    }).catch(fail => {
+                        onFailure(fail);
+                    });
+            },
+            (failInfo) => 
+            {
+                if (onFailure)
+                    onFailure(failInfo);
+            }
+        )
+    }
+
+    injectProjectSettings(settings)
+    {
+        this.postJson(this.url("/api/workspace/changeProjectMeta"), settings);
+    }
+
+    toggleSourceHeader(path, optionalFlag)
+    {
+        const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
+            ? optionalFlag
+            : undefined
+        ;
+        this.postJson(this.url("/api/workspace/toggleSourceHeader"), {
             path: path,
             flag: flag
         });

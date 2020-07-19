@@ -17,10 +17,27 @@ namespace Routers
     void BasicRouter::respondWithError(attender::response_handler* res, int status, char const* msg)
     {
         res->status(status);
+        res->type(".json");
         jsonResponse(res, json {
             {"error", true},
             {"message", msg}
         });
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void BasicRouter::respondWithError(attender::response_handler* res, std::string msg, json additionalInfo)
+    {
+        res->status(400);
+        res->type(".json");
+
+        additionalInfo["error"] = true;
+        additionalInfo["message"] = msg;
+
+        jsonResponse(res, additionalInfo);
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void BasicRouter::respondWithError(attender::response_handler* res, std::string msg)
+    {
+        respondWithError(res, msg, json::object());
     }
 //---------------------------------------------------------------------------------------------------------------------
     void BasicRouter::readExcept(boost::system::error_code ec)

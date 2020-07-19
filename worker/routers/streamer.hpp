@@ -3,6 +3,8 @@
 #include "router_base.hpp"
 #include "streamer_fwd.hpp"
 
+#include "../json.hpp"
+
 #include "../streaming/id.hpp"
 #include "../streaming/stream_queue.hpp"
 
@@ -61,6 +63,12 @@ namespace Routers
          *  @return 0 = success, -1 = forbidded by ip, -2 = no listener with id, -3 = invalid channel
          */
         int send(StreamChannel channel, std::string const& addr, int id, Streaming::Message&& msg);
+
+        /**
+         *  Send message formed from json on channel 'channel' to listener with id.
+         *  @return 0 = success, -1 = forbidded by ip, -2 = no listener with id, -3 = invalid channel
+         */
+        int send(StreamChannel channel, std::string const& addr, int id, json const& json, std::string const& type);
 
     private:
         void registerRoutes(attender::tcp_server& server);

@@ -18,3 +18,11 @@ export function setActiveProject(path)
         path: path
     };
 }
+
+export function setHoveredNode(path)
+{
+    return {
+        type: 'SET_HOVERED_NODE',
+        path: path
+    }
+}

@@ -180,6 +180,7 @@ namespace MinIDE::Scripting
         fc->linePos = linePos;
         fc->message = message;
         fc->isAbsolutePath = !relative.operator bool();
+        fc->dontReloadIfAlreadyOpen = true;
 
         auto result = impl_->streamer->send
         (

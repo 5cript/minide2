@@ -25,6 +25,17 @@ class Router
         obj.credentials = 'include';
         return obj
     }
+    tryParseJson(maybeJson)
+    {
+        try
+        {
+            return JSON.parse(maybeJson)
+        }
+        catch(err)
+        {
+            return maybeJson;
+        }
+    }
     authFetch(url, obj)
     {
         obj = this.authInfo(obj);
@@ -42,6 +53,47 @@ class Router
     setDataId(dataId)
     {
         this.dataId = dataId;
+    }
+    get(url, onSuccess, onFailure)
+    {
+        this.authFetch(
+            url,
+            {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }
+        ).then(res => 
+        {
+            if (res.status >= 400) 
+            {
+                if (onFailure !== undefined) {
+                    res.text().then(body => {
+                        onFailure(body);   
+                    }).catch(r => {
+                        onFailure(res);
+                    })
+                }
+                else
+                    res.text().then((value) => {
+                        this.errorCallback(value);
+                    });
+                return;
+            }
+            if (res.status >= 200 && res.status <= 299) 
+            {
+                if (onSuccess !== undefined)
+                    onSuccess(res);
+                return;
+            }
+        }).catch(e => 
+        {
+            if (onFailure !== undefined)
+                onFailure(e.message);
+            else
+                console.error(e);
+        });
     }
     postJson(url, data, onSuccess, onFailure)
     {
@@ -66,7 +118,7 @@ class Router
                     res.text().then(body => {
                         onFailure(body);   
                     }).catch(r => {
-                        onFailure(res);
+                        onFailure(r);
                     })
                 }
                 else

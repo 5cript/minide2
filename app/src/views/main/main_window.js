@@ -12,10 +12,11 @@ import MessageBox from '../../elements/message_box';
 import Blocker from './components/toolbar_blocker';
 import Slide from 'react-reveal/Slide';
 import {DragDropContext} from 'react-beautiful-dnd';
+import KeybindActor from './keybind_actor';
 
 // Actions
 import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actions';
-import {addOpenFileWithContent, activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
+import {addOpenFileWithContent, setActiveFile} from '../../actions/open_file_actions';
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
 import {addToLog, clearLog, focusLogByName, setLogType, swapLogs} from '../../actions/log_actions.js';
@@ -123,57 +124,14 @@ class MainWindow extends React.Component
     }
 
     /**
-     * Handles all pressed window-wide shortcuts
+     * Register and Forwards window wide shortcuts
      */
-    installSaveShortcuts()
+    installShortcuts()
     {
-        window.addEventListener('keyup', (event) => 
+        window.addEventListener('keyup', event => 
         {
-            if (this.isShortcut(event, this.props.shortcuts.bindings.save))
-            {
-                if (this.props.activeFile >= 0) 
-                {
-                    let file = this.props.openFiles[this.props.activeFile];
-                    if (file.isAbsolutePath)
-                    {
-                        this.showYesNoBox(this.dict.translate("$FileOutsideWorkspace", "dialog"), () => {
-                            this.backend.workspace().saveFile(file.path, file.content, () => 
-                            {
-                                this.props.dispatch(activeFileWasSynchronized());
-                            });
-                        })
-                    }
-                    else
-                    {
-                        this.backend.workspace().saveFile(file.path, file.content, () => 
-                        {
-                            this.props.dispatch(activeFileWasSynchronized());
-                        });
-                    }
-                }
-                else
-                {
-                    this.showOkBox('todo: implement save as for void model');
-                    return;
-                }
-                return;
-            }
-
-            if (this.isShortcut(event, this.props.shortcuts.bindings.saveAll))
-            {
-                this.props.openFiles.map(file => 
-                {
-                    console.log(file);
-                    if (!file.synchronized)
-                    {
-                        this.backend.workspace().saveFile(file.path, file.content, () => 
-                        {
-                            this.props.dispatch(fileWasSynchronized(file.path));
-                        });
-                    }
-                    return file;
-                })
-            }
+            if (this.keybindActor)
+                this.keybindActor.onKey(event);
         }, true);
     }
 
@@ -280,6 +238,92 @@ class MainWindow extends React.Component
                         this.props.dispatch(addToLog(head.processName, info.command));
                 }
             }
+            else if (head.type === "toggle_source_header")
+            {
+                const checkProjectSettings = (onSplitWasDecided, onLocalWasDecided) => 
+                {
+                    this.backend.workspace().loadProjectMetafile
+                    (
+                        options => 
+                        {
+                            if ((head.specialDirExists || head.specialDirFile !== "") && options.splitSourceAndInclude !== true && options.ignoreSeemingSplit !== true) 
+                            {
+                                this.showYesNoBox(this.dict.translate('$LooksLikeSourceSplitButNotConfigured', 'project'), 
+                                    () => // yes, want to split
+                                    {
+                                        this.backend.workspace().injectProjectSettings({
+                                            splitSourceAndInclude: true,
+                                            ignoreSeemingSplit: false
+                                        });
+                                        onSplitWasDecided();
+                                    },
+                                    () => // no, dont want split
+                                    {
+                                        this.backend.workspace().injectProjectSettings({
+                                            splitSourceAndInclude: false,
+                                            ignoreSeemingSplit: true
+                                        });
+                                        onLocalWasDecided();
+                                    }
+                                );
+                            }
+                            else if (options.splitSourceAndInclude !== true && options.ignoreSeemingSplit === true)
+                            {
+                                onLocalWasDecided();
+                            }
+                            else if (options.splitSourceAndInclude === true && head.specialDirFile !== "")
+                            {
+                                onSplitWasDecided();
+                            }
+                            else if (head.specialDirFile === "" || !head.fileInSpecialDir)
+                            {
+                                onLocalWasDecided();
+                            }
+                            else
+                            {
+                                this.showOkBox('implementation_error, uncaught variation in file split decision:\n' + JSON.stringify(options) + "\n" + JSON.stringify(head));
+                                console.error('implementation_error, uncaught variation in file split decision', options, head);
+                            }
+                        }, 
+                        error => 
+                        {
+                            console.error(JSON.stringify(error));
+                        }
+                    )
+                };
+
+                const openFile = (correspondingFile) => 
+                {
+                    const fileIfOpen = this.props.openFiles.findIndex(file => file.path === correspondingFile)
+                    if (fileIfOpen !== -1)
+                        this.props.dispatch(setActiveFile(fileIfOpen));
+                    else
+                        this.backend.workspace().loadFile(correspondingFile, undefined, fail => 
+                        {
+                            if (fail.fileNotFound === true) 
+                            {
+                                this.showYesNoBox(this.dict.translate('$FileNotFoundShallCreate', 'project') + "\n" + fail.path, () => 
+                                {
+                                    this.backend.workspace().createFile(correspondingFile, createFail => 
+                                    {
+                                        this.showOkBox(this.dict.translate('$CouldNotCreateFile', 'project') + "\n" + createFail)
+                                    })
+                                });
+                            }
+                            else 
+                                this.showOkBox('Error: ' + fail);
+                        });
+                }
+                checkProjectSettings
+                (
+                    () => {/* split decided */
+                        openFile(head.specialDirFile);
+                    },
+                    () => {/* local decided */
+                        openFile(head.inplaceFile);
+                    }
+                );
+            }
             else
             {
                 // Unhandled:
@@ -375,7 +419,7 @@ class MainWindow extends React.Component
         this.dict.setLang(this.props.locale.language);
 
         this.registerIpcHandler();
-        this.installSaveShortcuts();
+        this.installShortcuts();
 
         this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectingToBackend", "main_window")));
 
@@ -411,6 +455,12 @@ class MainWindow extends React.Component
         };
     }
 
+    loadKeybindsIfPossible = () => 
+    {
+        if (this.home && this.keybindActor)
+            this.keybindActor.loadKeybindsFromDrive(this.home);
+    }
+
     registerIpcHandler = () => 
     {
         this.debouncedStart = _.debounce(() => {
@@ -426,7 +476,8 @@ class MainWindow extends React.Component
         })
 
         ipcRenderer.on('setHome', (event, arg) => {
-            this.home = arg
+            this.home = arg;
+            this.loadKeybindsIfPossible();
 
             this.persistence = new LocalPersistence(this.home, window.require('fs'));
             try
@@ -505,13 +556,14 @@ class MainWindow extends React.Component
         })
     }
 
-    showYesNoBox(message, yesAction) 
+    showYesNoBox(message, yesAction, noAction) 
     {
         this.setState({
             yesNoBoxVisible: true,
             yesNoMessage: message
         })
         this.yesAction = yesAction;
+        this.noAction = noAction;
     }
 
     showOkBox(message, okAction) 
@@ -530,6 +582,8 @@ class MainWindow extends React.Component
         });
         if (whatButton === "Yes" && this.yesAction)
             this.yesAction();
+        else if (whatButton === "No" && this.noAction)
+            this.noAction();
     }
 
     onOkBoxClose(whatButton)
@@ -588,6 +642,12 @@ class MainWindow extends React.Component
         this.editor = editor;
     }
 
+    setKeybindActor = (actor) => 
+    {
+        this.keybindActor = actor;
+        this.loadKeybindsIfPossible();
+    }
+
     render = () => 
     {
         return (
@@ -635,6 +695,12 @@ class MainWindow extends React.Component
                 </div>
                 <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
                 <MessageBox boxStyle="Ok" dict={this.dict} visible={this.state.okBoxVisible} message={this.state.okBoxMessage} onButtonPress={(wb)=>{this.onOkBoxClose(wb);}}/>
+                <KeybindActor 
+                    ref={this.setKeybindActor}
+                    backend={this.backend}
+                    mainWindow={this}
+                    dict={this.dict}
+                ></KeybindActor>
                 </DragDropContext>
             </div>
         )
@@ -645,7 +711,6 @@ export default connect(state => {
     return {
         openFiles: state.openFiles.openFiles,
         activeFile: state.openFiles.activeFile,
-        shortcuts: state.shortcuts,
         locale: state.locale,
         backend: state.backend,
         activeProject: state.workspace.activeProject,

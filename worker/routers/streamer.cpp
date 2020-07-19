@@ -3,6 +3,7 @@
 #include "../streaming/common_messages/welcome.hpp"
 #include "../streaming/common_messages/binary_data.hpp"
 #include "../streaming/common_messages/keep_alive.hpp"
+#include "../streaming/common_messages/inline_message.hpp"
 
 #include <attender/encoding/streaming_producer.hpp>
 #include <attender/encoding/brotli.hpp>
@@ -75,6 +76,24 @@ namespace Routers
             case(StreamChannel::Data): return doWithChannel(dataStream_);
             default: return -3;
         }
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    int DataStreamer::send(StreamChannel channel, std::string const& addr, int id, json const& json, std::string const& type)
+    {
+        return send
+        (
+            channel,
+            addr,
+            id,
+            Streaming::Message
+            {
+                std::make_unique <Streaming::Messages::InlineMessage>
+                (
+                    type,
+                    json
+                )
+            }
+        );
     }
 //---------------------------------------------------------------------------------------------------------------------
     void DataStreamer::registerRoutes(attender::tcp_server& server)

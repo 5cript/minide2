@@ -59,7 +59,7 @@ class OpenFilesList extends React.Component
                                     'openFileXButton': true,
                                     'inactiveXButton': this.props.activeFile !== i
                                 })}
-                                id='x' 
+                                id='closeCross' 
                                 onClick={(e) => {
                                     if (!file.synchronized) 
                                     {

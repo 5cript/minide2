@@ -81,15 +81,15 @@ namespace Routers
                 }
                 catch(json::exception const& exc)
                 {
-                    res->status(400).send(exc.what());
+                    return respondWithError(res, exc.what());
                 }
                 catch(std::exception const& exc)
                 {
-                    res->status(400).send(exc.what());
+                    return respondWithError(res, exc.what());
                 }
                 catch(...)
                 {
-                    res->status(400).send("something went wrong while reading from the json");
+                    return respondWithError(res, "something went wrong while reading from the json");
                 }
             });
         });

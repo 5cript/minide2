@@ -1,7 +1,5 @@
 import nodePath from 'path';
 
-const isRenderer = require('is-electron-renderer')
-
 const pathModifier =
 {
     shorten: (path) => {
@@ -15,7 +13,7 @@ const pathModifier =
 
 const minIdeHome = (fs) => 
 {
-    let home = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share");
+    let home = process.env.APPDATA || (process.platform === 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share");
     home = home + "/.minIDE";
     if (!fs.existsSync(home))
         fs.mkdirSync(home, {recursive: true});

@@ -11,7 +11,8 @@ import classNames from 'classnames';
 import _ from 'lodash';
 
 // Actions
-import {setActiveProject} from '../../../actions/workspace_actions';
+import {setActiveProject, setHoveredNode} from '../../../actions/workspace_actions';
+import { setActiveFile } from '../../../actions/open_file_actions';
 
 // Styles
 import './styles/file_tree.css';
@@ -93,29 +94,40 @@ class FileView extends PureComponent
 
         const nodeKey = _.clone(this.hoveredNode.key);
 
-        let file = this.props.openFiles.find(file => file.path === this.hoveredNode.key);
-        if (file === undefined)
+        let fileIndex = this.props.openFiles.findIndex(file => file.path === this.hoveredNode.key);
+        if (this.props.openFiles[fileIndex] === undefined)
             this.props.backend.workspace().loadFile(this.hoveredNode.key);
         else
         {
+            /*
             this.showYesNoBox(this.props.dict.translate("$ReloadFileFromServer", "dialog"), () => {
                 this.props.backend.workspace().loadFile(nodeKey);
             });
+            */
+            this.props.dispatch(setActiveFile(fileIndex));
         }
     }
 
     onMouseEnter(v)
     {
+        if (this.lockHoverChange)
+            return;
         this.hoveredNode = v.node;
+        this.props.dispatch(setHoveredNode(v.node.key));
     }
 
     onMouseLeave(v)
     {
+        if (this.lockHoverChange)
+            return;
         this.hoveredNode = undefined;
+        this.props.dispatch(setHoveredNode(undefined));
     }
 
     onFileContextOpen(xOffset, yOffset, event)
     {
+        this.lockHoverChange = true;
+
         const doShow = this.hoveredNode && (this.hoveredNode.isLeaf !== false);
         if (doShow)
             this.contextItem = this.hoveredNode;
@@ -128,6 +140,8 @@ class FileView extends PureComponent
 
     onDirectoryContextOpen(xOffset, yOffset, event)
     {
+        this.lockHoverChange = true;
+
         const doShow = this.hoveredNode && (this.hoveredNode.isLeaf === false);
         if (doShow)
             this.contextItem = this.hoveredNode;
@@ -181,7 +195,7 @@ class FileView extends PureComponent
                             return <></>;
                         }
                         return (
-                            <div style={{background: "var(--background-color)"}}>
+                            <div style={{background: this.props.hoveredProps === obj.data.key ? "var(--background-color-brighter)" : "var(--background-color)"}}>
                                 <i className={classNames("tree-arrow", obj.expanded ? "tree-down" : "tree-right")} style={{cursor: 'pointer'}}></i>
                             </div>
                         );
@@ -194,14 +208,18 @@ class FileView extends PureComponent
                     menuId={'contextMenuForFiles'}
                     closeOnClickOut={true}
                     onOpen={(...args) => {return this.onFileContextOpen(...args);}}
+                    onClose={() => {this.lockHoverChange = false; this.props.dispatch(setHoveredNode(undefined));}}
                     otherMenus={["contextMenuForDirectories"]}
                     items={[
                         {
                             label: this.props.dict.translate("$OpenFile", "file_tree"),
-                            onClick: () => {console.log('configure')}
+                            onClick: () => {
+                                this.props.backend.workspace().loadFile(this.contextItem.key);
+                            }
                         },
                         {
                             label: this.props.dict.translate("$OpenToTheSide", "file_tree"),
+                            disabled: true,
                             onClick: () => {console.log('delete')},
                         },
                         {
@@ -209,6 +227,7 @@ class FileView extends PureComponent
                         },
                         {
                             label: this.props.dict.translate("$RenameFile", "file_tree"),
+                            onClick: () => {console.log('rename')},
                         },
                         {
                             line: true
@@ -224,6 +243,7 @@ class FileView extends PureComponent
                     menuId={'contextMenuForDirectories'}
                     closeOnClickOut={true}
                     onOpen={(...args) => {return this.onDirectoryContextOpen(...args);}}
+                    onClose={() => {this.lockHoverChange = false; this.props.dispatch(setHoveredNode(undefined));}}
                     otherMenus={["contextMenuForFiles"]}
                     items={[
                         {
@@ -242,6 +262,7 @@ export default connect(state => {
         fileTree: state.workspace.fileTree, 
         root: state.workspace.root,
         openFiles: state.openFiles.openFiles,
-        backendState: state.backend
+        backendState: state.backend,
+        hoveredProps: state.workspace.hoveredNode
     }
 })(FileView);

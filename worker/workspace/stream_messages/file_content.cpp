@@ -16,7 +16,8 @@ namespace Streaming::Messages
             {"chunks", chunks},
             {"flag", flag},
             {"path", path},
-            {"isAbsolutePath", isAbsolutePath}
+            {"isAbsolutePath", isAbsolutePath},
+            {"dontReloadIfAlreadyOpen", dontReloadIfAlreadyOpen}
         };
 
         if (line)

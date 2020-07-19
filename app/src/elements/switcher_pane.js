@@ -50,7 +50,7 @@ class SwitcherPane extends React.Component
                         onClick={()=>{this.onSwitchClick("toLeft")}}
                     >
                         <div className="offsetter">
-                            <i className="arrow left"></i>
+                            <i className="arrow switcher_left"></i>
                         </div>
                     </div>
                     {children[1]}
@@ -64,7 +64,7 @@ class SwitcherPane extends React.Component
                         onClick={()=>{this.onSwitchClick("toRight")}}
                     >
                         <div className="offsetter">
-                            <i className="arrow right"></i>
+                            <i className="arrow switcher_right"></i>
                         </div>
                     </div>
                 </div>

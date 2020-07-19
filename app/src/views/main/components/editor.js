@@ -50,7 +50,7 @@ class MonacoEditorComponent extends React.Component
     {
         theme: 'vs-dark',
         options: {
-            glyphMargin: true
+            glyphMargin: false
         },        
     }
 
@@ -195,7 +195,6 @@ class MonacoEditorComponent extends React.Component
 
     componentDidUpdate = () =>
     {
-        console.log('editor update');
         this.loadSelectedModel();
     }
 
@@ -289,7 +288,7 @@ class CodeEditor extends React.Component
                                                 else
                                                     return <div className="tabSpacer"></div>
                                             })()}
-                                            <button id='x' onClick={(e) => {
+                                            <button id='closeCross' onClick={(e) => {
                                                 if (!file.synchronized) 
                                                 {
                                                     this.showYesNoBox(this.props.dict.translate("$CloseUnsavedWarning", "dialog"))

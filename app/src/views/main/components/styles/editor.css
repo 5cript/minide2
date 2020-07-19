@@ -26,7 +26,7 @@
     width: 4px;
 }
 
-#x{
+#closeCross{
     width: 16px;
     padding: 0;
     height: 16px;
@@ -37,7 +37,7 @@
     border: none;
     background-color: transparent;
 }
-#x::after,#x::before{
+#closeCross::after,#closeCross::before{
     position:absolute;
     left:0px;
     top: 8px;
@@ -47,20 +47,20 @@
     height:2px;
     background: white;
 }
-#x::after{
+#closeCross::after{
     -webkit-transform: rotate(45deg);
     -moz-transform: rotate(45deg);
     -ms-transform: rotate(45deg);
     -o-transform: rotate(45deg);
     transform: rotate(45deg);
 }
-#x::before{
+#closeCross::before{
     -webkit-transform: rotate(-45deg);
     -moz-transform: rotate(-45deg);
     -ms-transform: rotate(-45deg);
     -o-transform: rotate(-45deg);
     transform: rotate(-45deg);
 }
-#x:focus {
+#closeCross:focus {
     outline: 0;
 }

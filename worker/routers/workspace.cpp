@@ -6,16 +6,21 @@
 #include "../json.hpp"
 #include "../hybrid_read_sink.hpp"
 #include "../filesystem/directory_cache.hpp"
+#include "../filesystem/relations.hpp"
 
 #include "../streaming/common_messages/binary_data.hpp"
 #include "../workspace/stream_messages/directory_contents.hpp"
 #include "../workspace/stream_messages/file_content.hpp"
 #include "../workspace/hashed_file.hpp"
 #include "../workspace/workspace_persistence.hpp"
+#include "../workspace/project_persistence.hpp"
+
 
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <type_traits>
 
 using namespace std::string_literals;
 
@@ -64,16 +69,16 @@ namespace Routers
                 auto sess = this_session(req);
 
                 if (!body.contains("path"))
-                    return res->status(400).send("need path in json body");
+                    return respondWithError(res, "need path in json body");
 
                 auto root = body["path"].get<std::string>();
 
                 if (!sfs::exists(root))
-                    return res->status(400).send("directory does not exist");
+                    return respondWithError(res, "directory does not exist");
 
                 auto id = sess.dataId;
                 if (id == -1)
-                    return res->status(400).send("please listen to the data stream before this request");
+                    return respondWithError(res, "please listen to the data stream before this request");
 
                 auto dir = std::make_unique <Streaming::Messages::DirectoryContent>(root);
                 dir->scan(false, "");
@@ -87,7 +92,7 @@ namespace Routers
                 );
 
                 if (result != 0)
-                    return res->status(400).send("please first listen to the data stream or provide correct listener id");
+                    return respondWithError(res, "please first listen to the data stream or provide correct listener id");
 
                 sess.workspace.root = root;
                 sess.save_partial([](auto& toSave, auto& from)
@@ -143,24 +148,24 @@ namespace Routers
                 auto sess = this_session(req);
 
                 if (!body.contains("path"))
-                    return res->status(400).send("need path in json body");
+                    return respondWithError(res, "need path in json body");
 
                 auto recursive = false;
                 if (body.contains("recursive") && body["recursive"].get<bool>())
                     recursive = true;
 
                 if (sess.workspace.root.empty())
-                    return res->status(400).send("first open a workspace");
+                    return respondWithError(res, "first open a workspace");
 
                 auto id = sess.dataId;
                 if (id == -1)
-                    return res->status(400).send("please listen to the data stream before this request");
+                    return respondWithError(res, "please listen to the data stream before this request");
 
                 std::string path = body["path"].get<std::string>();
 
                 auto veri = verifyPath(path, sess.workspace.root);
                 if (!veri.first.empty())
-                    return res->status(400).send(veri.first);
+                    return respondWithError(res, veri.first);
 
                 auto dir = std::make_unique <Streaming::Messages::DirectoryContent>(veri.second);
                 dir->scan(recursive, "");
@@ -174,7 +179,7 @@ namespace Routers
                 );
 
                 if (result != 0)
-                    return res->status(400).send("please first listen to the data stream or provide correct listener id");
+                    return respondWithError(res, "please first listen to the data stream or provide correct listener id");
                 res->status(200).end();
             });
         });
@@ -203,7 +208,7 @@ namespace Routers
 
             auto sess = this_session(req);
             if (sess.workspace.root.empty())
-                return res->status(400).send("open a workspace first");
+                return respondWithError(res, "open a workspace first");
 
             WorkspacePersistence wspace{sess.workspace.root};
             try
@@ -217,24 +222,86 @@ namespace Routers
             }
         });
 
-        cors_options(server, "/api/workspace/loadFile", "POST", impl_->config.corsOption);
-        server.post("/api/workspace/loadFile", [this](auto req, auto res)
+        cors_options(server, "/api/workspace/loadProjectMeta", "GET", impl_->config.corsOption);
+        server.get("/api/workspace/loadProjectMeta", [this](auto req, auto res)
         {
             enable_cors(req, res, impl_->config.corsOption);
 
             auto sess = this_session(req);
             if (sess.workspace.root.empty())
-                return res->status(400).send("open a workspace first");
+                return respondWithError(res, "open a workspace first");
+
+            if (sess.workspace.activeProject.empty())
+                return respondWithError(res, "no active project");
+
+            ProjectPersistence project{sess.workspace.activeProject};
+            try
+            {
+                project.load();
+                auto raw = project.raw();
+                if (raw.empty())
+                    res->status(200).send("{}");
+                else
+                    res->status(200).send(project.raw());
+            }
+            catch(std::exception const& exc)
+            {
+                return res->status(500).send(exc.what());
+            }
+        });
+
+
+        cors_options(server, "/api/workspace/changeProjectMeta", "POST", impl_->config.corsOption);
+        server.post("/api/workspace/changeProjectMeta", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            {
+                auto sess = this_session(req);
+                if (sess.workspace.root.empty())
+                    return respondWithError(res, "open a workspace first");
+
+                if (sess.workspace.activeProject.empty())
+                    return respondWithError(res, "no active project");
+            }
+
+            readJsonBody(req, res, [this, req, res](json const& body)
+            {
+                auto sess = this_session(req);
+                if (sess.workspace.root.empty())
+                    return respondWithError(res, "open a workspace first");
+
+                if (sess.workspace.activeProject.empty())
+                    return respondWithError(res, "no active project");
+
+                ProjectPersistence project{sess.workspace.activeProject};
+                project.load();
+                project.inject(body);
+                project.save();
+
+                res->status(200).end();
+            });
+        });
+        cors_options(server, "/api/workspace/loadFile", "POST", impl_->config.corsOption);
+        server.post("/api/workspace/loadFile", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            {
+                auto sess = this_session(req);
+                if (sess.workspace.root.empty())
+                    return respondWithError(res, "open a workspace first");
+            }
 
             readJsonBody(req, res, [this, req, res](json const& body)
             {
                 if (!body.contains("path"))
-                    return res->status(400).send("need path in json body");
+                    return respondWithError(res, "need path in json body");
 
                 auto sess = this_session(req);
                 auto id = sess.dataId;
                 if (id == -1)
-                    return res->status(400).send("please listen to the data stream before this request");
+                    return respondWithError(res, "please listen to the data stream before this request");
 
                 std::string path = body["path"].get<std::string>();
 
@@ -244,10 +311,13 @@ namespace Routers
 
                 auto veri = verifyPath(path, sess.workspace.root);
                 if (!veri.first.empty())
-                    return res->status(400).send(veri.first);
+                    return respondWithError(res, veri.first, json{
+                        {"fileNotFound", true},
+                        {"path", path}
+                    });
 
                 if (!sfs::is_regular_file(veri.second))
-                    return res->status(400).send("is not a regular file");
+                    return respondWithError(res, "is not a regular file");
 
                 auto fc = std::make_unique <Streaming::Messages::FileContent>();
                 fc->load
@@ -272,7 +342,7 @@ namespace Routers
                 );
 
                 if (result != 0)
-                    return res->status(400).send("please first listen to the data stream or provide correct listener id");
+                    return respondWithError(res, "please first listen to the data stream or provide correct listener id");
                 res->status(200).end();
             });
         });
@@ -287,7 +357,7 @@ namespace Routers
             auto sess = this_session(req);
 
             if (sess.workspace.root.empty())
-                return res->status(400).send("open a workspace first");
+                return respondWithError(res, "open a workspace first");
 
             auto maybeContentLen = req->get_header_field("Content-Length");
             long long len = 0;
@@ -300,7 +370,7 @@ namespace Routers
                 catch (std::exception const& exc)
                 {
                     // conversion failed!
-                    return res->status(400).send(exc.what());
+                    return respondWithError(res, exc.what());
                 }
             }
             else
@@ -310,7 +380,7 @@ namespace Routers
                 return res->status(413).end();
 
             if (len < 13)
-                return res->status(400).send("Content-Length is too small to be correct (10 bytes hex json len + | + json + data)");
+                return respondWithError(res, "Content-Length is too small to be correct (10 bytes hex json len + | + json + data)");
 
             std::shared_ptr <HashedFile> file = std::make_shared <HashedFile>();
             std::shared_ptr <JsonDataHybridSink> sink{std::make_shared <JsonDataHybridSink>(
@@ -320,22 +390,22 @@ namespace Routers
                     try
                     {
                         if (!jsonPart.contains("path"))
-                            return res->status(400).send("need path in json body part");
+                            return respondWithError(res, "need path in json body part");
 
                         if (!jsonPart.contains("sha256"))
-                            return res->status(400).send("requires a sha256 in the json body for verification");
+                            return respondWithError(res, "requires a sha256 in the json body for verification");
 
                         auto hash = jsonPart["sha256"].get<std::string>();
 
                         auto sess = this_session(req);
                         auto const [error, path] = verifyPath(jsonPart["path"].get<std::string>(), sess.workspace.root, false);
                         if (!error.empty())
-                            return res->status(400).send(error);
+                            return respondWithError(res, error);
 
                         // FIXME: dont save in same dir??
                         file->open(path, hash);
                         if (!file->good())
-                            return res->status(400).send("cannot open file");
+                            return respondWithError(res, "cannot open file");
                     }
                     catch(std::exception const& exc)
                     {
@@ -358,9 +428,9 @@ namespace Routers
                     }
                 },
                 // expectation failure
-                [res](std::string const& msg)
+                [res, this](std::string const& msg)
                 {
-                    res->status(400).send(msg);
+                    respondWithError(res, msg);
                 },
                 static_cast <std::size_t> (len)
             )};
@@ -408,23 +478,23 @@ namespace Routers
                 auto sess = this_session(req);
                 sess.dump();
                 if (sess.workspace.root.empty())
-                    return res->status(400).send("open a workspace first");
+                    return respondWithError(res, "open a workspace first");
             }
 
             readJsonBody(req, res, [this, req, res](json const& body)
             {
                 if (!body.contains("path"))
-                    return res->status(400).send("need path in json body");
+                    return respondWithError(res, "need path in json body");
 
                 std::string path = body["path"].get<std::string>();
 
                 auto sess = this_session(req);
                 auto veri = verifyPath(path, sess.workspace.root);
                 if (!veri.first.empty())
-                    return res->status(400).send(veri.first);
+                    return respondWithError(res, veri.first);
 
                 if (!sfs::is_directory(veri.second))
-                    return res->status(400).send("is not a directory");
+                    return respondWithError(res, "is not a directory");
 
                 sess.workspace.activeProject = veri.second;
                 sess.save_partial([](auto& toSave, auto& from)
@@ -441,6 +511,218 @@ namespace Routers
                 res->status(200).end();
             });
         });
+
+        cors_options(server, "/api/workspace/toggleSourceHeader", "POST", impl_->config.corsOption);
+        server.post("/api/workspace/toggleSourceHeader", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            {
+                auto sess = this_session(req);
+                if (sess.workspace.root.empty())
+                    return respondWithError(res, "open a workspace first");
+            }
+
+            readJsonBody(req, res, [this, req, res](json const& body)
+            {
+                if (!body.contains("path"))
+                    return respondWithError(res, "need path in json body");
+
+                auto sess = this_session(req);
+                auto id = sess.controlId;
+                if (id == -1)
+                    return respondWithError(res, "please listen to the control stream before this request");
+
+                std::string sourceExtension = "auto";
+                std::string headerExtension = "auto";
+                if (body.contains("sourceExtension"))
+                    sourceExtension = body["sourceExtension"].get<std::string>();
+                if (body.contains("headerExtension"))
+                    sourceExtension = body["headerExtension"].get<std::string>();
+                std::string targetExtension;
+
+                std::string path = body["path"].get<std::string>();
+
+                auto original = sfs::path{path};
+                auto extension = original.extension().string();
+
+                // I am shredding information here that is "encoded" where capital letters are c++ files.
+                // bullshit denomination to me, so eff it.
+                std::transform(std::begin(extension), std::end(extension), std::begin(extension), [](auto c){return std::tolower(c);});
+                bool isSource = false;
+                if
+                (
+                    extension == ".cpp" ||
+                    extension == ".c" ||
+                    extension == ".cxx" ||
+                    extension == ".cc" ||
+                    extension == ".c++" ||
+                    extension == ".cp" ||
+                    extension == ".ii" ||
+                    extension == ".i" ||
+                    extension == ".m" ||
+                    extension == ".mi" ||
+                    extension == ".mm" ||
+                    extension == ".mii"
+                )
+                {
+                    if (headerExtension != "auto")
+                        targetExtension = headerExtension;
+                    else
+                    {
+                        if (extension[1] == 'c')
+                            targetExtension = ".h"s + extension.substr(2, extension.length() - 2);
+                        else
+                            // this is easier, but not great. because there is distinction between cpp and c in
+                            // the other quirky extensions. but its not really worth the effort here.
+                            targetExtension = ".h";
+
+                    }
+                    isSource = true;
+                }
+                else if //is header
+                (
+                    extension == ".hh" ||
+                    extension == ".h" ||
+                    extension == ".hp" ||
+                    extension == ".hpp" ||
+                    extension == ".hxx" ||
+                    extension == ".h++" ||
+                    extension == ".tcc" ||
+                    extension == ".txx"
+                )
+                {
+                    if (sourceExtension != "auto")
+                        targetExtension = sourceExtension;
+                    else
+                    {
+                        if (extension[1] == 'h')
+                            targetExtension = ".c"s + extension.substr(2, extension.length() - 2);
+                        else
+                            targetExtension = ".cpp"; // tcc and txx are c++ extension
+                    }
+                    isSource = false;
+                }
+                else
+                {
+                    return respondWithError(res, "File is not recognized as a C/C++/Objective-C source or header file by extension");
+                }
+
+                auto findResult = toggleSourceHeader(original, isSource, targetExtension);
+
+                json j = json::object();
+                j["specialDirExists"] = std::get<2>(findResult);
+                Filesystem::Jail jail(sess.workspace.root);
+                auto makeRelative = [&jail, &findResult](auto dummy)
+                {
+                    auto path = std::get<decltype(dummy)::value>(findResult);
+                    if (path.empty())
+                        return path;
+                    auto maybeRelative = jail.relativeToRoot(path, true);
+                    if (maybeRelative)
+                        return maybeRelative.value();
+                    return path;
+                };
+                j["specialDirFile"] = makeRelative(std::integral_constant <int, 0>{}).generic_string();
+                j["inplaceFile"] = makeRelative(std::integral_constant <int, 1>{}).generic_string();
+                j["fileInSpecialDir"] = std::get<3>(findResult);
+
+                auto result = collection_->streamer().send
+                (
+                    StreamChannel::Control,
+                    req->ip(),
+                    id,
+                    j,
+                    "toggle_source_header"
+                );
+
+                if (result != 0)
+                    return respondWithError(res, "please first listen to the data stream or provide correct listener id");
+                res->status(200).end();
+            });
+        });
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    std::tuple <
+        sfs::path,
+        sfs::path,
+        bool,
+        bool
+    >
+    Workspace::toggleSourceHeader(sfs::path const& original, bool isSource, std::string const& targetExtension)
+    {
+        //sfs::path original{"/test/project/source/something/a/file.cpp"};
+        auto reduced = original.parent_path();
+
+        std::deque <std::string> parts;
+        for (auto i = std::begin(reduced); i != std::end(reduced); ++i)
+        {
+            parts.push_front(i->string());
+        }
+
+        bool anyFound = false;
+        for (auto const& i : parts)
+        {
+            if (isSource && (i == "source" || i == "sources" || i == "src"))
+            {
+                anyFound = true;
+                break;
+            }
+            else if (!isSource && (i == "include" || i == "headers"))
+            {
+                anyFound = true;
+                break;
+            }
+            else
+                reduced = reduced.parent_path();
+        }
+
+        if (!anyFound)
+            reduced = sfs::path{};
+
+        sfs::path specialDirPartner;
+        bool specialExists = false;
+        if (!reduced.empty() && reduced.string() != "/")
+        {
+            auto relative = sfs::proximate(original.parent_path(), reduced);
+
+            auto specialDir = sfs::path{};
+        #define TEST_SPECIAL_DIR(X) \
+            if (specialDir.empty() && sfs::exists(X)) \
+                specialDir = X;
+
+            if (isSource)
+            {
+                TEST_SPECIAL_DIR(reduced.parent_path() / "include");
+                TEST_SPECIAL_DIR(reduced.parent_path() / "headers");
+
+                if (specialDir.empty())
+                    specialDir = reduced.parent_path() / "include";
+                else
+                    specialExists = true;
+            }
+            else
+            {
+                TEST_SPECIAL_DIR(reduced.parent_path() / "source");
+                TEST_SPECIAL_DIR(reduced.parent_path() / "src");
+                TEST_SPECIAL_DIR(reduced.parent_path() / "sources");
+
+                if (specialDir.empty())
+                    specialDir = reduced.parent_path() / "source";
+                else
+                    specialExists = true;
+            }
+
+            specialDirPartner = specialDir / relative / (original.stem().string() + targetExtension);
+        }
+        auto samePlacePartner = original.parent_path() / (original.stem().string() + targetExtension);
+
+        return {
+            specialDirPartner.generic_string(),
+            samePlacePartner.generic_string(),
+            specialExists,
+            anyFound
+        };
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::pair <std::string, std::string> Workspace::verifyPath(std::string path, sfs::path const& root, bool mustExist)
@@ -457,7 +739,7 @@ namespace Routers
         auto relativePath = sfs::path{root}.remove_filename() / path;
 
         if (mustExist && !sfs::exists(relativePath))
-            return {"path does not exist"s, path};
+            return {"path does not exist", path};
 
         return {""s, relativePath.string()};
     }

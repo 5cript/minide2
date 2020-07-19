@@ -209,6 +209,8 @@
 		<Unit filename="settings/environment.hpp" />
 		<Unit filename="streaming/common_messages/binary_data.cpp" />
 		<Unit filename="streaming/common_messages/binary_data.hpp" />
+		<Unit filename="streaming/common_messages/inline_message.cpp" />
+		<Unit filename="streaming/common_messages/inline_message.hpp" />
 		<Unit filename="streaming/common_messages/keep_alive.cpp" />
 		<Unit filename="streaming/common_messages/keep_alive.hpp" />
 		<Unit filename="streaming/common_messages/messages_from_lua.cpp" />

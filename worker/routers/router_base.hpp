@@ -93,6 +93,8 @@ namespace Routers
 
     protected:
         void respondWithError(attender::response_handler* res, int status, char const* msg);
+        void respondWithError(attender::response_handler* res, std::string msg);
+        void respondWithError(attender::response_handler* res, std::string msg, json additionalInfo);
         void readExcept(boost::system::error_code ec);
 
         /**

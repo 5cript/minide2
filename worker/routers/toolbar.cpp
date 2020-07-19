@@ -87,7 +87,7 @@ namespace Routers
             }
             catch(std::exception const& exc)
             {
-                res->status(500).send(exc.what());
+                respondWithError(res, 400, exc.what());
             }
         });
 
@@ -99,20 +99,20 @@ namespace Routers
             readJsonBody(req, res, [req, res, this](json const& body)
             {
                 if (!body.contains("toolbarId"))
-                    return res->status(400).send("need toolbarId");
+                    return respondWithError(res, "need toolbarId");
                 if (!body.contains("itemId"))
-                    return res->status(400).send("need itemId");
+                    return respondWithError(res, "need itemId");
 
                 auto session = this_session(req);
                 auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
                 if (toolbar == nullptr)
-                    return res->status(400).send("toolbar with given id not found");
+                    return respondWithError(res, "toolbar with given id not found");
 
                 auto resultMessage = toolbar->clickAction(body["itemId"].get<std::string>());
                 if (resultMessage.empty())
                     res->status(200).end();
                 else
-                    res->status(400).send(resultMessage);
+                    respondWithError(res, resultMessage);
             });
         });
 
@@ -124,16 +124,16 @@ namespace Routers
             readJsonBody(req, res, [req, res, this](json const& body)
             {
                 if (!body.contains("toolbarId"))
-                    return res->status(400).send("need toolbarId");
+                    return respondWithError(res, "need toolbarId");
                 if (!body.contains("itemId"))
-                    return res->status(400).send("need itemId");
+                    return respondWithError(res, "need itemId");
                 if (!body.contains("menuEntryLabel"))
-                    return res->status(400).send("need menuEntryLabel");
+                    return respondWithError(res, "need menuEntryLabel");
 
                 auto session = this_session(req);
                 auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
                 if (toolbar == nullptr)
-                    return res->status(400).send("toolbar with given id not found");
+                    return respondWithError(res, "toolbar with given id not found");
 
                 auto resultMessage = toolbar->menuAction
                 (
@@ -143,7 +143,7 @@ namespace Routers
                 if (resultMessage.empty())
                     res->status(200).end();
                 else
-                    res->status(400).send(resultMessage);
+                    respondWithError(res, resultMessage);
             });
         });
 
@@ -155,14 +155,14 @@ namespace Routers
             readJsonBody(req, res, [req, res, this](json const& body)
             {
                 if (!body.contains("toolbarId"))
-                    return res->status(400).send("need toolbarId");
+                    return respondWithError(res, "need toolbarId");
                 if (!body.contains("itemId"))
-                    return res->status(400).send("need itemId");
+                    return respondWithError(res, "need itemId");
 
                 auto session = this_session(req);
                 auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
                 if (toolbar == nullptr)
-                    return res->status(400).send("toolbar with given id not found: "s + body["toolbarId"].get<std::string>());
+                    return respondWithError(res, "toolbar with given id not found: "s + body["toolbarId"].get<std::string>());
 
                 auto resultMessage = toolbar->loadCombobox
                 (
@@ -171,7 +171,7 @@ namespace Routers
                 if (resultMessage.empty())
                     res->status(200).end();
                 else
-                    res->status(400).send(resultMessage);
+                    respondWithError(res, resultMessage);
             });
         });
 
@@ -183,16 +183,16 @@ namespace Routers
             readJsonBody(req, res, [req, res, this](json const& body)
             {
                 if (!body.contains("toolbarId"))
-                    return res->status(400).send("need toolbarId");
+                    return respondWithError(res, "need toolbarId");
                 if (!body.contains("itemId"))
-                    return res->status(400).send("need itemId");
+                    return respondWithError(res, "need itemId");
                 if (!body.contains("selected"))
-                    return res->status(400).send("need selected");
+                    return respondWithError(res, "need selected");
 
                 auto session = this_session(req);
                 auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
                 if (toolbar == nullptr)
-                    return res->status(400).send("toolbar with given id not found");
+                    return respondWithError(res, "toolbar with given id not found");
 
                 auto resultMessage = toolbar->comboboxSelect
                 (
@@ -202,7 +202,7 @@ namespace Routers
                 if (resultMessage.empty())
                     res->status(200).end();
                 else
-                    res->status(400).send(resultMessage);
+                    respondWithError(res, resultMessage);
             });
         });
 
@@ -214,30 +214,30 @@ namespace Routers
             readJsonBody(req, res, [req, res, this](json const& body)
             {
                 if (!body.contains("toolbarId"))
-                    return res->status(400).send("need toolbarId");
+                    return respondWithError(res, "need toolbarId");
 
                 std::string logName = "";
                 if (body.contains("logName"))
                     logName = body["logName"].get<std::string>();
                 else
-                    return res->status(400).send("need logName");
+                    return respondWithError(res, "need logName");
 
                 int lineNumber = -1;
                 if (body.contains("lineNumber"))
                     lineNumber = body["lineNumber"].get<int>();
                 else
-                    return res->status(400).send("need lineNumber");
+                    return respondWithError(res, "need lineNumber");
 
                 std::string lineString;
                 if (body.contains("lineString"))
                     lineString = body["lineString"].get<std::string>();
                 else
-                    return res->status(400).send("need lineString");
+                    return respondWithError(res, "need lineString");
 
                 auto session = this_session(req);
                 auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
                 if (toolbar == nullptr)
-                    return res->status(400).send("toolbar with given id not found");
+                    return respondWithError(res, "toolbar with given id not found");
 
                 auto result = toolbar->onLogDoubleClick(logName, lineNumber, lineString);
                 if (result.empty())

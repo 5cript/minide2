@@ -26,7 +26,7 @@ class ToolbarApi extends Router
     {
         this.postJson(this.url("/api/toolbar/menuAction"), {
             toolbarId: toolbarId,
-            itemId,  itemId,
+            itemId:  itemId,
             menuEntryLabel: label
         })
     }

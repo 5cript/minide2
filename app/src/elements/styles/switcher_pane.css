@@ -26,12 +26,12 @@
     color: var(--foreground-color);
 }
 
-.right 
+.switcher_right 
 {
     transform: translateX(4px) rotate(-45deg);
 }
 
-.left 
+.switcher_right 
 {
     transform: translateX(8px) rotate(135deg);
 }

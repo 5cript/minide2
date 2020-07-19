@@ -2,7 +2,6 @@ import React from 'react';
 
 // components
 import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import {Droppable, Draggable} from 'react-beautiful-dnd';
 
 // other
@@ -140,6 +139,7 @@ export function TabPanel(props)
             id={`simple-tabpanel-${index}`}
             aria-labelledby={`simple-tab-${index}`}
             style={{widht: "100%", height: "100%"}}
+            {...other}
         >
             {children}
         </div>

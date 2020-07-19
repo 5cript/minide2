@@ -9,10 +9,10 @@ import LogPanel from './log';
 import {TabPanel, SleekTabs} from '../../../elements/tabs';
 
 // Actions
-import {setActiveLog, focusLogByName} from '../../../actions/log_actions';
+import {focusLogByName} from '../../../actions/log_actions';
 
 // Other
-import _ from 'lodash'
+//import _ from 'lodash'
 
 // Styles
 import './styles/logs_and_term.css';

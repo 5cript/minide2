@@ -10,16 +10,24 @@ const MenuItem = ({ item, anyImage }) =>
         label,
         icon,
         onClick,
-        isLine
+        isLine,
+        disabled
     } = item;
 
     if (isLine !== true)
         return (
             <span
                 className="menuItem"
-                onClick={(e) => {onClick(e, item.label)}}
+                onClick={(e) => {!disabled && onClick(e, item.label)}}
                 key={label}
-                style={{"cursor":"pointer","display":"flex","alignItems":"center","justifyContent":"flex-start","marginBottom":"7px"}}
+                style={{
+                    cursor: (disabled === true) ? "not-allowed" : "pointer",
+                    "display":"flex",
+                    "alignItems":"center",
+                    "justifyContent":"flex-start",
+                    "marginBottom":"7px",
+                    opacity: (disabled === true) ? 0.5 : undefined
+                }}
             >
                 {icon && <img className="menuIcon" src={icon} alt={'X'} />}
                 {icon === undefined && anyImage && <div className="menuImageFill"></div>}
@@ -128,6 +136,8 @@ export default class ContextMenu extends React.PureComponent
     {
         const menu = document.getElementById(this.menuId);
         this.visible = false; 
+        if (this.props.onClose)
+            this.props.onClose();
         if (menu)
             menu.style.cssText = menu.style.cssText + 'visibility: hidden;';
     }
@@ -191,7 +201,8 @@ ContextMenu.propTypes = {
     })),
     contextId: PropTypes.string.isRequired,
     menuId: PropTypes.string.isRequired,
-    otherMenus: PropTypes.array
+    otherMenus: PropTypes.array,
+    onClose: PropTypes.func
 };
 
 ContextMenu.defaultProps = {

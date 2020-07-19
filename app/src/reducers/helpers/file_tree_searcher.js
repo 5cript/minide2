@@ -2,8 +2,11 @@
  * on exact match returns {index: 'exact match index', match: true}.
  * on non exact match returns {index: 'where to insert, 0 equals front, 1 second etc', match: false}
  */
-let binaryChildSearch = (node, what) => 
+let binaryChildSearch = (node, what, searchFiles) => 
 {
+    if (searchFiles === undefined)
+        searchFiles = false;
+
     let lexicographically_before = (x, y) => {
         return x.localeCompare(y) < 0;
     }
@@ -16,20 +19,29 @@ let binaryChildSearch = (node, what) =>
 
     let start = 0;
     let end = node.typeSplitIndex;
-    if (end === 0) // end === 0 => action.directories.length === 0 => there is no directory => insert at front
-        return {
-            index: 0,
-            match: false
-        };
 
-    if (end === 1)
-        return {
-            index: lexicographically_before(node.children[0].title, what) ? 1 : 0,
-            match: (node.children[0].title === what)
-        };
+    if (searchFiles)
+    {
+        start = node.typeSplitIndex;
+        end = node.children.length;
+    }
+    else 
+    {
+        if (end === 0) // end === 0 => action.directories.length === 0 => there is no directory => insert at front
+            return {
+                index: 0,
+                match: false
+            };
+
+        if (end === 1)
+            return {
+                index: lexicographically_before(node.children[0].title, what) ? 1 : 0,
+                match: (node.children[0].title === what)
+            };
+    }
     
     // starting pivot:
-    let pivot = ~~((end - start) / 2);    
+    let pivot = ~~((end + start) / 2);    
 
     while (end - start > 1) 
     {

@@ -34,7 +34,7 @@ namespace Routers
                 auto sess = this_session(req);
 
                 if (!body.contains("path"))
-                    return res->status(400).send("need path in json body");
+                    return respondWithError(res, "need path in json body");
             });
         });
     }
