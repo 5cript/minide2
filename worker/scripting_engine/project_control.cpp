@@ -166,30 +166,35 @@ namespace MinIDE::Scripting
         {
         }
 
-        auto fc = std::make_unique <Streaming::Messages::FileContent>();
-        fc->load
-        (
-            fileName,
-            false,
-            impl_->config.maxFileReadSize,
-            impl_->config.maxFileReadSizeUnforceable,
-            impl_->config.fileChunkSize
-        );
-        fc->path = relative ? relative.value().generic_string() : fileName;
-        fc->line = line;
-        fc->linePos = linePos;
-        fc->message = message;
-        fc->isAbsolutePath = !relative.operator bool();
-        fc->dontReloadIfAlreadyOpen = true;
+        if (sfs::exists(fileName))
+        {
+            auto fc = std::make_unique <Streaming::Messages::FileContent>();
+            fc->load
+            (
+                fileName,
+                false,
+                impl_->config.maxFileReadSize,
+                impl_->config.maxFileReadSizeUnforceable,
+                impl_->config.fileChunkSize
+            );
+            fc->path = relative ? relative.value().generic_string() : fileName;
+            fc->line = line;
+            fc->linePos = linePos;
+            fc->message = message;
+            fc->isAbsolutePath = !relative.operator bool();
+            fc->dontReloadIfAlreadyOpen = true;
 
-        auto result = impl_->streamer->send
-        (
-            Routers::StreamChannel::Data,
-            s.value().remoteAddress,
-            s.value().dataId,
-            fc.release()
-        );
-        return result;
+            auto result = impl_->streamer->send
+            (
+                Routers::StreamChannel::Data,
+                s.value().remoteAddress,
+                s.value().dataId,
+                fc.release()
+            );
+
+            return result;
+        }
+        return false;
     }
 //#####################################################################################################################
     void loadProjectControl

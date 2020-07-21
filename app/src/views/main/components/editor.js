@@ -242,12 +242,13 @@ class CodeEditor extends React.Component
         return true;
     }
 
-    showYesNoBox(message) 
+    showYesNoBox(message, yesAction) 
     {
         this.setState({
             yesNoBoxVisible: true,
             yesNoMessage: message
         })
+        this.yesAction = yesAction;
     }
 
     onMessageBoxClose(whatButton)
@@ -291,11 +292,9 @@ class CodeEditor extends React.Component
                                             <button id='closeCross' onClick={(e) => {
                                                 if (!file.synchronized) 
                                                 {
-                                                    this.showYesNoBox(this.props.dict.translate("$CloseUnsavedWarning", "dialog"))
-                                                    this.yesAction = () => {
-                                                        console.log('yes action called');
+                                                    this.showYesNoBox(this.props.dict.translate("$CloseUnsavedWarning", "dialog"), () => {
                                                         this.props.dispatch(removeOpenFile(file.path));     
-                                                    }
+                                                    })
                                                 }
                                                 else
                                                     this.props.dispatch(removeOpenFile(file.path)); 

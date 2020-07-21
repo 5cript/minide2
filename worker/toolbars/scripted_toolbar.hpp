@@ -11,12 +11,48 @@
 #include "../json.hpp"
 #include "../filesystem/filesystem.hpp"
 #include "../config.hpp"
+#include "../fallible.hpp"
 
 #include <string>
 #include <memory>
 
 namespace Toolbars
 {
+    struct ToolbarApiError
+    {
+        enum class ErrorType
+        {
+            LockTimeout,
+            Various
+        };
+
+        std::optional <std::string> message;
+        ErrorType type;
+
+        ToolbarApiError(std::string const& message)
+            : message{message}
+            , type{ErrorType::Various}
+        {
+        }
+
+        std::string error_message() const
+        {
+            if (type == ErrorType::LockTimeout)
+                return "lock timed out, some other action is in progress";
+
+            if (message)
+                return message.value();
+            else
+                return "no error message";
+        }
+
+        ToolbarApiError(ErrorType type)
+            : message{}
+            , type{type}
+        {
+        }
+    };
+
     class ScriptedToolbar : public BasicToolbar
     {
     public:
@@ -31,11 +67,11 @@ namespace Toolbars
         ~ScriptedToolbar();
 
         std::string id() const;
-        std::string clickAction(std::string const& itemId);
-        std::string menuAction(std::string const& itemId, std::string const& menuEntryLabel);
-        std::string loadCombobox(std::string const& itemId);
-        std::string comboboxSelect(std::string const& itemId, std::string const& selected);
-        std::string onLogDoubleClick(std::string const& logName, int lineNumber, std::string lineString);
+        Fallible <ToolbarApiError, void> clickAction(std::string const& itemId);
+        Fallible <ToolbarApiError, void> menuAction(std::string const& itemId, std::string const& menuEntryLabel);
+        Fallible <ToolbarApiError, void> loadCombobox(std::string const& itemId);
+        Fallible <ToolbarApiError, void> comboboxSelect(std::string const& itemId, std::string const& selected);
+        Fallible <ToolbarApiError, void> onLogDoubleClick(std::string const& logName, int lineNumber, std::string lineString);
 
         json getJson() const;
 

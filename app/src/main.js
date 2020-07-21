@@ -110,8 +110,8 @@ function createWindow()
 
 	electron.Menu.setApplicationMenu(menu);
 
-	//const screen = 0;
-	const screen = 1;
+	const screen = 0;
+	//const screen = 1;
 
 	let windowWidth = 1500;
 	let windowHeight = 900;

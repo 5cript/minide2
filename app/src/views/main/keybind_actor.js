@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 // Components
 
 // Actions
-import {activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open_file_actions';
+import {activeFileWasSynchronized, fileWasSynchronized, setActiveFile, removeOpenFile} from '../../actions/open_file_actions';
 import {setAllKeybinds} from '../../actions/shortcut_actions';
 
 // Other
@@ -18,7 +18,10 @@ class KeybindActor extends React.Component
     isShortcut = (event, shortcutDefinition) =>
     {
         if (shortcutDefinition === undefined)
-            console.error('oups, shortcut is not defined?! look at shortcut store');
+        {
+            // there is no binding for this.
+            return;
+        }
 
         if (event.type !== 'keyup')
             return;
@@ -41,57 +44,13 @@ class KeybindActor extends React.Component
                     return false;
                 }
             }
-            else if (event[k] !== v)
+            else if (v !== undefined && event[k] !== v)
             {
                 is = false;
                 return false;
             }
         });
         return is;
-    }
-
-    saveFile = () =>
-    {
-        if (this.props.activeFile >= 0) 
-        {
-            let file = this.props.openFiles[this.props.activeFile];
-            if (file.isAbsolutePath)
-            {
-                this.props.mainWindow.showYesNoBox(this.dict.translate("$FileOutsideWorkspace", "dialog"), () => {
-                    this.props.backend.workspace().saveFile(file.path, file.content, () => 
-                    {
-                        this.props.dispatch(activeFileWasSynchronized());
-                    });
-                })
-            }
-            else
-            {
-                this.props.backend.workspace().saveFile(file.path, file.content, () => 
-                {
-                    this.props.dispatch(activeFileWasSynchronized());
-                });
-            }
-        }
-        else
-        {
-            this.props.mainWindow.showOkBox('todo: implement save as for void model');
-            return;
-        }
-    }
-
-    saveAllFiles = () =>
-    {
-        this.props.openFiles.map(file => 
-        {
-            if (!file.synchronized)
-            {
-                this.props.backend.workspace().saveFile(file.path, file.content, () => 
-                {
-                    this.props.dispatch(fileWasSynchronized(file.path));
-                });
-            }
-            return file;
-        })
     }
 
     loadKeybindsFromDrive = (home) =>
@@ -120,13 +79,49 @@ class KeybindActor extends React.Component
         this.props.backend.workspace().toggleSourceHeader(this.props.openFiles[this.props.activeFile].path);
     }
 
+    advanceEditorTab = (amount) => 
+    {
+        const openFileCount = this.props.openFiles.length;
+        if (openFileCount === 0)
+            return;
+        if (openFileCount === 1)
+            return this.props.dispatch(setActiveFile(0))
+        
+        let newActive = this.props.activeFile + amount;
+        if (newActive >= openFileCount)
+            newActive = 0;
+        if (newActive < 0)
+            newActive = openFileCount - 1;
+
+        this.props.dispatch(setActiveFile(newActive));
+    }
+
+    closeActiveFile = () => 
+    {
+        if (this.props.activeFile !== -1)
+        {
+            const file = this.props.openFiles[this.props.activeFile];
+            if (!file.synchronized) 
+            {
+                this.props.mainWindow.showYesNoBox(this.props.dict.translate("$CloseUnsavedWarning", "dialog"), () => {
+                    this.props.dispatch(removeOpenFile(file.path));     
+                })
+            }
+            else
+                this.props.dispatch(removeOpenFile(file.path)); 
+        }
+    }
+
     onKey = (event) =>
     {
         const pbindings = this.props.shortcuts.bindings;
         const bindings = [
-            {combination: pbindings.save, action: ()=>{this.saveFile()}},
-            {combination: pbindings.saveAll, action: ()=>{this.saveAllFiles()}},
-            {combination: pbindings.toggleSourceHeader, action: ()=>{this.toggleSourceHeader()}}
+            {combination: pbindings.save, action: ()=>{this.props.commonActions.saveFile();}},
+            {combination: pbindings.saveAll, action: ()=>{this.props.commonActions.saveAllFiles()}},
+            {combination: pbindings.toggleSourceHeader, action: ()=>{this.toggleSourceHeader()}},
+            {combination: pbindings.editorTabPrevious, action: ()=>{this.advanceEditorTab(-1)}},
+            {combination: pbindings.editorTabNext, action: ()=>{this.advanceEditorTab(1)}},
+            {combination: pbindings.closeActiveFile, action: ()=>{this.closeActiveFile()}}
         ];
 
         for (let binding of bindings)

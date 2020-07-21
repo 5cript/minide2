@@ -18,6 +18,7 @@
 
 using namespace MinIDE::Scripting;
 using namespace std::string_literals;
+using namespace std::chrono_literals;
 
 namespace Toolbars
 {
@@ -48,7 +49,8 @@ namespace Toolbars
 //---------------------------------------------------------------------------------------------------------------------
     std::pair <std::string, sol::table> ScriptedToolbar::Implementation::getItem(std::string const& itemId)
     {
-        std::lock_guard <StateCollection::mutex_type> guard{engine->globalMutex};
+        StateCollection::guard_type guard{engine->globalMutex};
+
         auto& lua = engine->lua;
 
         if (!loaded)
@@ -121,7 +123,7 @@ namespace Toolbars
         loadProcessUtility(impl_->engine);
 
         {
-            std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+            StateCollection::guard_type guard{impl_->engine->globalMutex};
             auto& lua = impl_->engine->lua;
 
             commonStateSetup(lua, true);
@@ -214,32 +216,37 @@ namespace Toolbars
         }
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::string ScriptedToolbar::onLogDoubleClick(std::string const& logName, int lineNumber, std::string lineString)
+    Fallible <ToolbarApiError, void> ScriptedToolbar::onLogDoubleClick(std::string const& logName, int lineNumber, std::string lineString)
     {
-        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+        StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
+        if (!guard.try_lock_for(500ms))
+            return ToolbarApiError(ToolbarApiError::ErrorType::LockTimeout);
+
         auto& lua = impl_->engine->lua;
 
         if (!impl_->loaded)
-            return "not loaded (how did this happen?) "s + __FILE__ + ":" + std::to_string(__LINE__);
+            return ToolbarApiError{"not loaded (how did this happen?) "s + __FILE__ + ":" + std::to_string(__LINE__)};
 
         if (!lua["get_toolbar"].valid())
-            return "missing get_toolbar function";
+            return ToolbarApiError{"missing get_toolbar function"};
 
         sol::object interface = lua["get_toolbar"]();
         sol::table tablified = interface;
 
         tablified["on_log_double_click"](interface, logName, lineNumber, lineString);
 
-        return "";
+        return fallibleSuccess<ToolbarApiError, void>();
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::string ScriptedToolbar::clickAction(std::string const& id)
+    Fallible <ToolbarApiError, void> ScriptedToolbar::clickAction(std::string const& id)
     {
+        StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
+        if (!guard.try_lock_for(500ms))
+            return ToolbarApiError(ToolbarApiError::ErrorType::LockTimeout);
+
         auto p = impl_->getItem(id);
         if (!p.first.empty())
-            return p.first;
-
-        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+            return ToolbarApiError{p.first};
 
         auto& tablified = p.second;
 
@@ -250,22 +257,25 @@ namespace Toolbars
         });
         action();
         if (!fail)
-            return "";
+            return fallibleSuccess<ToolbarApiError, void>();
         else
-            return "item does not have an action, or action is not a function";
+            return ToolbarApiError{"item does not have an action, or action is not a function"};
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::string ScriptedToolbar::menuAction(std::string const& itemId, std::string const& menuEntryLabel)
+    Fallible <ToolbarApiError, void> ScriptedToolbar::menuAction(std::string const& itemId, std::string const& menuEntryLabel)
     {
+        StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
+        if (!guard.try_lock_for(500ms))
+            return ToolbarApiError(ToolbarApiError::ErrorType::LockTimeout);
+
         auto p = impl_->getItem(itemId);
         if (!p.first.empty())
-            return p.first;
+            return ToolbarApiError{p.first};
 
-        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
         auto& tablified = p.second;
 
         if (!tablified["entries"].valid())
-            return "no entries in menu";
+            return ToolbarApiError{"no entries in menu"};
 
         for (sol::table const entries = tablified["entries"]; auto const& [ek, entry] : entries)
         {
@@ -275,22 +285,25 @@ namespace Toolbars
                 continue;
 
             if (!entryTable["action"].valid())
-                return "item.entry does not have an action";
+                return ToolbarApiError{"item.entry does not have an action"};
 
             auto action = entryTable.get_or<std::function<void()>>("action", [](){});
             action();
-            return "";
+            return fallibleSuccess<ToolbarApiError, void>();
         }
-        return "menu was found, but not the label of the menu entry";
+        return ToolbarApiError{"menu was found, but not the label of the menu entry"};
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::string ScriptedToolbar::loadCombobox(std::string const& itemId)
+    Fallible <ToolbarApiError, void> ScriptedToolbar::loadCombobox(std::string const& itemId)
     {
+        StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
+        if (!guard.try_lock_for(500ms))
+            return ToolbarApiError(ToolbarApiError::ErrorType::LockTimeout);
+
         auto p = impl_->getItem(itemId);
         if (!p.first.empty())
-            return p.first;
+            return ToolbarApiError{p.first};
 
-        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
         auto& item = p.second;
 
         bool fail = false;
@@ -300,22 +313,24 @@ namespace Toolbars
         });
         load();
         if (!fail)
-            return "";
+            return fallibleSuccess<ToolbarApiError, void>();
         else
-            return "item does not have a load function, or member is not a function";
+            return ToolbarApiError{"item does not have a load function, or member is not a function"};
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::string ScriptedToolbar::comboboxSelect(std::string const& itemId, std::string const& selected)
+    Fallible <ToolbarApiError, void> ScriptedToolbar::comboboxSelect(std::string const& itemId, std::string const& selected)
     {
-        std::lock_guard <StateCollection::mutex_type> guard{impl_->engine->globalMutex};
+        StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
+        if (!guard.try_lock_for(500ms))
+            return ToolbarApiError(ToolbarApiError::ErrorType::LockTimeout);
 
         auto& lua = impl_->engine->lua;
 
         if (!impl_->loaded)
-            return "not loaded (how did this happen?) "s + __FILE__ + ":" + std::to_string(__LINE__);
+            return ToolbarApiError{"not loaded (how did this happen?) "s + __FILE__ + ":" + std::to_string(__LINE__)};
 
         if (!lua["combox_select"].valid())
-            return "missing combox_select function";
+            return ToolbarApiError{"missing combox_select function"};
 
         bool fail = false;
         auto select = lua.get_or<std::function<void(std::string const&, std::string const&)>>
@@ -325,8 +340,8 @@ namespace Toolbars
         );
         select(itemId, selected);
         if (fail)
-            return "script interface misses the combox_select function";
-        return "";
+            return ToolbarApiError{"script interface misses the combox_select function"};
+        return fallibleSuccess<ToolbarApiError, void>();
     }
 //#####################################################################################################################
 }

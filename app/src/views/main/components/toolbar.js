@@ -94,10 +94,31 @@ class Toolbar extends React.Component {
         }
     }
 
+    decideSpecialAction = (action) => 
+    {
+        switch(action)
+        {
+            case('save'): 
+            {
+                this.props.commonActions.saveFile();
+                break;
+            }
+            case('saveAll'):
+            {
+                this.props.commonActions.saveAllFiles();
+                break;
+            }
+        }
+    }
+
     buttonAction = (toolbar, item) => 
     {
         if (item.special_actions && item.special_actions.length > 0)
-            console.log('SPECIAL_ACTIONS!!!')
+        {
+            item.special_actions.forEach(element => {
+                this.decideSpecialAction(element);
+            });
+        }
 
         this.props.backend.toolbar().callAction(toolbar.id, item.id);
     }

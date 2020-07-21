@@ -108,11 +108,11 @@ namespace Routers
                 if (toolbar == nullptr)
                     return respondWithError(res, "toolbar with given id not found");
 
-                auto resultMessage = toolbar->clickAction(body["itemId"].get<std::string>());
-                if (resultMessage.empty())
+                auto result = toolbar->clickAction(body["itemId"].get<std::string>());
+                if (!result.didFail())
                     res->status(200).end();
                 else
-                    respondWithError(res, resultMessage);
+                    respondWithError(res, result.error_value().error_message());
             });
         });
 
@@ -135,15 +135,15 @@ namespace Routers
                 if (toolbar == nullptr)
                     return respondWithError(res, "toolbar with given id not found");
 
-                auto resultMessage = toolbar->menuAction
+                auto result = toolbar->menuAction
                 (
                     body["itemId"].get<std::string>(),
                     body["menuEntryLabel"].get<std::string>()
                 );
-                if (resultMessage.empty())
+                if (!result.didFail())
                     res->status(200).end();
                 else
-                    respondWithError(res, resultMessage);
+                    respondWithError(res, result.error_value().error_message());
             });
         });
 
@@ -164,14 +164,14 @@ namespace Routers
                 if (toolbar == nullptr)
                     return respondWithError(res, "toolbar with given id not found: "s + body["toolbarId"].get<std::string>());
 
-                auto resultMessage = toolbar->loadCombobox
+                auto result = toolbar->loadCombobox
                 (
                     body["itemId"].get<std::string>()
                 );
-                if (resultMessage.empty())
+                if (!result.didFail())
                     res->status(200).end();
                 else
-                    respondWithError(res, resultMessage);
+                    respondWithError(res, result.error_value().error_message());
             });
         });
 
@@ -194,15 +194,15 @@ namespace Routers
                 if (toolbar == nullptr)
                     return respondWithError(res, "toolbar with given id not found");
 
-                auto resultMessage = toolbar->comboboxSelect
+                auto result = toolbar->comboboxSelect
                 (
                     body["itemId"].get<std::string>(),
                     body["selected"].get<std::string>()
                 );
-                if (resultMessage.empty())
+                if (!result.didFail())
                     res->status(200).end();
                 else
-                    respondWithError(res, resultMessage);
+                    respondWithError(res, result.error_value().error_message());
             });
         });
 
@@ -240,9 +240,10 @@ namespace Routers
                     return respondWithError(res, "toolbar with given id not found");
 
                 auto result = toolbar->onLogDoubleClick(logName, lineNumber, lineString);
-                if (result.empty())
-                    return res->status(204).end();
-                res->status(200).send(result);
+                if (!result.didFail())
+                    res->status(200).end();
+                else
+                    respondWithError(res, result.error_value().error_message());
             });
         });
     }

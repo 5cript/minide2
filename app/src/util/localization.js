@@ -17,7 +17,11 @@ class Dictionary
                     "$OpenWorkspace": "Open Workspace",
                     "$Settings": "Settings",
                     "$Environment": "Environment",
-                    "$Preferences": "Preferences"
+                    "$Preferences": "Preferences",
+                    "$Backend": "Backend",
+                    "$Connect": "Connect",
+                    "$Test": "TestAction_DEL_ME",
+                    "$ReloadToolbar": "Reload toolbar"
                 },
                 "explorer": {
                     "$OpenFiles": "Open Files",
@@ -102,7 +106,11 @@ class Dictionary
                     "$OpenWorkspace": "Arbeitsraum Öffnen",
                     "$Settings": "Einstellungen",
                     "$Environment": "Ausführumgebung",
-                    "$Preferences": "Lokale Einstellungen"
+                    "$Preferences": "Lokale Einstellungen",
+                    "$Backend": "Backend",
+                    "$Connect": "Verbinden",
+                    "$Test": "Testaktion_DEL_ME",
+                    "$ReloadToolbar": "Toolbar neu laden"
                 },
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",

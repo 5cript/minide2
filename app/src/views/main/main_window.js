@@ -13,6 +13,7 @@ import Blocker from './components/toolbar_blocker';
 import Slide from 'react-reveal/Slide';
 import {DragDropContext} from 'react-beautiful-dnd';
 import KeybindActor from './keybind_actor';
+import CommonActions from './common_actions';
 
 // Actions
 import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actions';
@@ -435,6 +436,13 @@ class MainWindow extends React.Component
             // on Connection Loss
             (...args) => {this.onConnectionLoss(...args);}
         );
+        
+        this.commonActions = new CommonActions
+        (
+            props.store,
+            this,
+            this.backend
+        );
     }
 
     onConnectionLoss(which)
@@ -515,7 +523,8 @@ class MainWindow extends React.Component
         
         ipcRenderer.on('testBackend', (event, arg) => 
         {
-            this.backend.workspace().openWorkspace("D:/Development/IDE2/test-project");
+            this.showYesNoBox('Bla Bla\nBlubber Asdf\n1234');
+            //this.backend.workspace().openWorkspace("D:/Development/IDE2/test-project");
         })
 
         ipcRenderer.on('reloadToolbar', (event, arg) => 
@@ -669,7 +678,13 @@ class MainWindow extends React.Component
                         <Blocker></Blocker>
                     </Slide>
                     <Slide right when={this.props.backend.connected}>
-                        <Toolbar dict={this.dict} ref={(n) => {this.setToolbarRef(n)}} backend={this.backend} cmake={new CMakeToolbarEvents()}/>
+                        <Toolbar 
+                            dict={this.dict} 
+                            ref={(n) => {this.setToolbarRef(n)}} 
+                            backend={this.backend} 
+                            cmake={new CMakeToolbarEvents()}
+                            commonActions={this.commonActions}
+                        />
                     </Slide>
                 </div>
                 <div id='SplitterContainer'>
@@ -713,6 +728,7 @@ class MainWindow extends React.Component
                     backend={this.backend}
                     mainWindow={this}
                     dict={this.dict}
+                    commonActions={this.commonActions}
                 ></KeybindActor>
                 </DragDropContext>
             </div>
