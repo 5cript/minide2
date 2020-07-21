@@ -97,6 +97,27 @@ export default function reducer(state={
                 openFiles: openFiles
             }
         }
+        case 'MOVE_OPEN_FILE': {
+            if (!(action.from >= 0 && action.from < state.openFiles.length && action.to >= 0 && action.to < state.openFiles.length))
+                return state;
+
+            let lastActiveFilePath = '';
+            if (state.activeFile !== -1)
+                lastActiveFilePath = state.openFiles[state.activeFile].path;
+            let openFiles = _.clone(state.openFiles);
+            openFiles.splice(action.to, 0, openFiles.splice(action.from, 1)[0]);
+            if (lastActiveFilePath !== '')
+                return {
+                    ...state,
+                    openFiles: openFiles,
+                    activeFile: openFiles.findIndex(file => file.path === lastActiveFilePath)
+                };
+            else
+                return {
+                    ...state,
+                    openFiles: openFiles
+                };
+        }
         default:
             return state;
     }

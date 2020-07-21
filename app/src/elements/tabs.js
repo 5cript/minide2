@@ -47,7 +47,7 @@ const getItemStyle = (isDragging, isSelected, draggableStyle) => ({
   });
   
 
-class SleekTabs extends React.Component
+class MuiTabs extends React.Component
 {
     /*
     * props:
@@ -95,7 +95,7 @@ class SleekTabs extends React.Component
                                         }}
                                     >
                                         {this.props.tabLabels.map((label, i) => {return (
-                                            <Draggable key={label + i} draggableId={'' + i} index={i}>
+                                            <Draggable key={label + i} draggableId={"dropzone_" + this.id + "_" + i} index={i}>
                                                 {(prov, snap) => 
                                                     <div
                                                         ref={prov.innerRef}
@@ -125,9 +125,9 @@ class SleekTabs extends React.Component
             </div>
         );
     }
-}
+};
 
-export {SleekTabs};
+export {MuiTabs};
 
 export function TabPanel(props)
 {

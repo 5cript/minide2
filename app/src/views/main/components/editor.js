@@ -1,11 +1,10 @@
 import React from 'react';
 
 // Components
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import MonacoEditor from 'react-monaco-editor';
 import ReactResizeDetector from 'react-resize-detector';
 import MessageBox from '../../../elements/message_box';
+import {Droppable, Draggable} from 'react-beautiful-dnd';
 
 // Other
 import {pathModifier} from '../../../util/path_util';
@@ -32,17 +31,26 @@ const SimpleIconButton = styled(IconButton)({
 // VERY NICE HELP:
 // https://microsoft.github.io/monaco-editor/playground.html#interacting-with-the-editor-rendering-glyphs-in-the-margin
 
-const HoverFix = createMuiTheme({
-    overrides: {
-        MuiIconButton: {
-            root: {
-                '&:hover': {
-                    backgroundColor: 'var(--background-color-brighter)'
-                }
-            }
-        }
-    }
-})
+const getListStyle = isDraggingOver => ({
+    display: 'flex',
+    paddingBot: '0px',
+    paddingLeft: '0px',
+    overflow: 'auto',
+    margin: '0px',
+    width: '100%'
+});
+const getItemStyle = (isDragging, isSelected, draggableStyle) => ({
+    // some basic styles to make the items look a bit nicer
+    // change background colour if dragging
+    paddingTop: '4px',
+    backgroundColor: isDragging ? 'transparent' : (isSelected ? 'var(--background-color-darker)' : undefined),
+    color: isSelected ? 'var(--theme-color)' : undefined,
+    height: '25px',
+  
+    // styles we need to apply on draggables
+    ...draggableStyle,
+  });
+  
 
 class MonacoEditorComponent extends React.Component
 {
@@ -236,13 +244,13 @@ class CodeEditor extends React.Component
         yesNoMessage: 'blubber'
     }
 
-    onTabChange(index)
+    onTabChange = (index) =>
     {
         this.props.dispatch(setActiveFile(index));
         return true;
     }
 
-    showYesNoBox(message, yesAction) 
+    showYesNoBox = (message, yesAction) =>
     {
         this.setState({
             yesNoBoxVisible: true,
@@ -251,7 +259,7 @@ class CodeEditor extends React.Component
         this.yesAction = yesAction;
     }
 
-    onMessageBoxClose(whatButton)
+    onMessageBoxClose = (whatButton) =>
     {
         this.setState({
             yesNoBoxVisible: false
@@ -274,44 +282,57 @@ class CodeEditor extends React.Component
     {
         return (
             <div id='EditorContainer'>
-                <MuiThemeProvider theme={HoverFix}>
-                    <Tabs onSelect={(e) => {this.onTabChange(e)}} selectedIndex={this.props.activeFile}>
-                        <TabList>
-                            {
-                                this.props.openFiles.map((file, i) => {
-                                    return (
-                                        <Tab key={file.path}>{pathModifier.shorten(file.path)}
-                                            {(() => {
-                                                if (!file.synchronized)
-                                                    return <svg viewBox="0 0 10 10" className="tabModifiedFile" xmlns="http://www.w3.org/2000/svg">
-                                                        <circle cx="5" cy="5" r="5" fill="red"/>
-                                                    </svg>
-                                                else
-                                                    return <div className="tabSpacer"></div>
-                                            })()}
-                                            <button id='closeCross' onClick={(e) => {
-                                                if (!file.synchronized) 
-                                                {
-                                                    this.showYesNoBox(this.props.dict.translate("$CloseUnsavedWarning", "dialog"), () => {
-                                                        this.props.dispatch(removeOpenFile(file.path));     
-                                                    })
+                <div className="editorTabBox">{/*tabs*/}
+                    <Droppable
+                        droppableId={"dropzone_editorTabs"}
+                        direction='horizontal'
+                        className='editorTabZone'
+                    >
+                        {(provided, snapshot) => 
+                            <div
+                                ref={provided.innerRef}
+                                style={getListStyle(snapshot.isDraggingOver)}
+                                {...provided.droppableProps}
+                            >
+                                <div
+                                    className='editorTabContainer'
+                                >
+                                    {this.props.openFiles.map((file, i) => {
+                                        const label = pathModifier.shorten(file.path);
+                                        return (
+                                            <Draggable key={label + i} draggableId={'dropzone_editorTabs' + i} index={i}>
+                                                {(prov, snap) => 
+                                                    <div
+                                                        ref={prov.innerRef}
+                                                        className="editorTabHead"
+                                                        {...prov.draggableProps}
+                                                        {...prov.dragHandleProps}
+                                                        style={getItemStyle(snap.isDragging, this.props.activeFile === i, prov.draggableProps.style)}
+                                                        onClick={() => {this.onTabChange(i)}}
+                                                    >
+                                                        {label}
+                                                        <button id={'closeCross'} className='editorTabClose' onClick={(e) => {
+                                                            if (!file.synchronized) 
+                                                            {
+                                                                this.showYesNoBox(this.props.dict.translate("$CloseUnsavedWarning", "dialog"), () => {
+                                                                    this.props.dispatch(removeOpenFile(file.path));     
+                                                                })
+                                                            }
+                                                            else
+                                                                this.props.dispatch(removeOpenFile(file.path)); 
+                                                            e.stopPropagation();
+                                                        }}></button>
+                                                    </div>
                                                 }
-                                                else
-                                                    this.props.dispatch(removeOpenFile(file.path)); 
-                                                e.stopPropagation();
-                                            }}></button>
-                                        </Tab>
-                                    );
-                                })
-                            }
-                        </TabList>
-                        {
-                            this.props.openFiles.map((file) => {
-                                return <TabPanel key={file.path}></TabPanel>
-                            })
+                                            </Draggable>
+                                        )
+                                    })}
+                                </div>
+                                {provided.placeholder}
+                            </div>
                         }
-                    </Tabs>
-                </MuiThemeProvider>
+                    </Droppable>
+                </div>
                 <ConnectedEditor ref={this.setMonacoRef} id='MonacoWrap' language="javascript" />
                 <MessageBox boxStyle="YesNo" dict={this.props.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </div>

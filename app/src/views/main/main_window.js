@@ -17,10 +17,10 @@ import CommonActions from './common_actions';
 
 // Actions
 import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actions';
-import {addOpenFileWithContent, setActiveFile} from '../../actions/open_file_actions';
+import {addOpenFileWithContent, setActiveFile, moveOpenFile} from '../../actions/open_file_actions';
 import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
-import {addToLog, clearLog, focusLogByName, setLogType, swapLogs} from '../../actions/log_actions.js';
+import {addToLog, clearLog, focusLogByName, setLogType, moveLogs} from '../../actions/log_actions.js';
 import {setPreferences} from '../../actions/preferences_actions.js';
 
 // Other
@@ -641,7 +641,11 @@ class MainWindow extends React.Component
         {
             if (dndOperation.source.droppableId === "dropzone_mainLogTabs")
             {
-                this.props.dispatch(swapLogs(dndOperation.source.index, dndOperation.destination.index));
+                this.props.dispatch(moveLogs(dndOperation.source.index, dndOperation.destination.index));
+            }
+            else if (dndOperation.source.droppableId === "dropzone_editorTabs")
+            {
+                this.props.dispatch(moveOpenFile(dndOperation.source.index, dndOperation.destination.index));
             }
         }
     }

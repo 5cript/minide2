@@ -62,3 +62,12 @@ export function fileWasSynchronized(path)
         path: path
     }
 }
+
+export function moveOpenFile(from, to)
+{
+    return {
+        type: 'MOVE_OPEN_FILE',
+        from: from,
+        to: to
+    }
+}

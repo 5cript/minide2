@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import TerminalInstance from './terminal';
 import LogPanel from './log';
-import {TabPanel, SleekTabs} from '../../../elements/tabs';
+import {TabPanel, MuiTabs} from '../../../elements/tabs';
 
 // Actions
 import {focusLogByName} from '../../../actions/log_actions';
@@ -43,7 +43,7 @@ class LogsAndOthers extends React.Component
 
         return (
             <div className='tabContainer'>
-                <SleekTabs
+                <MuiTabs
                     onChange={(viewIndex) => this.props.dispatch(focusLogByName(tabLabels[viewIndex]))}
                     value={activeLabel}
                     tabLabels={tabLabels}
@@ -98,7 +98,7 @@ class LogsAndOthers extends React.Component
                             );
                         })
                     }
-                </SleekTabs>
+                </MuiTabs>
             </div>
         );
     }

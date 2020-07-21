@@ -41,7 +41,7 @@ export function focusLogByName(name)
     }
 }
 
-export function swapLogs(from, to)
+export function moveLogs(from, to)
 {
     return {
         type: 'SWAP_LOGS',
