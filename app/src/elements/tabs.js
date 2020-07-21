@@ -18,7 +18,7 @@ const LeanTabs = withStyles({
         width: '100%',
         minHeight: 0,
         margin: 0,
-        backgroundColor: 'var(--background-color-darker)'
+        backgroundColor: 'var(--background-color)'
     },
     indicator: {
         backgroundColor: 'var(--theme-color-brighter)',
