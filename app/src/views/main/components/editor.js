@@ -282,7 +282,7 @@ class CodeEditor extends React.Component
     {
         return (
             <div id='EditorContainer'>
-                <div className="editorTabBox">{/*tabs*/}
+                <div className="editorTabBox">
                     <Droppable
                         droppableId={"dropzone_editorTabs"}
                         direction='horizontal'
