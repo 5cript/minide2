@@ -1,22 +1,67 @@
-#ToolbarContainer {
+#ToolbarContainer 
+{
     background-color: var(--background-color-darker);
     padding: 3px;
     display: flex;
 }
 
-.Seperator {
+.toolbarIconButton
+{
+}
+
+.toolbarIconButtonImage
+{
+    z-index: 5;
+    width: 16px;
+    height: 16px;
+    background-blend-mode: unset;
+}
+
+.toolbarIconButtonFilterBottom
+{
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: calc(50% - 8px);
+    top: calc(50% - 8px);
+    background-color: var(--background-color-darker);
+    background-blend-mode: none;
+    isolation: isolate;
+}
+
+.toolbarIconButtonFilter
+{
+    object-fit: cover;
+    position: absolute;
+    z-index: 10;
+    width: 16px;
+    height: 16px;
+    left: calc(50% - 8px);
+    top: calc(50% - 8px);
+    background-color: red;
+    opacity: 0.5;
+    background-blend-mode: color-burn;
+    
+    -webkit-mask-mode: alpha;
+}
+
+.Seperator 
+{
     border-right: solid 1px var(--foreground-color);
     position: relative;
     top: 10%;
     height: 80%;
 }
 
-#ActualToolbar {
+#ActualToolbar 
+{
+    background: var(--background-color-darker);
     align-content: center;
     display: flex;
 }
 
-.ToolbarGroup {
+.ToolbarGroup 
+{
     position: relative;
     top: calc(50% - 13px);
     display: flex;

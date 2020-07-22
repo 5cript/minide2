@@ -16,7 +16,7 @@ import HamburgerMenu from 'react-hamburger-menu';
 import ContextMenu from '../../../elements/context_menu';
 
 // Actions
-import {setActiveToolbar} from '../../../actions/toolbar_actions';
+import {setActiveToolbar, setItemsEnableStatus, setItemRunning} from '../../../actions/toolbar_actions';
 
 // Other
 import _ from 'lodash';
@@ -120,7 +120,29 @@ class Toolbar extends React.Component {
             });
         }
 
+        this.props.dispatch(setItemRunning(toolbar.id, item.id, true));
+        this.props.dispatch(setItemsEnableStatus(toolbar.id, item.disables, false));
         this.props.backend.toolbar().callAction(toolbar.id, item.id);
+    }
+
+    setItemNotRunning = (toolbarId, itemId) => 
+    {
+        const toolbar = this.props.toolbars[toolbarId]
+        if (toolbar === undefined)
+        {
+            console.error('cannot enable items for this invalid toolbar id');
+            return;
+        }
+
+        const item = toolbar.items.find(item => item.id === itemId);
+        if (item === undefined)
+        {
+            console.error('cannot enable items for this invalid toolbar-item id');
+            return;
+        }
+
+        this.props.dispatch(setItemsEnableStatus(toolbar.id, item.disables, true));
+        this.props.dispatch(setItemRunning(toolbar.id, item.id, false));
     }
 
     openMenu = (id) => 
@@ -246,8 +268,22 @@ class Toolbar extends React.Component {
                             ? 'data:image/png;base64, ' + item.pngbase64
                             : 'resources/images/toolbar/red_x.png'
                         ;
-                        return <SimpleIconButton key={item.id} edge={false} onClick={() => this.buttonAction(toolbar, item)}>
-                            <img alt={'ohno'} src={img}></img>
+                        return <SimpleIconButton className="toolbarIconButton" key={item.id} edge={false} onClick={() => this.buttonAction(toolbar, item)}>
+                            <div 
+                                className="toolbarIconButtonFilter"
+                                style={{
+                                    "WebkitMaskImage": `url('${img}')`,
+                                    visibility: (item.running === true && item.cancelable === true) ? undefined : 'hidden'
+                                }}
+                            ></div>
+                            <div 
+                                className="toolbarIconButtonImage" 
+                                iconalt={_.toUpper(item.id[0])} 
+                                style={{
+                                    backgroundImage: `url('${img}')`,
+                                    filter: ((item.running === true && item.cancelable === true) || item.disabled === true) ? 'grayscale()' : undefined
+                                }}
+                            ></div>
                         </SimpleIconButton>
                     }
                     case("Splitter"):

@@ -27,3 +27,23 @@ export function setActiveToolbar(toolbarId)
         activeToolbar: toolbarId
     }
 }
+
+export function setItemsEnableStatus(toolbarId, itemIdArray, enabled)
+{
+    return {
+        type: 'SET_TOOLBAR_ITEMS_ENABLED',
+        toolbarId: toolbarId,
+        itemIds: itemIdArray,
+        enabled: enabled
+    }
+}
+
+export function setItemRunning(toolbarId, itemId, running)
+{
+    return {
+        type: 'SET_TOOLBAR_ITEM_RUNNING',
+        toolbarId: toolbarId,
+        itemId: itemId,
+        running: running
+    }
+}

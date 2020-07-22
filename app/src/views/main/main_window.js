@@ -187,12 +187,20 @@ class MainWindow extends React.Component
             case('showProjectSettings'):
                 return this.showProjectSettigns(data);
             case('setComboboxData'):
-                return this.toolbar.comboboxLoaded
-                (
+                return this.toolbar.comboboxLoaded(
                     data.toolbarId,
                     data.itemId,
                     data.targets
                 )
+            case('actionCompleted'):
+            {
+                if (this.toolbar)
+                {
+                    this.toolbar.setItemNotRunning(data.toolbarId, data.itemId);
+                }
+
+                break;
+            }
             default:
                 return;
         }
@@ -226,6 +234,7 @@ class MainWindow extends React.Component
                 const info = JSON.parse(head.data);
                 if (info.what === "processEnded")
                 {
+                    console.log(head)
                     let message = head.processName + " " + this.dict.translate("$ProcessEnded", "lua") + " " + info.status + "\n";
                     this.props.dispatch(addToLog(head.processName, message));
                 }

@@ -149,6 +149,7 @@
 		<Unit filename="config.hpp" />
 		<Unit filename="environment_lock.cpp" />
 		<Unit filename="environment_lock.hpp" />
+		<Unit filename="fallible.hpp" />
 		<Unit filename="filesystem/directory_cache.cpp" />
 		<Unit filename="filesystem/directory_cache.hpp" />
 		<Unit filename="filesystem/filesystem.hpp" />

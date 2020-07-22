@@ -187,6 +187,8 @@ namespace Toolbars
                 {
                     transferBasics("pngbase64", ""s);
                     transferBasics("special_actions", std::vector <std::string>{});
+                    transferBasics("cancelable", false);
+                    transferBasics("disables", std::vector <std::string>{});
                 }
                 else if (type == "Menu")
                 {
