@@ -218,6 +218,32 @@ namespace Toolbars
         }
     }
 //---------------------------------------------------------------------------------------------------------------------
+    Fallible <ToolbarApiError, bool> ScriptedToolbar::cancelAction(std::string const& itemId, bool force)
+    {
+        //StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
+        //if (!guard.try_lock_for(500ms))
+        //    return ToolbarApiError(ToolbarApiError::ErrorType::LockTimeout);
+
+        auto p = impl_->getItem(itemId);
+        if (!p.first.empty())
+            return ToolbarApiError{p.first};
+
+        auto& tablified = p.second;
+
+        bool fail = false;
+        auto cancel = tablified.get_or<std::function<bool(bool)>>("cancel", [&fail](bool)
+        {
+            fail = true;
+            return false;
+        });
+        std::cout << "cancel\n";
+        auto result = cancel(force);
+        if (!fail)
+            return fallibleSuccess<ToolbarApiError, bool>(result);
+        else
+            return ToolbarApiError{"item does not have a cancel, or cancel is not a function"};
+    }
+//---------------------------------------------------------------------------------------------------------------------
     Fallible <ToolbarApiError, void> ScriptedToolbar::onLogDoubleClick(std::string const& logName, int lineNumber, std::string lineString)
     {
         StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
@@ -240,7 +266,7 @@ namespace Toolbars
         return fallibleSuccess<ToolbarApiError, void>();
     }
 //---------------------------------------------------------------------------------------------------------------------
-    Fallible <ToolbarApiError, void> ScriptedToolbar::clickAction(std::string const& id)
+    Fallible <ToolbarApiError, bool> ScriptedToolbar::clickAction(std::string const& id)
     {
         StateCollection::guard_type guard{impl_->engine->globalMutex, std::defer_lock};
         if (!guard.try_lock_for(500ms))
@@ -253,13 +279,14 @@ namespace Toolbars
         auto& tablified = p.second;
 
         bool fail = false;
-        auto action = tablified.get_or<std::function<void()>>("action", [&fail]()
+        auto action = tablified.get_or<std::function<bool()>>("action", [&fail]()
         {
             fail = true;
+            return false;
         });
-        action();
+        auto result = action();
         if (!fail)
-            return fallibleSuccess<ToolbarApiError, void>();
+            return fallibleSuccess<ToolbarApiError, bool>(result);
         else
             return ToolbarApiError{"item does not have an action, or action is not a function"};
     }

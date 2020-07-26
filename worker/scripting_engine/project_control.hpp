@@ -78,6 +78,11 @@ namespace MinIDE::Scripting
          */
         bool openFileAt(std::string const& fileName, int line, int linePos, std::string const& message);
 
+        /**
+         *  Removes all files from the target dir.
+         */
+        void clean(std::string const& target);
+
     private:
         struct Implementation;
         std::unique_ptr <Implementation> impl_;

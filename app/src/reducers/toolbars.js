@@ -24,6 +24,7 @@ export default function reducer(state={
     {
         case 'INITIALIZE_TOOLBARS': 
         {
+            console.log('initialize toolbars')
             return {...state, toolbars: action.toolbars, lookup: action.lookup}
         }
         case 'SET_ACTIVE_TOOLBAR':

@@ -51,7 +51,6 @@ namespace Streaming
     template <typename T, typename... Args>
     Message makeMessage(Args&&... args)
     {
-        std::cout << "make message\n";
         return Message(new T(std::forward <Args&&>(args)...));
     }
 }

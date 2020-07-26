@@ -12,9 +12,9 @@ public:
     using error_type = ErrorType;
     using success_type = std::conditional_t <
         std::is_same_v <SuccessType, void>,
-            VoidResult,
-            SuccessType
-        >
+        VoidResult,
+        SuccessType
+    >
     ;
 
     Fallible(error_type e)

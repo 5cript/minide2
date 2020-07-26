@@ -67,7 +67,8 @@ namespace Toolbars
         ~ScriptedToolbar();
 
         std::string id() const;
-        Fallible <ToolbarApiError, void> clickAction(std::string const& itemId);
+        Fallible <ToolbarApiError, bool> clickAction(std::string const& itemId);
+        Fallible <ToolbarApiError, bool> cancelAction(std::string const& itemId, bool force);
         Fallible <ToolbarApiError, void> menuAction(std::string const& itemId, std::string const& menuEntryLabel);
         Fallible <ToolbarApiError, void> loadCombobox(std::string const& itemId);
         Fallible <ToolbarApiError, void> comboboxSelect(std::string const& itemId, std::string const& selected);

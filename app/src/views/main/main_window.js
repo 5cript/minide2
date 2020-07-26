@@ -234,7 +234,6 @@ class MainWindow extends React.Component
                 const info = JSON.parse(head.data);
                 if (info.what === "processEnded")
                 {
-                    console.log(head)
                     let message = head.processName + " " + this.dict.translate("$ProcessEnded", "lua") + " " + info.status + "\n";
                     this.props.dispatch(addToLog(head.processName, message));
                 }

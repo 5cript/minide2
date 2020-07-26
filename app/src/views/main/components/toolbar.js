@@ -113,6 +113,12 @@ class Toolbar extends React.Component {
 
     buttonAction = (toolbar, item) => 
     {
+        if (item.running && item.cancelable)
+            this.props.backend.toolbar().cancelAction(toolbar.id, item.id, true);
+
+        if (item.disabled)
+            return;
+
         if (item.special_actions && item.special_actions.length > 0)
         {
             item.special_actions.forEach(element => {
@@ -121,8 +127,16 @@ class Toolbar extends React.Component {
         }
 
         this.props.dispatch(setItemRunning(toolbar.id, item.id, true));
-        this.props.dispatch(setItemsEnableStatus(toolbar.id, item.disables, false));
-        this.props.backend.toolbar().callAction(toolbar.id, item.id);
+		if (item.disables)
+			this.props.dispatch(setItemsEnableStatus(toolbar.id, item.disables, false));
+        this.props.backend.toolbar().callAction(toolbar.id, item.id, (result) => {
+            if (result.apiResult === false) {
+                this.props.dispatch(setItemRunning(toolbar.id, item.id, false));
+				if (item.disables)
+					this.props.dispatch(setItemsEnableStatus(toolbar.id, item.disables, true));
+                console.error("action failed");
+            }
+        });
     }
 
     setItemNotRunning = (toolbarId, itemId) => 
@@ -228,9 +242,15 @@ class Toolbar extends React.Component {
         this.props.backend.toolbar().comboxSelect(toolbarId, itemId, selected);
     }
 
-    onContextMenuItemClick = (toolbarId, itemId, event, label) => 
+    onContextMenuItemClick = (toolbar, item, entry) => 
     {
-        this.props.backend.toolbar().menuAction(toolbarId, itemId, label);
+        this.props.backend.toolbar().menuAction(toolbar.id, item.id, entry.label);
+        if (entry.special_actions && entry.special_actions.length > 0)
+        {
+            entry.special_actions.forEach(element => {
+                this.decideSpecialAction(element);
+            });
+        }
     }
 
     onOpenCombox = (toolbarId, itemId) =>
@@ -362,7 +382,7 @@ class Toolbar extends React.Component {
                                                 label: this.props.dict.translate(entry.label, "toolbar"),
                                                 line: entry.is_splitter,
                                                 icon: img,
-                                                onClick: () => {this.onContextMenuItemClick(toolbar.id, item.id, undefined, entry.label)}
+                                                onClick: () => {this.onContextMenuItemClick(toolbar, item, entry)}
                                             }
                                         }), item => {
                                             return item.label !== undefined || item.line === true;

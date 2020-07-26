@@ -129,6 +129,7 @@ namespace Routers
          */
         auto keepAlive = [this](auto const& id, auto& stream, auto& produ, auto& idleCounter)
         {
+            //std::cout << stream.queue.consumeableCount(id) << "\n";
             if (stream.queue.consumeableCount(id) == 0)
             {
                 ++idleCounter;
@@ -169,6 +170,7 @@ namespace Routers
                 if (!keepAlive(id, stream, produ, idleCounter))
                     continue;
 
+                std::cout << "pop";
                 auto iter = stream.queue.popMessage(id);
                 writeMessage(*produ, iter->msg);
                 stream.queue.unrefMessage(iter);

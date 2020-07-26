@@ -124,6 +124,7 @@ class Backend extends Router
                         }
                     }
                     
+                    console.log('readNext');
                     return read();
                 }).catch(reject => {
                     this.onConnectionLoss('control_error: ' + reject.message);

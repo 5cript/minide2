@@ -196,6 +196,11 @@ namespace MinIDE::Scripting
         }
         return false;
     }
+//---------------------------------------------------------------------------------------------------------------------
+    void LuaProjectControl::clean(std::string const& target)
+    {
+        std::cout << "clean: " << target << "\n";
+    }
 //#####################################################################################################################
     void loadProjectControl
     (
@@ -229,7 +234,8 @@ namespace MinIDE::Scripting
             "update", &LuaProjectControl::reloadInformation,
             "read_project_file", &LuaProjectControl::readProjectFile,
             "save_project_file", &LuaProjectControl::saveProjectFile,
-            "open_file_at", &LuaProjectControl::openFileAt
+            "open_file_at", &LuaProjectControl::openFileAt,
+            "clean", &LuaProjectControl::clean
         );
     }
 //#####################################################################################################################

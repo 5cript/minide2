@@ -14,11 +14,38 @@ class ToolbarApi extends Router
         }, onSuccess);
     }
 
-    callAction(toolbarId, itemId)
+    callAction(toolbarId, itemId, onSuccess)
     {
         this.postJson(this.url("/api/toolbar/callAction"), {
             toolbarId: toolbarId,
             itemId: itemId
+        }, (result) => {
+            result.json().then(json => {
+                if (onSuccess)
+                    onSuccess(json);
+            }).catch(err => {
+                console.error('action result should have been json', err);
+            })
+        }, (err) => {
+            console.error(err);
+        })
+    }
+
+    cancelAction(toolbarId, itemId, force, onSuccess)
+    {
+        this.postJson(this.url("/api/toolbar/cancelAction"), {
+            toolbarId: toolbarId,
+            itemId: itemId,
+            force: force
+        }, (result) => {
+            result.json().then(json => {
+                if (onSuccess)
+                    onSuccess(json);
+            }).catch(err => {
+                console.error('cancel result should have been json', err);
+            })
+        }, (err) => {
+            console.error(err);
         })
     }
 

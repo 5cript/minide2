@@ -10,6 +10,7 @@
 #include <iterator>
 #include <iostream>
 #include <algorithm>
+#include <type_traits>
 
 using json = nlohmann::json;
 
@@ -22,10 +23,57 @@ namespace Routers
     struct Toolbar::Implementation
     {
         Config config;
+        attender::tcp_server* server;
 
         Implementation(Config const& config)
             : config{config}
         {
+        }
+
+        template <typename FunctionT, typename RouterT>
+        void delegateToolbarMemberCall
+        (
+            std::string const& url,
+            FunctionT func,
+            RouterT* router,
+            std::vector <std::string> const& checks
+        )
+        {
+            cors_options(*server, url, "POST", config.corsOption);
+            server->post(url, [this, router, func, checks](auto req, auto res)
+            {
+                enable_cors(req, res, config.corsOption);
+
+                readJsonBody(req, res, [req, res, router, func, checks, this](json const& body)
+                {
+                    for (auto const& check : checks)
+                        if (!body.contains(check))
+                            return router->respondWithError(res, "json body requires "s + check + " to be present");
+
+                    auto session = router->this_session(req);
+                    auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
+                    if (toolbar == nullptr)
+                        return router->respondWithError(res, "toolbar with given id not found");
+
+                    auto result = func(body, toolbar);
+                    if (!result.didFail())
+                    {
+                        //result.
+                        if constexpr (std::is_same_v <typename decltype(result)::success_type, VoidResult>)
+                            res->status(200).end();
+                        else
+                        {
+                            res->status(200);
+                            json j = json::object();
+                            j["apiResult"] = result.result().value();
+                            jsonResponse(res, j);
+                        }
+                    }
+                    else
+                        router->respondWithError(res, result.error_value().error_message());
+                });
+            });
+
         }
     };
 //#####################################################################################################################
@@ -54,6 +102,8 @@ namespace Routers
     void Toolbar::registerRoutes(attender::tcp_server& server)
     {
         using namespace Toolbars::Types;
+
+        impl_->server = &server;
 
         cors_options(server, "/api/toolbar/loadAll", "POST", impl_->config.corsOption);
         server.post("/api/toolbar/loadAll", [this](auto req, auto res)
@@ -91,120 +141,46 @@ namespace Routers
             }
         });
 
-        cors_options(server, "/api/toolbar/callAction", "POST", impl_->config.corsOption);
-        server.post("/api/toolbar/callAction", [this](auto req, auto res)
+        impl_->delegateToolbarMemberCall("/api/toolbar/callAction", [](json const& body, auto& toolbar)
         {
-            enable_cors(req, res, impl_->config.corsOption);
+            return toolbar->clickAction(body["itemId"].get<std::string>());
+        }, this,
+        {"toolbarId", "itemId"});
 
-            readJsonBody(req, res, [req, res, this](json const& body)
-            {
-                if (!body.contains("toolbarId"))
-                    return respondWithError(res, "need toolbarId");
-                if (!body.contains("itemId"))
-                    return respondWithError(res, "need itemId");
-
-                auto session = this_session(req);
-                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
-                if (toolbar == nullptr)
-                    return respondWithError(res, "toolbar with given id not found");
-
-                auto result = toolbar->clickAction(body["itemId"].get<std::string>());
-                if (!result.didFail())
-                    res->status(200).end();
-                else
-                    respondWithError(res, result.error_value().error_message());
-            });
-        });
-
-        cors_options(server, "/api/toolbar/menuAction", "POST", impl_->config.corsOption);
-        server.post("/api/toolbar/menuAction", [this](auto req, auto res)
+        impl_->delegateToolbarMemberCall("/api/toolbar/cancelAction", [](json const& body, auto& toolbar)
         {
-            enable_cors(req, res, impl_->config.corsOption);
+            return toolbar->cancelAction(body["itemId"].get<std::string>(), body["force"].get<bool>());
+        }, this,
+        {"toolbarId", "itemId", "force"});
 
-            readJsonBody(req, res, [req, res, this](json const& body)
-            {
-                if (!body.contains("toolbarId"))
-                    return respondWithError(res, "need toolbarId");
-                if (!body.contains("itemId"))
-                    return respondWithError(res, "need itemId");
-                if (!body.contains("menuEntryLabel"))
-                    return respondWithError(res, "need menuEntryLabel");
-
-                auto session = this_session(req);
-                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
-                if (toolbar == nullptr)
-                    return respondWithError(res, "toolbar with given id not found");
-
-                auto result = toolbar->menuAction
-                (
-                    body["itemId"].get<std::string>(),
-                    body["menuEntryLabel"].get<std::string>()
-                );
-                if (!result.didFail())
-                    res->status(200).end();
-                else
-                    respondWithError(res, result.error_value().error_message());
-            });
-        });
-
-        cors_options(server, "/api/toolbar/loadCombobox", "POST", impl_->config.corsOption);
-        server.post("/api/toolbar/loadCombobox", [this](auto req, auto res)
+        impl_->delegateToolbarMemberCall("/api/toolbar/menuAction", [](json const& body, auto& toolbar)
         {
-            enable_cors(req, res, impl_->config.corsOption);
+            return toolbar->menuAction
+            (
+                body["itemId"].get<std::string>(),
+                body["menuEntryLabel"].get<std::string>()
+            );
+        }, this,
+        {"toolbarId", "itemId", "menuEntryLabel"});
 
-            readJsonBody(req, res, [req, res, this](json const& body)
-            {
-                if (!body.contains("toolbarId"))
-                    return respondWithError(res, "need toolbarId");
-                if (!body.contains("itemId"))
-                    return respondWithError(res, "need itemId");
-
-                auto session = this_session(req);
-                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
-                if (toolbar == nullptr)
-                    return respondWithError(res, "toolbar with given id not found: "s + body["toolbarId"].get<std::string>());
-
-                auto result = toolbar->loadCombobox
-                (
-                    body["itemId"].get<std::string>()
-                );
-                if (!result.didFail())
-                    res->status(200).end();
-                else
-                    respondWithError(res, result.error_value().error_message());
-            });
-        });
-
-        cors_options(server, "/api/toolbar/comboboxSelect", "POST", impl_->config.corsOption);
-        server.post("/api/toolbar/comboboxSelect", [this](auto req, auto res)
+        impl_->delegateToolbarMemberCall("/api/toolbar/loadCombobox", [](json const& body, auto& toolbar)
         {
-            enable_cors(req, res, impl_->config.corsOption);
+            return toolbar->loadCombobox
+            (
+                body["itemId"].get<std::string>()
+            );
+        }, this,
+        {"toolbarId", "itemId"});
 
-            readJsonBody(req, res, [req, res, this](json const& body)
-            {
-                if (!body.contains("toolbarId"))
-                    return respondWithError(res, "need toolbarId");
-                if (!body.contains("itemId"))
-                    return respondWithError(res, "need itemId");
-                if (!body.contains("selected"))
-                    return respondWithError(res, "need selected");
-
-                auto session = this_session(req);
-                auto* toolbar = session.toolbarStore.toolbarById(body["toolbarId"].get<std::string>());
-                if (toolbar == nullptr)
-                    return respondWithError(res, "toolbar with given id not found");
-
-                auto result = toolbar->comboboxSelect
-                (
-                    body["itemId"].get<std::string>(),
-                    body["selected"].get<std::string>()
-                );
-                if (!result.didFail())
-                    res->status(200).end();
-                else
-                    respondWithError(res, result.error_value().error_message());
-            });
-        });
+        impl_->delegateToolbarMemberCall("/api/toolbar/comboboxSelect", [](json const& body, auto& toolbar)
+        {
+            return toolbar->comboboxSelect
+            (
+                body["itemId"].get<std::string>(),
+                body["selected"].get<std::string>()
+            );
+        }, this,
+        {"toolbarId", "itemId", "selected"});
 
         cors_options(server, "/api/toolbar/logDoubleClick", "POST", impl_->config.corsOption);
         server.post("/api/toolbar/logDoubleClick", [this](auto req, auto res)
