@@ -78,6 +78,7 @@
     "react-start": "react-app-rewired start",
     "start": "electron-forge start",
     "build": "react-app-rewired build",
+	"gdb": "gdb electron-forge start",
     "test": "react-app-rewired test",
     "package": "electron-forge package",
     "make": "electron-forge make"

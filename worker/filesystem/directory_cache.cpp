@@ -1,6 +1,6 @@
 #include "directory_cache.hpp"
 
-#include <filewatch/FileWatch.hpp>
+//#include <filewatch/FileWatch.hpp>
 
 #include <functional>
 #include <set>
@@ -15,14 +15,14 @@ namespace Filesystem
         (
             DirectoryCache& cache,
             Filesystem::path const& dir_,
-            std::function <void(std::string const&, const filewatch::Event)> const& watch,
+            /*std::function <void(std::string const&, const filewatch::Event)> const& watch,*/
             CacheUpdateObserver observer,
             bool scan,
             bool saveChange
         );
 
         Filesystem::path dir;
-        std::unique_ptr <filewatch::FileWatch <std::string>> watcher;
+        //std::unique_ptr <filewatch::FileWatch <std::wstring>> watcher;
         std::set <std::string> contents;
         std::string renameCache;
         std::mutex renameLock;
@@ -34,13 +34,13 @@ namespace Filesystem
     (
         DirectoryCache& cache,
         Filesystem::path const& dir_,
-        std::function <void(std::string const&, const filewatch::Event)> const& watch,
+        /*std::function <void(std::string const&, const filewatch::Event)> const& watch,*/
         CacheUpdateObserver observer,
         bool scan,
         bool saveChange
     )
         : dir{dir_}
-        , watcher{}
+        //, watcher{}
         , contents{}
         , renameCache{}
         , observer{std::move(observer)}
@@ -48,11 +48,13 @@ namespace Filesystem
     {
         if (scan)
             cache.fullscan();
-        watcher = std::make_unique <filewatch::FileWatch <std::string>>
+        /*
+        watcher = std::make_unique <filewatch::FileWatch <std::wstring>>
         (
-            dir.string(),
-            [watch](const std::string& path, const filewatch::Event change_type){watch(path, change_type);}
+            dir.wstring(),
+            [watch](const std::wstring& path, const filewatch::Event change_type){watch(path, change_type);}
         );
+        */
     }
 //#####################################################################################################################
     DirectoryCache::DirectoryCache(Filesystem::path const& dir, CacheUpdateObserver observer, bool scan, bool saveChanges)
@@ -60,6 +62,7 @@ namespace Filesystem
         (
             *this,
             dir,
+            /*
             [this](std::string const& path, const filewatch::Event event){
                 switch(event)
                 {
@@ -76,6 +79,7 @@ namespace Filesystem
                 default: return;
                 }
             },
+            */
             std::move(observer),
             scan,
             saveChanges

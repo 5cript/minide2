@@ -121,4 +121,20 @@ namespace Streaming::Messages
 
         std::string toJson() const override;
     };
+
+    struct CreateInputForm : public JsonSerializable
+    {
+        std::string identifier;
+        std::string jsonSpecification;
+
+        CreateInputForm() = default;
+        CreateInputForm(std::string identifier, std::string jsonSpecification)
+            : identifier{std::move(identifier)}
+            , jsonSpecification{std::move(jsonSpecification)}
+        {
+        }
+        CreateInputForm(CreateInputForm&&) = default;
+
+        std::string toJson() const override;
+    };
 }

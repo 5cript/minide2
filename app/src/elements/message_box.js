@@ -60,18 +60,24 @@ class MessageBox extends React.Component
     render()
     {
         return (
-            <ReactModal initWidth={500} initHeight={200} 
+            <ReactModal initWidth={this.props.width ? this.props.width : 500} initHeight={this.props.height ? this.props.height : 200} 
                 onFocus={() => {}}
                 className={"messageBoxModal"}
                 onRequestClose={()=>{this.onRodalClose()}} 
                 isOpen={this.props.visible}
+                disableResize={this.props.disableResize}
+                disableMove={this.props.disableMove}
             >
                 <div className="messageBoxHeader">{this.props.title}</div>
+                {this.props.children}
                 <TextareaAutosize  
                     className="messageBoxText" 
                     value={this.props.message === undefined ? '' : this.props.message}
                     readOnly   
                     wrap='soft'
+                    style={{
+                        display: this.props.disableInput === true ? 'none' : undefined
+                    }}
                 >    
                 </TextareaAutosize >
                 <div className="messageBoxButtons">
@@ -99,6 +105,13 @@ class MessageBox extends React.Component
                                 <div className="buttonBox">
                                     <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</StyledButton>
                                     <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Cancel")}}>{this.dict.translate("$Cancel", 'dialog')}</StyledButton>
+                                </div>
+                            )
+                        }
+                        else if (this.boxStyle === "Modal") 
+                        {
+                            return (
+                                <div style={{display: 'none'}}>
                                 </div>
                             )
                         }

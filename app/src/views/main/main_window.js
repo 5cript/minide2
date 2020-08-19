@@ -32,6 +32,7 @@ import LocalPersistence from '../../util/persistence';
 // Style
 import './styles/main.css'
 import ReactResizeDetector from 'react-resize-detector';
+import InputBox from '../../elements/input_box';
 
 // requires
 const {ipcRenderer} = window.require('electron');
@@ -93,7 +94,8 @@ class MainWindow extends React.Component
         yesNoMessage: '',
         okBoxVisible: false,
         okBoxMessage: '',
-        logsHeight: 200
+        logsHeight: 200,
+        inputForm: null
     }
 
     isShortcut(event, shortcutDefinition)
@@ -246,6 +248,34 @@ class MainWindow extends React.Component
                     if (info.command !== undefined)
                         this.props.dispatch(addToLog(head.processName, info.command));
                 }
+            }
+            else if (head.type === "create_input_form")
+            {
+                console.log(head.specs);
+                const spec = JSON.parse(head.specs);
+                console.log(spec);
+
+                let schema = {};
+
+                schema.categories = spec.categories.map(category => {
+                    return {
+                        id: category.id,
+                        caption: this.dict.translate(category.label, spec.dictionary),
+                        borderColor: category.border_color
+                    }
+                })
+                schema.fields = spec.fields.map(field => {
+                    let type = field.type;
+                    if (type === "text")
+                        type = "input";
+                    return {
+                        key: field.id,
+                        label: this.dict.translate(field.label, spec.dictionary),
+                        type: type,
+                        category: field.category
+                    }
+                })
+                this.setState({inputForm: schema});
             }
             else if (head.type === "toggle_source_header")
             {
@@ -735,6 +765,29 @@ class MainWindow extends React.Component
                 </div>
                 <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
                 <MessageBox boxStyle="Ok" dict={this.dict} visible={this.state.okBoxVisible} message={this.state.okBoxMessage} onButtonPress={(wb)=>{this.onOkBoxClose(wb);}}/>
+                <MessageBox
+                    boxStyle="Modal"
+                    dict={this.dict} 
+                    visible={this.state.inputForm !== null && this.state.inputForm !== undefined} 
+                    message={''}
+                    disableInput={true}
+                    height={500}
+                    width={500}
+                    disableResize={false}
+                >
+                    <div className="dynamicInputFormContainment">
+                        <InputBox
+                            visible={this.state.inputForm !== null && this.state.inputForm !== undefined}
+                            onButtonPress={() => {}}
+                            dict={this.dict}
+                            schema={this.state.inputForm ? this.state.inputForm : {
+                                fields: [],
+                                categories: []
+                            }}
+                        >
+                        </InputBox>
+                    </div>
+                </MessageBox>
                 <KeybindActor 
                     ref={this.setKeybindActor}
                     backend={this.backend}

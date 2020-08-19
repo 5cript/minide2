@@ -74,9 +74,21 @@ class Dictionary
                     "$RenameFile": "Rename File",
                     "$ReallyDeleteFile": "Really delete file? This cannot be undone"
                 },
-                "toolbar": {
+                "cmake_toolbar": {
                     "$Save": "Speichern",
-                    "$ProjectSettings": "Project Settings"
+                    "$ProjectSettings": "Project Settings",
+                    "$AddNewTarget": "Add New Target",
+                    "$TargetName": "Name",
+                    "$Environment": "Environment",
+                    "$CMakeArguments": "CMake Arguments",
+                    "$LowerLevelCommand": "Lower Level Command (make / ninja)",
+                    "$LowerLevelArguments": "Lower Level Arguments",
+                    "$BuildDirectory": "Build Directory",
+                    "$CleanCommand": "Clean Command",
+                    "$CppCompiler": "C++ Compiler",
+                    "$CCompiler": "C Compiler",
+                    "$RunParameters": "Run Parameters",
+                    "$ExecutionDirectory": "Execution Directory"
                 },
                 "lua": {
                     "$ProcessEnded": "ended with status",
@@ -163,9 +175,21 @@ class Dictionary
                     "$RenameFile": "Datei Umbennen",
                     "$ReallyDeleteFile": "Datei wirklich unwiederbringlich löschen?"
                 },
-                "toolbar": {
+                "cmake_toolbar": {
                     "$Save": "Speichern",
-                    "$ProjectSettings": "Projekteinstellungen"
+                    "$ProjectSettings": "Projekteinstellungen",
+                    "$AddNewTarget": "Neue Build Konfiguration",
+                    "$TargetName": "Name",
+                    "$Environment": "Ausführumgebung",
+                    "$CMakeArguments": "CMake Argumente",
+                    "$LowerLevelCommand": "Übersetzungsprogramm (make / ninja)",
+                    "$LowerLevelArguments": "Übersetzungsparameter",
+                    "$BuildDirectory": "Verzeichnis für Erzeugnis",
+                    "$CleanCommand": "Säuberungsbefehl",
+                    "$CppCompiler": "C++ Übersetzer",
+                    "$CCompiler": "C Übersetzer",
+                    "$RunParameters": "Parameter zur Ausführung",
+                    "$ExecutionDirectory": "Ausführungsverzeichnis"
                 },
                 "lua": {
                     "$ProcessEnded": "wurde beendet mit Status",

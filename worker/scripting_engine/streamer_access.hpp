@@ -66,6 +66,11 @@ namespace MinIDE::Scripting
          */
         bool sendProcessInfo(std::string const& programName, std::string const& formattedData);
 
+        /**
+         *  Create input form on client
+         */
+        bool createInputForm(std::string const& identification, std::string const& jsonSpecification);
+
     private:
         struct Implementation;
         std::unique_ptr <Implementation> impl_;

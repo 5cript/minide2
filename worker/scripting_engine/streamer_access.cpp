@@ -176,6 +176,26 @@ namespace MinIDE::Scripting
         );
         return true;
     }
+//---------------------------------------------------------------------------------------------------------------------
+    bool LuaStreamer::createInputForm(std::string const& identification, std::string const& jsonSpecification)
+    {
+        auto s = impl_->sessionAccess.session();
+        if (!s)
+            return false;
+
+        impl_->streamer->send
+        (
+            StreamChannel::Control,
+            s.value().remoteAddress,
+            s.value().controlId,
+            Streaming::makeMessage<Streaming::Messages::CreateInputForm>
+            (
+                identification,
+                jsonSpecification
+            )
+        );
+        return true;
+    }
 //#####################################################################################################################
     void loadStreamerAccess
     (
@@ -205,7 +225,8 @@ namespace MinIDE::Scripting
             "send_subprocess_stdout", &LuaStreamer::sendSubprocessStdout,
             "send_subprocess_stderr", &LuaStreamer::sendSubprocessStderr,
             "send_subprocess_info", &LuaStreamer::sendProcessInfo,
-            "remote_call", &LuaStreamer::remoteProcedureRequest
+            "remote_call", &LuaStreamer::remoteProcedureRequest,
+            "create_input_form", &LuaStreamer::createInputForm
         );
 
         strongRef->lua.new_enum(

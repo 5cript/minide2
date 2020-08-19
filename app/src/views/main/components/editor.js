@@ -311,6 +311,14 @@ class CodeEditor extends React.Component
                                                         onClick={() => {this.onTabChange(i)}}
                                                     >
                                                         {label}
+                                                        {(() => {
+                                                            if (!file.synchronized)
+                                                                return <svg viewBox="0 0 10 10" className="tabModifiedFile">
+                                                                    <circle cx="5" cy="5" r="5" fill="red"/>
+                                                                </svg>
+                                                            else
+                                                                return <div className="tabSpacer"></div>
+                                                        })()}
                                                         <button id={'closeCross'} className='editorTabClose' onClick={(e) => {
                                                             if (!file.synchronized) 
                                                             {

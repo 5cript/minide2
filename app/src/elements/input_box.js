@@ -13,6 +13,8 @@ import './styles/input_box.css';
  *  - visible: is visible?
  *  - message: what to display
  *  - onButtonPress: fired when a button is pressed
+ *  - schema: A schema for the input box
+ *  - dict: Translation dictionary
  */
 class InputBox extends React.Component
 {

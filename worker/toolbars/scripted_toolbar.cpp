@@ -140,6 +140,7 @@ namespace Toolbars
 
             impl_->jsonRepresentation["items"] = json::array();
             impl_->jsonRepresentation["name"] = interface["name"].get_or<std::string>("missing_name");
+            impl_->jsonRepresentation["dictionary"] = interface["dictionary"].get_or<std::string>("generic_toolbar");
             auto defaultId = impl_->gen.generate_id();
             impl_->id = interface["id"].get_or<std::string>(defaultId);
             impl_->jsonRepresentation["id"] = impl_->id;

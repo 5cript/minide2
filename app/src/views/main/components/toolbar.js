@@ -379,7 +379,7 @@ class Toolbar extends React.Component {
                                                 : undefined
                                             ;
                                             return {
-                                                label: this.props.dict.translate(entry.label, "toolbar"),
+                                                label: this.props.dict.translate(entry.label, toolbar.dictionary),
                                                 line: entry.is_splitter,
                                                 icon: img,
                                                 onClick: () => {this.onContextMenuItemClick(toolbar, item, entry)}

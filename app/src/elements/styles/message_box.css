@@ -22,9 +22,13 @@
 	resize: none;
 }
 
+.rodal-dialog {
+	width: unset !important;
+}
+
 .flexible-modal {
 	position: absolute;
-	z-index: 1;
+	z-index: 100;
 	border: 1px solid #ccc;
 	background: var(--background-color);
 }
@@ -56,4 +60,12 @@
 	right: 0;
 	top: 0;
 	cursor: move;
+}
+
+.flexible-modal-drag-area-right {
+	display: none;
+}
+
+.flexible-modal-drag-area-left {
+	display: none;
 }

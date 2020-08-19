@@ -62,4 +62,13 @@ namespace Streaming::Messages
         }.dump();
     }
 //#####################################################################################################################
+    std::string CreateInputForm::toJson() const
+    {
+        return json{
+            {"type", "create_input_form"s},
+            {"id", identifier},
+            {"specs", jsonSpecification}
+        }.dump();
+    }
+//#####################################################################################################################
 }

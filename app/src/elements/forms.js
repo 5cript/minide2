@@ -262,7 +262,12 @@ export class FlatForm extends React.Component
             return (
                 <div className="formCategoryOutward" key={i}>
                     <span className="formCategoryCaption">{cat.caption}</span>
-                    <div className="formCategoryInward">
+                    <div 
+                        className="formCategoryInward"
+                        style={{
+                            borderColor: cat.borderColor ? cat.borderColor : 'var(--foreground-color)'
+                        }}
+                    >
                     {
                         cat.fields.map(scheme => this.fieldToComponent(scheme))
                     }
