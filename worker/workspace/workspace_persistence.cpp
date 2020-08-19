@@ -42,6 +42,12 @@ bool WorkspacePersistence::load()
     sstr << reader.rdbuf();
     raw_ = sstr.str();
 
+    //AC 19.08.2020 führt zu einem Absturzt QUICKFIXX
+    if(raw_.empty())
+    {
+        return false;
+    }
+
     auto j = json::parse(raw_);
 
     if (j.contains("lastActiveProject"))

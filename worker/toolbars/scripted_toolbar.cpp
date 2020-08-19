@@ -180,7 +180,8 @@ namespace Toolbars
                 jsonItem["type"] = item.get<std::string>("type");
 
                 // Id
-                transferBasics("id", "missing_id_"s + key.as<std::string>());
+                transferBasics("id", "missing_id_"s + std::to_string(key.as<int>()));
+                //transferBasics("id", "missing_id_"s + impl_->gen.generate_id());
 
                 // Item Type dependent transferals
                 std::string type = jsonItem["type"];
