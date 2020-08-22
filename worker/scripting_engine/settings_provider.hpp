@@ -31,6 +31,7 @@ namespace MinIDE::Scripting
         ~LuaSettingsProvider();
 
         std::optional <std::map <std::string, std::string>> environment(std::string const& envName) const;
+        std::vector <std::string> environments() const;
 
     private:
         struct Implementation;

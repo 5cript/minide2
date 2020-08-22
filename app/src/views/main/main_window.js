@@ -95,7 +95,8 @@ class MainWindow extends React.Component
         okBoxVisible: false,
         okBoxMessage: '',
         logsHeight: 200,
-        inputForm: null
+        inputForm: null,
+        inputFormEnvs: []
     }
 
     isShortcut(event, shortcutDefinition)
@@ -275,7 +276,7 @@ class MainWindow extends React.Component
                         category: field.category
                     }
                 })
-                this.setState({inputForm: schema});
+                this.setState({inputForm: schema, inputFormEnvs: spec.environments ? spec.environments : []});
             }
             else if (head.type === "toggle_source_header")
             {
@@ -777,8 +778,22 @@ class MainWindow extends React.Component
                 >
                     <div className="dynamicInputFormContainment">
                         <InputBox
+                            environments={this.state.inputFormEnvs}
                             visible={this.state.inputForm !== null && this.state.inputForm !== undefined}
-                            onButtonPress={() => {}}
+                            onButtonPress={(b, data) => {
+                                switch(b)
+                                {
+                                    case("Ok"):
+                                    {
+                                        console.log(data);
+                                        this.setState({inputForm: null});
+                                    }
+                                    case("Cancel"):
+                                    {
+                                        this.setState({inputForm: null});
+                                    }
+                                }
+                            }}
                             dict={this.dict}
                             schema={this.state.inputForm ? this.state.inputForm : {
                                 fields: [],

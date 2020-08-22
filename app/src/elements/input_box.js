@@ -86,6 +86,7 @@ class InputBox extends React.Component
                     ref={this.setFormRef}
                     dict={this.props.dict}
                     schema={this.props.schema}
+                    environments={this.props.environments}
                 ></FlatForm>
                 <div className="inputBoxButtons">
                     <StyledButton className={"dialogButton"} onClick={()=>{this.onButtonClick("Ok")}}>{this.dict.translate("$Ok", 'dialog')}</StyledButton>

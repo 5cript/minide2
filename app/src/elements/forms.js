@@ -10,6 +10,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Jello from 'react-reveal/Jello';
 import WarningSharpIcon from '@material-ui/icons/WarningSharp';
 import Switch from '@material-ui/core/Switch';
+import { DropdownList } from 'react-widgets'
 
 // Styles
 import './styles/forms.css';
@@ -41,6 +42,9 @@ export class FlatForm extends React.Component
             values: {},
             animates: {}
         }
+
+        this.environments = 
+            this.props.environments ? this.props.environments : ['error, please pass envs']
 
         if (this.props.onChange)
             this.onAnyChange = this.props.onChange;
@@ -138,12 +142,23 @@ export class FlatForm extends React.Component
 
     unknownType = (scheme) => 
     {
-        return <div>{this.props.dict.translate("$UnknownSchemeType", "dialog") + ": " + scheme.label}</div>
+        return <div key={scheme.key}>{this.props.dict.translate("$UnknownSchemeType", "dialog") + ": " + scheme.label}</div>
     }
 
     qualifyId = (id) => 
     {
         return this.idPrefix + id;
+    }
+
+    environment = (scheme) =>
+    {
+        return <div key={scheme.key} className="flatFormEnvironment">
+            <div className="formLabel">{scheme.label}</div>
+            <DropdownList
+                id={this.qualifyId(scheme.key)}
+                data={this.environments}
+            ></DropdownList>
+        </div>
     }
 
     getInput = () => 
@@ -293,6 +308,7 @@ export class FlatForm extends React.Component
             case('boolbox'): return this.boolbox(scheme);
             case('numberInput'): return this.inputField(scheme, {numberOnly: true});
             case('spacer'): return this.spacer(scheme);
+            case('environment'): return this.environment(scheme);
             default: return this.unknownType(scheme);
         }
     }

@@ -51,6 +51,17 @@ namespace MinIDE::Scripting
 //---------------------------------------------------------------------------------------------------------------------
     LuaSettingsProvider::~LuaSettingsProvider() = default;
 //---------------------------------------------------------------------------------------------------------------------
+    std::vector <std::string> LuaSettingsProvider::environments() const
+    {
+        auto&& envs = impl_->settingsProv->settings().environments();
+
+        std::vector <std::string> vec;
+        for (auto const& [env, value] : envs)
+            vec.push_back(env);
+
+        return vec;
+    }
+//---------------------------------------------------------------------------------------------------------------------
     std::optional <std::map <std::string, std::string>> LuaSettingsProvider::environment(std::string const& envName) const
     {
         auto&& envs = impl_->settingsProv->settings().environments();
@@ -130,7 +141,8 @@ namespace MinIDE::Scripting
                     new (&p) LuaSettingsProvider(state, std::move(sessionAccess), streamer, settingsProv);
                 }
             ),
-            "environment", &LuaSettingsProvider::environment
+            "environment", &LuaSettingsProvider::environment,
+            "environments", [](LuaSettingsProvider& p){ return sol::as_table(p.environments()); }
         );
     }
 //#####################################################################################################################
