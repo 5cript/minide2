@@ -170,6 +170,8 @@
 		<Unit filename="public_settings.hpp" />
 		<Unit filename="routers.cpp" />
 		<Unit filename="routers.hpp" />
+		<Unit filename="routers/debugger.cpp" />
+		<Unit filename="routers/debugger.hpp" />
 		<Unit filename="routers/router_base.cpp" />
 		<Unit filename="routers/router_base.hpp" />
 		<Unit filename="routers/settings_provider.cpp" />
