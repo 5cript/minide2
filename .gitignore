@@ -124,3 +124,8 @@ frontend_
 x
 y
 libbacktrace
+debugger-interface
+lldb-mi
+mplex
+twisted-spirit
+worker/debugger
