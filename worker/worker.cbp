@@ -147,6 +147,8 @@
 		<Unit filename="../tiny-process-library/process.hpp" />
 		<Unit filename="../tiny-process-library/process_win.cpp" />
 		<Unit filename="config.hpp" />
+		<Unit filename="debugger/debugger.cpp" />
+		<Unit filename="debugger/debugger.hpp" />
 		<Unit filename="environment_lock.cpp" />
 		<Unit filename="environment_lock.hpp" />
 		<Unit filename="fallible.hpp" />
