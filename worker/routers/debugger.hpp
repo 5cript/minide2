@@ -11,11 +11,11 @@
 
 namespace Routers
 {
-    class Debugger : public BasicRouter
+    class DebuggerRouter : public BasicRouter
     {
     public:
-        Debugger(RouterCollection* collection, attender::tcp_server& server, Config const& config);
-        ~Debugger();
+        DebuggerRouter(RouterCollection* collection, attender::tcp_server& server, Config const& config);
+        ~DebuggerRouter();
 
     private:
         void registerRoutes(attender::tcp_server& server);

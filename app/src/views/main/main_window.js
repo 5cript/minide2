@@ -193,7 +193,7 @@ class MainWindow extends React.Component
                 return this.toolbar.comboboxLoaded(
                     data.toolbarId,
                     data.itemId,
-                    data.targets
+                    data.items
                 )
             case('actionCompleted'):
             {

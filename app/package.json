@@ -81,7 +81,8 @@
     "gdb": "gdb electron-forge start",
     "test": "react-app-rewired test",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+	"go": "run-p react-start electron"
   },
   "eslintConfig": {
     "extends": "react-app"

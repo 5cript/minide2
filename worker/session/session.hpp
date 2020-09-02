@@ -3,11 +3,13 @@
 #include "session_fwd.hpp"
 #include "../workspace/workspace.hpp"
 #include "toolbar_store.hpp"
+#include "../debugger/debugger.hpp"
 
 #include <attender/attender/session/session.hpp>
 #include <string>
 #include <functional>
 #include <mutex>
+#include <unordered_map>
 
 /**
  *  Keep this class as clean as possible. little functionality, more just plain data.
@@ -20,6 +22,7 @@ public:
     WorkspaceInfo workspace;
     std::string remoteAddress;
     std::string terminalEnvironment;
+    std::unordered_map <std::string, Debugger> debuggerInstances;
 
     ToolbarStore toolbarStore;
 
