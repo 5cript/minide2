@@ -42,7 +42,7 @@ module.exports = function reducer(state = initialState, action)
     {
         case 'OPEN_WORKSPACE': 
         {
-            return {...state, root: action.payload}
+            return {...state, root: action.payload.payload}
         }
         case 'SET_HOVERED_NODE': 
         {
@@ -59,21 +59,21 @@ module.exports = function reducer(state = initialState, action)
                     });
             }
             
-            if (action.path !== undefined)
+            if (action.payload.path !== undefined)
             {
-                if (action.path === state.activeProject)
-                    findNodeAndSetStyle(action.path, res, {
+                if (action.payload.path === state.activeProject)
+                    findNodeAndSetStyle(action.payload.path, res, {
                         backgroundColor: 'var(--background-color-brighter)',
                         fontWeight: 'bold',
                         color: 'var(--theme-color)'
                     }, true)
                 else
-                    findNodeAndSetStyle(action.path, res, {
+                    findNodeAndSetStyle(action.payload.path, res, {
                         backgroundColor: 'var(--background-color-brighter)'
                     }, true)
             }
 
-            return {...state, fileTree: res, hoveredNode: action.path}; 
+            return {...state, fileTree: res, hoveredNode: action.payload.path}; 
         }
         case 'SET_ACTIVE_PROJECT':
         {
@@ -82,28 +82,28 @@ module.exports = function reducer(state = initialState, action)
             if (state.activeProject !== undefined)
                 findNodeAndSetStyle(state.activeProject, res, undefined);
 
-            findNodeAndSetStyle(action.path, res, {
+            findNodeAndSetStyle(action.payload.path, res, {
                 fontWeight: 'bold',
                 color: 'var(--theme-color)'
             });
 
-            return {...state, activeProject: action.path, fileTree: res};   
+            return {...state, activeProject: action.payload.path, fileTree: res};   
         }
         case 'SET_FILE_TREE_BRANCH': 
         {
-            if (action.directories === undefined)
-                action.directories = [];
-            if (action.files === undefined)
-                action.files = [];
+            if (action.payload.directories === undefined)
+                action.payload.directories = [];
+            if (action.payload.files === undefined)
+                action.payload.files = [];
 
             const lexiSortCompare = (lhs, rhs) => {
                 return lhs.localeCompare(rhs);
             }
 
-            action.directories.sort(lexiSortCompare);
-            action.files.sort(lexiSortCompare);
+            action.payload.directories.sort(lexiSortCompare);
+            action.payload.files.sort(lexiSortCompare);
 
-            let originSplit = action.origin.split('/');
+            let originSplit = action.payload.origin.split('/');
             originSplit.shift();
             
             const insertInTree = (node, index, title, key) => 
@@ -126,15 +126,15 @@ module.exports = function reducer(state = initialState, action)
             const setChildren = (node) => 
             {
                 node.children = [];
-                for (let i of action.directories) 
-                    node.children.push({key: action.origin + "/" + i, title: i, isLeaf: false});
-                node.typeSplitIndex = action.directories.length;
-                for (let i of action.files) 
+                for (let i of action.payload.directories) 
+                    node.children.push({key: action.payload.origin + "/" + i, title: i, isLeaf: false});
+                node.typeSplitIndex = action.payload.directories.length;
+                for (let i of action.payload.files) 
                 {
                     if (i[0] !== '.')
-                        node.children.push({key: action.origin + "/" + i, title: i});
+                        node.children.push({key: action.payload.origin + "/" + i, title: i});
                     else
-                        node.children.push({key: action.origin + "/" + i, title: i, style: {
+                        node.children.push({key: action.payload.origin + "/" + i, title: i, style: {
                             color: 'var(--invisible-file)'
                         }});
                 }
@@ -164,9 +164,9 @@ module.exports = function reducer(state = initialState, action)
                 res = _.cloneDeep(initialState.fileTree);    
                 res.isLeaf = false;
                 setChildren(res);
-                res.key = action.origin;
+                res.key = action.payload.origin;
                 res.title = originSplit[0];
-                return {...state, root: action.origin, fileTree: res};
+                return {...state, root: action.payload.origin, fileTree: res};
             }
             return {...state, fileTree: res};
         }

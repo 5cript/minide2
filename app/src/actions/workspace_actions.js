@@ -5,9 +5,11 @@ export function setFileTreeBranch(directory, files, directories)
 {
     return {
         type: 'SET_FILE_TREE_BRANCH',
-        origin: directory,
-        files: files,
-        directories: directories
+        payload: {
+            origin: directory,
+            files: files,
+            directories: directories
+        }
     };
 }
 
@@ -15,7 +17,9 @@ export function setActiveProject(path)
 {
     return {
         type: 'SET_ACTIVE_PROJECT',
-        path: path
+        payload: {
+            path: path
+        }
     };
 }
 
@@ -23,6 +27,8 @@ export function setHoveredNode(path)
 {
     return {
         type: 'SET_HOVERED_NODE',
-        path: path
+        payload: {
+            path: path
+        }
     }
 }

@@ -5,6 +5,7 @@
 #include "routers/toolbar.hpp"
 #include "routers/workspace.hpp"
 #include "routers/settings_provider.hpp"
+#include "routers/debugger.hpp"
 
 #include "config.hpp"
 
@@ -31,4 +32,5 @@ private:
     Routers::DataStreamer streamer_;
     Routers::Terminal terminal_;
     Routers::SettingsProvider settingsProvider_;
+    Routers::DebuggerRouter debuggerRouter_;
 };

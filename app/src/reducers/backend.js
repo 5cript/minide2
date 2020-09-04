@@ -5,28 +5,30 @@ module.exports = function reducer(state={
     connectMessage: '',
     sessionId: '',
     tryingToConnect: false
-}, action) {
-    switch (action.type) {
+}, action) 
+{
+    switch (action.type) 
+    {
         case 'SET_IP': {
-            return {...state, ip: action.ip}
+            return {...state, ip: action.payload.ip}
         }
         case 'SET_PORT': {
-            return {...state, port: action.port}
+            return {...state, port: action.payload.port}
         }
         case 'SET_CONNECTION_STATUS': {
-            if (action.connected === true)
-                return {...state, connected: action.connected}
+            if (action.payload.connected === true)
+                return {...state, connected: action.payload.connected}
             else
-            return {...state, connected: action.connected, sessionId: ''}
+            return {...state, connected: action.payload.connected, sessionId: ''}
         }
         case 'SET_TRY_TO_CONNECT': {
-            return {...state, tryingToConnect: action.connecting}
+            return {...state, tryingToConnect: action.payload.connecting}
         }
         case 'SET_CONNECT_MESSAGE': {
-            return {...state, connectMessage: action.message}
+            return {...state, connectMessage: action.payload.message}
         }
         case 'SET_SESSION_ID': {
-            return {...state, sessionId: action.sessionId}
+            return {...state, sessionId: action.payload.sessionId}
         }
         default:
             return state;

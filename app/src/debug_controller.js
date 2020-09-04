@@ -7,8 +7,9 @@ class DebugController
         this.store = store;
     }
 
-    startDebugger = () =>
+    startDebugger = (profile) =>
     {
+        this.debugger.startDebugger(profile)
     }
 }
 

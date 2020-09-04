@@ -23,6 +23,7 @@ import _ from 'lodash';
 
 // Styles
 import './styles/toolbar.css'
+import { setRunConfig } from '../../../actions/debugging_actions';
 
 // Requires
 //let dict = require('../../../util/localization');
@@ -84,6 +85,7 @@ class Toolbar extends React.Component {
         const toolbar = this.props.toolbars[this.props.shownBarId];
         if (toolbar === undefined || _.isEmpty(toolbar))
             return;
+            
         for (let i in toolbar.items)
         {
             const item = toolbar.items[i]
@@ -209,6 +211,7 @@ class Toolbar extends React.Component {
             {
                 boxes[id].selected = names[0]
                 this.props.backend.toolbar().comboxSelect(toolbarId, itemId, names[0]);
+                this.updateRunProfileState(toolbarId, itemId, names[0]);
             }
 
             const openCombox = 
@@ -233,6 +236,22 @@ class Toolbar extends React.Component {
         }
     }
 
+    updateRunProfileState = (toolbarId, itemId, selected) => 
+    {
+        const toolbar = this.props.toolbars[toolbarId];
+        if (toolbar)
+        {
+            let profile = undefined;
+            const item = toolbar.items.find(elem => elem.id === itemId);
+
+            if (item.type === "ComboBox" && item.managed === "run_profiles")
+                profile = selected
+
+            if (profile)
+                this.props.dispatch(setRunConfig(profile))
+        }
+    }
+
     closeComboBox = (toolbarId, itemId, selected) => 
     {
         const id = toolbarId + "_" + itemId;
@@ -244,6 +263,9 @@ class Toolbar extends React.Component {
             openCombobox: null,
             comboboxes: boxes
         })
+        
+        this.updateRunProfileState(toolbarId, itemId, selected);
+
         this.props.backend.toolbar().comboxSelect(toolbarId, itemId, selected);
     }
 
@@ -267,7 +289,9 @@ class Toolbar extends React.Component {
             ]
         })
         if (toolbarId && itemId)
+        {
             this.props.backend.toolbar().loadCombobox(toolbarId, itemId);
+        }
     }
 
     buildToolbar = (id) => 
@@ -407,12 +431,19 @@ class Toolbar extends React.Component {
     }
 
     
-    preselectToolbar = () => 
+    preselectToolbar = (suggested) => 
     {
-        for (let i in this.props.toolbars)
+        if (suggested !== undefined)
         {
-            this.props.dispatch(setActiveToolbar(this.props.toolbars[i].id));
-            break;
+            this.props.dispatch(setActiveToolbar(suggested));
+        }   
+        else 
+        {
+            for (let i in this.props.toolbars)
+            {
+                this.props.dispatch(setActiveToolbar(this.props.toolbars[i].id));
+                break;
+            }
         }
     }
 
@@ -425,7 +456,7 @@ class Toolbar extends React.Component {
                         labelId={'toolbar-select-label'}
                         value={this.props.shownBarId}
                         onChange={id => { 
-                            this.props.dispatch(setActiveToolbar(id.target.valu))
+                            this.props.dispatch(setActiveToolbar(id.target.value))
                         }}
                         input={<Input classes={{
                             underline: StyledSelect.underline,

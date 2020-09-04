@@ -25,16 +25,17 @@ module.exports = function reducer(state={
         case 'INITIALIZE_TOOLBARS': 
         {
             console.log('initialize toolbars')
-            return {...state, toolbars: action.toolbars, lookup: action.lookup}
+            return {...state, toolbars: action.payload.toolbars, lookup: action.payload.lookup}
         }
         case 'SET_ACTIVE_TOOLBAR':
         {
-            return {...state, activeToolbar: action.activeToolbar}
+            const active = action.payload.activeToolbar ? action.payload.activeToolbar : '';
+            return {...state, activeToolbar: active}
         }
         case 'SET_TOOLBAR_ITEMS_ENABLED':
         {
             let toolbars = _.clone(state.toolbars);
-            let toolbar = toolbars[action.toolbarId];
+            let toolbar = toolbars[action.payload.toolbarId];
             if (toolbar === undefined)
             {
                 console.error('state update with invalid toolbar id, SET_TOOLBAR_ITEMS_ENABLED');
@@ -43,7 +44,7 @@ module.exports = function reducer(state={
 
             toolbar.items = toolbar.items.map(item => 
             {
-                const disabled = action.itemIds.findIndex(it => it === item.id) !== -1 ? !action.enabled : undefined;
+                const disabled = action.payload.itemIds.findIndex(it => it === item.id) !== -1 ? !action.payload.enabled : undefined;
                 return{
                     ...item,
                     disabled: disabled
@@ -58,21 +59,21 @@ module.exports = function reducer(state={
         case 'SET_TOOLBAR_ITEM_RUNNING':
         {
             let toolbars = _.clone(state.toolbars);
-            let toolbar = toolbars[action.toolbarId];
+            let toolbar = toolbars[action.payload.toolbarId];
             if (toolbar === undefined)
             {
                 console.error('state update with invalid toolbar id, SET_TOOLBAR_ITEM_RUNNING');
                 return state;
             }
 
-            let item = toolbar.items.find(item => item.id === action.itemId);
+            let item = toolbar.items.find(item => item.id === action.payload.itemId);
             if (item === undefined)
             {
                 console.error('state update with invalid toolbar-item id, SET_TOOLBAR_ITEM_RUNNING');
                 return state;
             }
 
-            item.running = action.running;
+            item.running = action.payload.running;
 
             return {
                 ...state,

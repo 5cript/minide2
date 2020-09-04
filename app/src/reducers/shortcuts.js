@@ -13,7 +13,7 @@ module.exports = function reducer(state = initialState, action)
         case('SET_ALL_KEY_BINDINGS'): 
         {
             return {
-                bindings: action.bindings
+                bindings: action.payload.bindings
             }
         }
         default:

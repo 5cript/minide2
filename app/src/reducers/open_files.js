@@ -12,26 +12,28 @@ module.exports = function reducer(state={
         */
     ],
     activeFile: -1
-}, action) {
-    switch (action.type) {
+}, action) 
+{
+    switch (action.type) 
+    {
         case 'ADD_OPEN_FILE': {
             let activeFile = state.activeFile === -1 ? 0 : state.activeFile;
 
             let openFiles = _.clone(state.openFiles);
-            let fileIndex = openFiles.findIndex(file => file.path === action.file.path);
+            let fileIndex = openFiles.findIndex(file => file.path === action.payload.file.path);
             if (fileIndex === -1)
             {
-                if (action.focus)
+                if (action.payload.focus)
                     activeFile = state.openFiles.length;
-                openFiles.push(action.file);
+                openFiles.push(action.payload.file);
             }
             else
             {
-                if (action.focus)
+                if (action.payload.focus)
                     activeFile = fileIndex;
-                openFiles[fileIndex].content = _.clone(action.file.content);
-                openFiles[fileIndex].synchronized = _.clone(action.file.synchronized);
-                openFiles[fileIndex].isAbsolutePath = _.clone(action.file.isAbsolutePath);
+                openFiles[fileIndex].content = _.clone(action.payload.file.content);
+                openFiles[fileIndex].synchronized = _.clone(action.payload.file.synchronized);
+                openFiles[fileIndex].isAbsolutePath = _.clone(action.payload.file.isAbsolutePath);
             }
             return {
                 ...state, 
@@ -56,7 +58,7 @@ module.exports = function reducer(state={
         }
         case 'FILE_WAS_SYNCHRONIZED': {
             let openFiles = _.clone(state.openFiles);
-            let fileIndex = openFiles.findIndex(file => file.path === action.path);
+            let fileIndex = openFiles.findIndex(file => file.path === action.payload.path);
             if (fileIndex === -1)
                 console.log('tried to synchronize unopened file');
             else
@@ -71,7 +73,7 @@ module.exports = function reducer(state={
             return {
                 ...state, 
                 openFiles: state.openFiles.filter(f => {
-                    return f.path !== action.path
+                    return f.path !== action.payload.path
                 }), 
                 activeFile: (() => {
                     if (state.activeFile >= state.openFiles.length - 1)
@@ -89,7 +91,7 @@ module.exports = function reducer(state={
                 return state;
                 
             let openFiles = _.clone(state.openFiles);
-            openFiles[state.activeFile].content = action.content;
+            openFiles[state.activeFile].content = action.payload.content;
             openFiles[state.activeFile].synchronized = false;
 
             return {
@@ -98,14 +100,14 @@ module.exports = function reducer(state={
             }
         }
         case 'MOVE_OPEN_FILE': {
-            if (!(action.from >= 0 && action.from < state.openFiles.length && action.to >= 0 && action.to < state.openFiles.length))
+            if (!(action.payload.from >= 0 && action.payload.from < state.openFiles.length && action.payload.to >= 0 && action.payload.to < state.openFiles.length))
                 return state;
 
             let lastActiveFilePath = '';
             if (state.activeFile !== -1)
                 lastActiveFilePath = state.openFiles[state.activeFile].path;
             let openFiles = _.clone(state.openFiles);
-            openFiles.splice(action.to, 0, openFiles.splice(action.from, 1)[0]);
+            openFiles.splice(action.payload.to, 0, openFiles.splice(action.payload.from, 1)[0]);
             if (lastActiveFilePath !== '')
                 return {
                     ...state,

@@ -27,7 +27,6 @@ const fs = require('fs');
 require('electron-reload')
 const store = require('./store_main');
 
-
 const BrowserWindow = electron.BrowserWindow;
 
 const app = electron.app
@@ -103,12 +102,17 @@ const menuTemplate = [
 				click: async e => mainWindow.webContents.send('connectBackend')
 			},
 			{
-				label: dict.translate('$Test', 'menu'),
-				click: async e => mainWindow.webContents.send('testBackend')
-			},
-			{
 				label: dict.translate('$ReloadToolbar', 'menu'),
 				click: async e => mainWindow.webContents.send('reloadToolbar')
+			}
+		]
+	},
+	{
+		label: dict.translate("$Test", 'menu'),
+		submenu: [
+			{
+				label: dict.translate('$DumpMainStore', 'menu'),
+				click: async e => console.log(store.getState())
 			}
 		]
 	}

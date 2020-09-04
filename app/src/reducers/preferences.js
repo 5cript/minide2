@@ -1,13 +1,14 @@
 module.exports = function reducer(state={
     preferences: {}
-}, action) {
+}, action) 
+{
     switch (action.type) 
     {
         case 'SET_PREFERENCES': 
         {
             return {
                 ...state,
-                preferences: action.preferences
+                preferences: action.payload.preferences
             }
         }
         default:

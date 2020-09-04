@@ -8,11 +8,24 @@ class DebuggerRouter extends Router
         this.errorCallback = errorCallback;
     }
 
-    startDebugger(runConfigName)
+    startDebugger(runProfileName)
     {
-        this.postJson(this.url("/api/debugger/createInstance"), {
-            runConfigName: runConfigName
-        });
+        this.postJson(
+            this.url("/api/debugger/createInstance"), 
+            {
+                runProfileName: runProfileName
+            },
+            response => {
+                response.json().then(json => {
+                    console.log(json);
+                }).catch(err => {
+                    console.error('createInstance result should have been json', err);
+                })
+            },
+            err => {
+                console.error(err);
+            }
+        );
     }
 }
 

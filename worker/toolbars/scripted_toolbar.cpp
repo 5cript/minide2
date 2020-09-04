@@ -193,6 +193,10 @@ namespace Toolbars
                     transferBasics("cancelable", false);
                     transferBasics("disables", std::vector <std::string>{});
                 }
+                else if (type == "ComboBox")
+                {
+                    transferBasics("managed", "no"s);
+                }
                 else if (type == "Menu")
                 {
                     if (item["entries"].valid())

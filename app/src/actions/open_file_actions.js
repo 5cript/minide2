@@ -2,10 +2,12 @@ export function addOpenFile(file)
 {
     return {
         type: 'ADD_OPEN_FILE',
-        file: {
-            path: file,
-            content: '',
-            synchronized: false
+        payload: {
+            file: {
+                path: file,
+                content: '',
+                synchronized: false
+            }
         }
     }
 }
@@ -14,13 +16,15 @@ export function addOpenFileWithContent(file, isAbsolutePath, content)
 {
     return {
         type: 'ADD_OPEN_FILE',
-        file: {
-            path: file,
-            content: content,
-            isAbsolutePath: isAbsolutePath,
-            synchronized: true
-        },
-        focus: true
+        payload: {
+            file: {
+                path: file,
+                content: content,
+                isAbsolutePath: isAbsolutePath,
+                synchronized: true
+            },
+            focus: true
+        }
     }
 }
 
@@ -28,7 +32,9 @@ export function removeOpenFile(file)
 {
     return {
         type: 'REMOVE_OPEN_FILE',
-        path: file
+        payload: {
+            path: file
+        }
     }
 }
 
@@ -44,14 +50,17 @@ export function setActiveFileContent(data)
 {
     return {
         type: 'SET_ACTIVE_FILE_CONTENT',
-        content: data
+        payload: {
+            content: data
+        }
     }
 }
 
 export function activeFileWasSynchronized()
 {
     return {
-        type: 'ACTIVE_FILE_WAS_SYNCHRONIZED'
+        type: 'ACTIVE_FILE_WAS_SYNCHRONIZED',
+        payload: {} // empty payload for electron-redux
     };
 }
 
@@ -59,7 +68,9 @@ export function fileWasSynchronized(path)
 {
     return {
         type: 'FILE_WAS_SYNCHRONIZED',
-        path: path
+        payload: {
+            path: path
+        }
     }
 }
 
@@ -67,7 +78,9 @@ export function moveOpenFile(from, to)
 {
     return {
         type: 'MOVE_OPEN_FILE',
-        from: from,
-        to: to
+        payload: {
+            from: from,
+            to: to
+        }
     }
 }

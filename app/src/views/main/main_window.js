@@ -191,12 +191,13 @@ class MainWindow extends React.Component
         if (firstLoad && this.props.preferences.backend.autoLoadLastProject)
         {
             const lastActive = this.persistence.getLastActive(this.currentHost());
-            console.log(lastActive)
             if (lastActive)
             {
                 this.backend.workspace().setActiveProject(lastActive, () => {
-                    this.props.dispatch(setActiveProject(lastActive))
-                    this.onActiveProjectChange(lastActive);
+                    setTimeout(() => {
+                        this.props.dispatch(setActiveProject(lastActive))
+                        this.onActiveProjectChange(lastActive);
+                    }, 1000)
                 });
             }
         }
@@ -204,9 +205,26 @@ class MainWindow extends React.Component
 
     initToolbars = (json) =>
     {
-        this.props.dispatch(initializeToolbars(json));
+        let toolbars = {}
+        let lookup = []
+        let ot = json.toolbars;
+        let preselect = undefined;
+        for (const i in ot)
+        {
+            const toolbar = ot[i];
+            if (preselect === undefined)
+                preselect = toolbar.id;
+            lookup.push(toolbar.id);
+            toolbars[toolbar.id] = {
+                items: toolbar.items,
+                name: toolbar.name,
+                id: toolbar.id
+            }
+        }
+        
+        this.props.dispatch(initializeToolbars(toolbars, lookup));
         if (this.toolbar)
-            this.toolbar.preselectToolbar();
+            this.toolbar.preselectToolbar(preselect);
     }
 
     showProjectSettigns({settingsFile})

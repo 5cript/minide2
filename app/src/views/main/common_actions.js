@@ -19,7 +19,8 @@ export default class CommonActions
         return {
             openFiles: state.openFiles.openFiles,
             activeFile: state.openFiles.activeFile,
-            shortcuts: state.shortcuts
+            shortcuts: state.shortcuts,
+            debugging: state.debugging
         }
     }
 
@@ -69,6 +70,6 @@ export default class CommonActions
 
     startDebugger = () => 
     {
-        this.debugController.startDebugger();
+        this.debugController.startDebugger(this.getState().debugging.selectedConfig);
     }
 }

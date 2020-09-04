@@ -19,22 +19,22 @@ module.exports = function reducer(state={
         case 'ADD_TO_LOG': 
         {
             let logs = _.cloneDeep(state.logs);
-            const logIndex = logs.findIndex(log => log.logName === action.logName);
+            const logIndex = logs.findIndex(log => log.logName === action.payload.logName);
             let ordering = [...state.ordering];
             if (logIndex === -1)
             {
                 logs.push({
-                    data: action.data,
-                    logName: action.logName
+                    data: action.payload.data,
+                    logName: action.payload.logName
                 })
                 ordering.push(logs.length - 1);
             }
             else 
             {
                 if (logs[logIndex].data === undefined)
-                    logs[logIndex].data = action.data;
+                    logs[logIndex].data = action.payload.data;
                 else
-                    logs[logIndex].data += action.data;
+                    logs[logIndex].data += action.payload.data;
             }
 
             return {
@@ -47,26 +47,26 @@ module.exports = function reducer(state={
         {
             return {
                 ...state,
-                activeLog: state.ordering.findIndex(elem => elem === action.index)
+                activeLog: state.ordering.findIndex(elem => elem === action.payload.index)
             }
         }
         case 'SET_LOG_TYPE':
         {
             let logs = _.cloneDeep(state.logs);
-            const logIndex = logs.findIndex(log => log.logName === action.logName);
+            const logIndex = logs.findIndex(log => log.logName === action.payload.logName);
             let ordering = [...state.ordering];
             if (logIndex === -1)
             {
                 logs.push({
                     data: '',
-                    logName: action.logName,
-                    logType: action.logType
+                    logName: action.payload.logName,
+                    logType: action.payload.logType
                 })
                 ordering.push(logs.length - 1);
             }
             else
             {
-                logs[logIndex].logType = action.logType
+                logs[logIndex].logType = action.payload.logType
             }
 
             return {
@@ -78,13 +78,13 @@ module.exports = function reducer(state={
         case 'CLEAR_LOG': 
         {
             let logs = _.cloneDeep(state.logs);
-            const logIndex = logs.findIndex(log => log.logName === action.logName);
+            const logIndex = logs.findIndex(log => log.logName === action.payload.logName);
             let ordering = [...state.ordering];
             if (logIndex === -1)
             {
                 logs.push({
                     data: '',
-                    logName: action.logName
+                    logName: action.payload.logName
                 })
                 ordering.push(logs.length - 1);
             }
@@ -101,7 +101,7 @@ module.exports = function reducer(state={
         }
         case 'SET_ACTIVE_LOG_BY_NAME': 
         {
-            const logIndex = state.logs.findIndex(log => log.logName === action.logName);
+            const logIndex = state.logs.findIndex(log => log.logName === action.payload.logName);
 
             if (logIndex === -1)
                 return state;
@@ -113,11 +113,11 @@ module.exports = function reducer(state={
         }
         case 'SWAP_LOGS':
         {
-            if (!(action.from >= 0 && action.from < state.logs.length && action.to >= 0 && action.to < state.logs.length))
+            if (!(action.payload.from >= 0 && action.payload.from < state.logs.length && action.payload.to >= 0 && action.payload.to < state.logs.length))
                 return state;
 
             let ordering = [...state.ordering];            
-            ordering.splice(action.to, 0, ordering.splice(action.from, 1)[0]);
+            ordering.splice(action.payload.to, 0, ordering.splice(action.payload.from, 1)[0]);
 
             return {
                 ...state,
