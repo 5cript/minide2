@@ -1,6 +1,9 @@
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
+//import {CopyWebpackPlugin} from 'copy-webpack-plugin';
+//import {MonacoWebpackPlugin} from 'monaco-editor-webpack-plugin';
+
 module.exports = function override(config, env) {
     if (!config.plugins) {
         config.plugins = [];

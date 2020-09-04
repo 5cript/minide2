@@ -6,7 +6,7 @@ const initialState =
     }
 };
 
-export default function reducer(state = initialState, action) 
+module.exports = function reducer(state = initialState, action) 
 {
     switch (action.type) 
     {

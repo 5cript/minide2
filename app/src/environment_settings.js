@@ -6,7 +6,7 @@ let envWindow = undefined;
 let isVisible = false;
 let forceQuit = false;
 
-export default function createEnvironmentWindow(path, parentCenter, server)
+module.exports = function createEnvironmentWindow(path, parentCenter, server)
 {
     const w = 800;
     const h = 600;

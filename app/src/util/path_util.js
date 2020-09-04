@@ -1,4 +1,8 @@
-import nodePath from 'path';
+let nodePath;
+if (typeof window !== 'undefined') 
+    nodePath = window.require('path');
+else
+    nodePath = require('path');
 
 const pathModifier =
 {
@@ -20,4 +24,4 @@ const minIdeHome = (fs) =>
     return home;
 }
 
-export {pathModifier, minIdeHome};
+module.exports = {pathModifier, minIdeHome};

@@ -1,16 +1,34 @@
+/*
 import createEnvironmentWindow from './environment_settings';
 import createPreferencesWindow from './preferences_window';
 import Dictionary from './util/localization.js';
 
+import electron from 'electron';
+import {ipcMain} from 'electron';
+import {isDev} from 'electron-is-dev';
+import shortcut from 'electron-localshortcut';
+import {minIdeHome} from './util/path_util';
+import fs from 'fs';
+
+import reload from 'electron-reload';
+*/
+
+
+const createEnvironmentWindow  = require('./environment_settings');
+const createPreferencesWindow = require('./preferences_window');
+const Dictionary = require('./util/localization.js');
+
 const electron = require('electron')
 const isDev = require('electron-is-dev')
 const shortcut = require('electron-localshortcut');
-const BrowserWindow = electron.BrowserWindow
 const {ipcMain} = require('electron')
 const {minIdeHome} = require('./util/path_util');
 const fs = require('fs');
-
 require('electron-reload')
+const store = require('./store_main');
+
+
+const BrowserWindow = electron.BrowserWindow;
 
 const app = electron.app
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
@@ -110,8 +128,8 @@ function createWindow()
 
 	electron.Menu.setApplicationMenu(menu);
 
-	const screen = 0;
-	//const screen = 1;
+	//const screen = 0;
+	const screen = 1;
 
 	let windowWidth = 1500;
 	let windowHeight = 900;
@@ -133,7 +151,8 @@ function createWindow()
 		webPreferences: {
 			webSecurity: true,
 			nodeIntegration: true,
-			allowEval: false
+			allowEval: false,
+			enableRemoteModule: true
 		},
 	})
 
@@ -162,7 +181,7 @@ function createWindow()
 	
 	mainWindow.webContents.on('did-finish-load', e => 
 	{
-		const home = minIdeHome(require('fs'));
+		const home = minIdeHome(fs);
 		let preferences;
 		if (fs.existsSync(home + "/preferences.json"))
 			preferences = JSON.parse(fs.readFileSync(home + "/preferences.json", 'utf8')).preferences;

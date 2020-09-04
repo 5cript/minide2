@@ -1,6 +1,7 @@
 import WorkspaceApi from './backend/workspace';
 import ToolbarApi from './backend/toolbar';
 import Router from './backend/router';
+import DebuggerRouter from './backend/debugger';
 
 class Backend extends Router
 {
@@ -16,6 +17,7 @@ class Backend extends Router
 
         this.workspaceRoutes = new WorkspaceApi(store, errorCallback);
         this.toolbarRoutes = new ToolbarApi(store, errorCallback);
+        this.debuggerRoutes = new DebuggerRouter(store, errorCallback);
 
         this.routers = [
             this.workspaceRoutes
@@ -53,6 +55,11 @@ class Backend extends Router
     toolbar()
     {
         return this.toolbarRoutes;
+    }
+
+    debugger()
+    {
+        return this.debuggerRoutes;
     }
 
     handleControlMessage(json)
@@ -124,7 +131,7 @@ class Backend extends Router
                         }
                     }
                     
-                    console.log('readNext');
+                    //console.log('readNext');
                     return read();
                 }).catch(reject => {
                     this.onConnectionLoss('control_error: ' + reject.message);

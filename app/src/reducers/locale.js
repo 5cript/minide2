@@ -3,7 +3,7 @@ const initialState =
     language: 'de_DE'
 };
 
-export default function reducer(state = initialState, action) 
+module.exports = function reducer(state = initialState, action) 
 {
     switch (action.type) 
     {

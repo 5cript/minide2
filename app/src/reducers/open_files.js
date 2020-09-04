@@ -1,6 +1,6 @@
-import _ from 'lodash';
+const _ = require('lodash');
 
-export default function reducer(state={
+module.exports = function reducer(state={
     openFiles: [
         /*
         {

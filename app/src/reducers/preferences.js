@@ -1,4 +1,4 @@
-export default function reducer(state={
+module.exports = function reducer(state={
     preferences: {}
 }, action) {
     switch (action.type) 

@@ -254,4 +254,4 @@ class Dictionary
     }
 }
 
-export default Dictionary;
+module.exports = Dictionary;

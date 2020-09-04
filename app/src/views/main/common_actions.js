@@ -2,11 +2,12 @@ import {activeFileWasSynchronized, fileWasSynchronized} from '../../actions/open
 
 export default class CommonActions
 {
-    constructor(store, mainWindow, backend)
+    constructor(store, mainWindow, backend, debugController)
     {
         this.mainWindow = mainWindow
         this.backend = backend;
         this.store = store;
+        this.debugController = debugController;
 
         console.log(store);
     }
@@ -64,5 +65,10 @@ export default class CommonActions
             }
             return file;
         })
+    }
+
+    startDebugger = () => 
+    {
+        this.debugController.startDebugger();
     }
 }

@@ -1,4 +1,4 @@
-export default function reducer(state={
+module.exports = function reducer(state={
     ip: '',
     port: 0,
     connected: false,

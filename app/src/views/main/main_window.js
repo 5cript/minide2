@@ -28,6 +28,7 @@ import Backend from '../../backend_connector';
 import _ from 'lodash';
 import Dictionary from '../../util/localization';
 import LocalPersistence from '../../util/persistence';
+import DebugController from '../../debug_controller';
 
 // Style
 import './styles/main.css'
@@ -97,6 +98,41 @@ class MainWindow extends React.Component
         logsHeight: 200,
         inputForm: null,
         inputFormEnvs: []
+    }
+
+    constructor(props) 
+    {
+        super(props)
+        this.dict = new Dictionary();
+        this.dict.setLang(this.props.locale.language);
+
+        this.registerIpcHandler();
+        this.installShortcuts();
+
+        this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectingToBackend", "main_window")));
+
+        this.backend = new Backend
+        (
+            props.store,
+            // Control Callback
+            (...args) => {this.onControlStream(...args);}, 
+            // Data Callback
+            (...args) => {this.onDataStream(...args);}, 
+            // Error Callback
+            (...args) => {this.onStreamError(...args);},
+            // on Connection Loss
+            (...args) => {this.onConnectionLoss(...args);}
+        );
+        
+        this.debugController = new DebugController(this.backend, props.store);
+        
+        this.commonActions = new CommonActions
+        (
+            props.store,
+            this,
+            this.backend,
+            this.debugController
+        );
     }
 
     isShortcut(event, shortcutDefinition)
@@ -450,38 +486,6 @@ class MainWindow extends React.Component
     onStreamError(err)
     {
         console.error(err);
-    }
-
-    constructor(props) 
-    {
-        super(props)
-        this.dict = new Dictionary();
-        this.dict.setLang(this.props.locale.language);
-
-        this.registerIpcHandler();
-        this.installShortcuts();
-
-        this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectingToBackend", "main_window")));
-
-        this.backend = new Backend
-        (
-            props.store, 
-            // Control Callback
-            (...args) => {this.onControlStream(...args);}, 
-            // Data Callback
-            (...args) => {this.onDataStream(...args);}, 
-            // Error Callback
-            (...args) => {this.onStreamError(...args);},
-            // on Connection Loss
-            (...args) => {this.onConnectionLoss(...args);}
-        );
-        
-        this.commonActions = new CommonActions
-        (
-            props.store,
-            this,
-            this.backend
-        );
     }
 
     onConnectionLoss(which)

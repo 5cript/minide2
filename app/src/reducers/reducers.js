@@ -1,15 +1,15 @@
-import {combineReducers} from 'redux';
+const {combineReducers} = require('redux');
 
-import openFiles from './open_files';
-import workspace from './workspace';
-import backend from './backend';
-import shortcuts from './shortcuts';
-import toolbars from './toolbars';
-import locale from './locale';
-import logs from './logs';
-import preferences from './preferences';
+const openFiles = require('./open_files');
+const workspace = require('./workspace');
+const backend = require('./backend');
+const shortcuts = require('./shortcuts');
+const toolbars = require('./toolbars');
+const locale = require('./locale');
+const logs = require('./logs');
+const preferences = require('./preferences');
 
-export default combineReducers({
+module.exports = combineReducers({
     openFiles,
     workspace,
     backend,

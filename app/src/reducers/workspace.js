@@ -1,5 +1,5 @@
-import _ from 'lodash';
-import binaryChildSearch from './helpers/file_tree_searcher';
+const _ = require('lodash');
+const binaryChildSearch = require('./helpers/file_tree_searcher');
 
 const initialState = 
 {
@@ -36,7 +36,7 @@ const findNodeAndSetStyle = (path, topNode, style, includeFiles) =>
     curNode.style = style;
 };
 
-export default function reducer(state = initialState, action) 
+module.exports = function reducer(state = initialState, action) 
 {
     switch (action.type) 
     {

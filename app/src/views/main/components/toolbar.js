@@ -103,9 +103,14 @@ class Toolbar extends React.Component {
                 this.props.commonActions.saveFile();
                 break;
             }
-            case('saveAll'):
+            case('save_all'):
             {
                 this.props.commonActions.saveAllFiles();
+                break;
+            }
+            case('cpp_debug'):
+            {
+                this.props.commonActions.startDebugger();
                 break;
             }
         }

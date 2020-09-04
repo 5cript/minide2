@@ -45,9 +45,6 @@ namespace Routers
                 if (body.contains("executeable"))
                     executeable = body["executeable"].get<std::string>();
 
-                if (body.contains("executeable"))
-                    executeable = body["executeable"].get<std::string>();
-
                 res->end();
             });
         });

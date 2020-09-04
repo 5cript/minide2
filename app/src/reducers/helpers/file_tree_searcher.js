@@ -96,4 +96,4 @@ let binaryChildSearch = (node, what, searchFiles) =>
     }
 }
 
-export default binaryChildSearch;
+module.exports = binaryChildSearch;

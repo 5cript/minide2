@@ -8,7 +8,7 @@ let preferencesWindow = undefined;
 let isVisible = false;
 let forceQuit = false;
 
-export default function createPreferencesWindow(path, parentCenter)
+module.exports = function createPreferencesWindow(path, parentCenter)
 {
     const w = 1400;
     const h = 950;

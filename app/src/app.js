@@ -4,7 +4,7 @@ import Environments from './views/environments/environments';
 import Preferences from './views/preferences/preferences';
 import {BrowserRouter as Router, Route} from 'react-router-dom';
 import {Provider} from 'react-redux';
-import store from './store';
+import store from './store_renderer';
 
 // styles
 
@@ -14,8 +14,8 @@ class ViewRouter extends React.Component
 	{
 		return {
 			main: <MainWindow store={store}/>,
-			environments: <Environments/>,
-			preferences: <Preferences/>
+			environments: <Environments store={store}/>,
+			preferences: <Preferences store={store}/>
 		}
 	}
 
