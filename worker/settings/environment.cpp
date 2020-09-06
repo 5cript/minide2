@@ -43,9 +43,9 @@ namespace SettingParts
         return pathStr;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::map <std::string, std::string> Environment::compile(char pathSplit) const
+    std::unordered_map <std::string, std::string> Environment::compile(char pathSplit) const
     {
-        std::map <std::string, std::string> env;
+        std::unordered_map <std::string, std::string> env;
         env["PATH"] = mergePath(pathSplit);
         env.insert(std::begin(variables), std::end(variables));
         return env;

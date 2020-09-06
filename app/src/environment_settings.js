@@ -24,7 +24,8 @@ module.exports = function createEnvironmentWindow(path, parentCenter, server)
 			webPreferences: {
 				webSecurity: true,
 				nodeIntegration: true,
-				allowEval: false
+				allowEval: false,
+				enableRemoteModule: true
 			}
 		})
 		

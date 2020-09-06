@@ -94,6 +94,7 @@ class Environments extends React.Component
             }
         });
 
+        /*
         ipcRenderer.on('loadEnvironment', (event, arg) => 
         {
             this.backend = arg;
@@ -101,6 +102,7 @@ class Environments extends React.Component
             console.log('load', this.backend);
             this.load();
         });
+        */
     }
 
     environmentList = () =>

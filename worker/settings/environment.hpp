@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <unordered_map>
 
 namespace SettingParts
 {
@@ -20,14 +21,14 @@ namespace SettingParts
 
     public:
         std::vector <std::string> path; // PATH variable, sorted out of variables for its special treatment.
-        std::map <std::string, std::string> variables;
+        std::unordered_map <std::string, std::string> variables;
 
         /// A list (map, because integer indicates order because guarantees for arrays might be tricky to hold)
         /// of other environments to inherit from.
         /// Avoid usage, unless you really think its right for your case.
         std::map <std::string, std::string> inherits;
 
-        std::map <std::string, std::string> compile(char pathSplit) const;
+        std::unordered_map <std::string, std::string> compile(char pathSplit) const;
         std::string mergePath(char pathSplit) const;
 
         /**

@@ -4,6 +4,8 @@
 
 #include <fstream>
 
+using namespace std::string_literals;
+
 //#####################################################################################################################
 void PublicSettings::load()
 {
@@ -55,6 +57,49 @@ void PublicSettings::setEnvironments(std::unordered_map <std::string, SettingPar
 {
     environments_ = envs;
     save();
+}
+//---------------------------------------------------------------------------------------------------------------------
+std::optional <std::unordered_map <std::string, std::string>> PublicSettings::compileEnvironment(std::string const& name) const
+{
+    auto findEnv = [this](std::string const& name) -> std::optional <SettingParts::Environment>
+    {
+        auto iter = environments_.find(name);
+        if (iter == std::end(environments_))
+            return std::nullopt;
+
+        return {iter->second};
+    };
+
+    auto optEnv = findEnv(name);
+    if (!optEnv)
+        return std::nullopt;
+
+    auto env = optEnv.value();
+    auto envCpy = env;
+    for (auto const& [orderKey, inherits] : envCpy.inherits)
+    {
+        auto inheritedEnv = findEnv(inherits);
+        if (!inheritedEnv)
+        {
+            throw std::runtime_error
+            (
+                "environment inherits other environment that wasn't found"s +
+                "{\"inherited\":\""s + inherits + "\"}"
+            );
+        }
+
+        bool sensitive = true;
+        // This could be wrong, cause dependent on Filesystem?
+#ifdef _WIN32
+        sensitive = false;
+#endif
+        env = inheritedEnv.value().merge(env, sensitive);
+    }
+    char pathSplit = SettingParts::Environment::linuxPathSplit;
+#ifdef _WIN32
+    pathSplit = SettingParts::Environment::windowsPathSplit;
+#endif // _WIN32
+    return env.compile(pathSplit);
 }
 //---------------------------------------------------------------------------------------------------------------------
 PublicSettings::PublicSettings() = default;

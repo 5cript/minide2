@@ -17,6 +17,12 @@ public:
             std::string debugger;
             std::string arguments;
             std::string executeable;
+
+            // is a name to one of the configured enviroments
+            std::string environment;
+
+            // defaults to true
+            bool autostart;
         };
         std::vector <Configuration> configs;
     };

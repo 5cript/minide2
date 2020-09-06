@@ -19,6 +19,7 @@ namespace Routers
 
     private:
         void registerRoutes(attender::tcp_server& server);
+        void addCreateInstanceRoute(attender::tcp_server& server);
 
     private:
         struct Implementation;

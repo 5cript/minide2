@@ -43,11 +43,14 @@ void RunConfig::transferExistingItems(json const& j)
     j.contains("configurations");
     json configs = j["configurations"];
 
-#define EXTRACT(jso, name, type) \
-    jso.contains(name) ? jso[name].get<type>() : type{}
+#define EXTRACT(jso, name, type, def) \
+    jso.contains(name) ? jso[name].get<type>() : def
 
 #define EXTRACT_PROFILE(name, type) \
-    EXTRACT(config, name, type)
+    EXTRACT(config, name, type, type{})
+
+#define EXTRACT_PROFILE_DEF(name, type, def) \
+    EXTRACT(config, name, type, def)
 
     for (json config : configs)
     {
@@ -58,6 +61,8 @@ void RunConfig::transferExistingItems(json const& j)
             EXTRACT_PROFILE("debugger", std::string),
             EXTRACT_PROFILE("arguments", std::string),
             EXTRACT_PROFILE("executeable", std::string),
+            EXTRACT_PROFILE("environment", std::string),
+            EXTRACT_PROFILE_DEF("autostart", bool, true)
         };
 
         content_.configs.push_back(cfg);

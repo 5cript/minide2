@@ -62,60 +62,32 @@ namespace MinIDE::Scripting
         return vec;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    std::optional <std::map <std::string, std::string>> LuaSettingsProvider::environment(std::string const& envName) const
+    std::optional <std::unordered_map <std::string, std::string>> LuaSettingsProvider::environment(std::string const& envName) const
     {
-        auto&& envs = impl_->settingsProv->settings().environments();
-
-        auto findEnv = [&envs](std::string const& name) -> std::optional <SettingParts::Environment>
-        {
-            auto iter = envs.find(name);
-            if (iter == std::end(envs))
-                return std::nullopt;
-
-            return {iter->second};
-        };
-
-        auto optEnv = findEnv(envName);
-        if (!optEnv)
-            return std::nullopt;
-
         auto s = impl_->sessionAccess.session();
         if (!s)
             return std::nullopt;
 
-        auto env = optEnv.value();
-        auto envCpy = env;
-        for (auto const& [orderKey, inherits] : envCpy.inherits)
+        try
         {
-            auto inheritedEnv = findEnv(inherits);
-            if (!inheritedEnv)
-            {
-                impl_->streamer->send
-                (
-                    StreamChannel::Control,
-                    s.value().remoteAddress,
-                    s.value().controlId,
-                    Streaming::makeMessage<Streaming::Messages::LuaErrorMessage>
-                    (
-                        "environment inherits other environment that wasn't found",
-                        "{\"inherited\":\""s + inherits + "\"}",
-                        Streaming::Messages::ErrorTypes::Precondition
-                    )
-                );
-            }
-
-            bool sensitive = true;
-// This could be wrong, cause dependent on Filesystem?
-#ifdef _WIN32
-            sensitive = false;
-#endif
-            env = inheritedEnv.value().merge(env, sensitive);
+            return impl_->settingsProv->settings().compileEnvironment(envName);
         }
-        char pathSplit = SettingParts::Environment::linuxPathSplit;
-#ifdef _WIN32
-        pathSplit = SettingParts::Environment::windowsPathSplit;
-#endif // _WIN32
-        return env.compile(pathSplit);
+        catch(std::exception const& exc)
+        {
+            impl_->streamer->send
+            (
+                StreamChannel::Control,
+                s.value().remoteAddress,
+                s.value().controlId,
+                Streaming::makeMessage<Streaming::Messages::LuaErrorMessage>
+                (
+                    std::string{exc.what()},
+                    "{}",
+                    Streaming::Messages::ErrorTypes::Precondition
+                )
+            );
+        }
+        return std::nullopt;
     }
 //#####################################################################################################################
     void loadSettingsProvider
