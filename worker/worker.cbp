@@ -39,6 +39,7 @@
 		</Compiler>
 		<Linker>
 			<Add option="-lSimpleJSON" />
+			<Add option="-ldbgint" />
 			<Add option="-lspecial_paths" />
 			<Add option="-lautomata" />
 			<Add option="-lboost_filesystem-mt" />
@@ -60,6 +61,7 @@
 			<Add directory="../tiny-process-library/build" />
 			<Add directory="../automata/build" />
 			<Add directory="../special-paths/build" />
+			<Add directory="../debugger-interface/build" />
 		</Linker>
 		<Unit filename="../attender/attender.hpp" />
 		<Unit filename="../attender/attender/callback_wrapper.cpp" />
@@ -242,6 +244,8 @@
 		<Unit filename="workspace/hashed_file.hpp" />
 		<Unit filename="workspace/project_persistence.cpp" />
 		<Unit filename="workspace/project_persistence.hpp" />
+		<Unit filename="workspace/run_config.cpp" />
+		<Unit filename="workspace/run_config.hpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.cpp" />
 		<Unit filename="workspace/stream_messages/directory_contents.hpp" />
 		<Unit filename="workspace/stream_messages/file_content.cpp" />
