@@ -2,6 +2,7 @@ import React from 'react';
 import MainWindow from './views/main/main_window';
 import Environments from './views/environments/environments';
 import Preferences from './views/preferences/preferences';
+import Keybinds from './views/keybinds/keybinds';
 import {BrowserRouter as Router, Route} from 'react-router-dom';
 import {Provider} from 'react-redux';
 import store from './store_renderer';
@@ -15,7 +16,8 @@ class ViewRouter extends React.Component
 		return {
 			main: <MainWindow store={store}/>,
 			environments: <Environments store={store}/>,
-			preferences: <Preferences store={store}/>
+			preferences: <Preferences store={store}/>,
+			keybinds: <Keybinds store={store}/>
 		}
 	}
 

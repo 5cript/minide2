@@ -21,7 +21,8 @@ class Dictionary
                     "$Backend": "Backend",
                     "$Connect": "Connect",
                     "$Test": "TestAction_DEL_ME",
-                    "$ReloadToolbar": "Reload toolbar"
+                    "$ReloadToolbar": "Reload toolbar",
+                    "$EditKeybinds": "Edit Keybinkds"
                 },
                 "explorer": {
                     "$OpenFiles": "Open Files",
@@ -107,6 +108,20 @@ class Dictionary
                     "$LooksLikeSourceSplitButNotConfigured": "Looks like your project does a split by include and source by common convention, but your project is not configured accordingly. Do you want to change that?",
                     "$FileNotFoundShallCreate": "File not found, do you want to create it?",
                     "$CouldNotCreateFile": "Could not create file"
+                },
+                "search": {
+                    "$Search": "Search"
+                },
+                "keybinds": {
+                    "$Command": "Command",
+                    "$Keybind": "Keybind",
+                    "$toggleSourceHeader": "Switch between Soruce and Header file (C++)",
+                    "$save": "Save Current File",
+                    "$saveAll": "Save All Files",
+                    "$editorTabPrevious": "Previous Open File Tab",
+                    "$editorTabNext": "Next Open File Tab",
+                    "$closeActiveFile": "Close Current File",
+                    "$PressKey": "Press a combination"
                 }
             },
             "de_DE": {
@@ -122,7 +137,8 @@ class Dictionary
                     "$Backend": "Backend",
                     "$Connect": "Verbinden",
                     "$Test": "Testaktion_DEL_ME",
-                    "$ReloadToolbar": "Toolbar neu laden"
+                    "$ReloadToolbar": "Toolbar neu laden",
+                    "$EditKeybinds": "Tastenkürzel anpassen"
                 },
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
@@ -208,6 +224,20 @@ class Dictionary
                     "$LooksLikeSourceSplitButNotConfigured": "Es sieht so aus als wäre dieses Projekt in 'include' und 'source' getrennt. Aber das Projekt ist nicht dahingehend konfiguriert. Wollen sie die Trennung aktivieren?",
                     "$FileNotFoundShallCreate": "Datei nicht gefunden, soll sie erstellt werden?",
                     "$CouldNotCreateFile": "Konnte datei nicht erstellen"
+                },
+                "search": {
+                    "$Search": "Suchen"
+                },
+                "keybinds": {
+                    "$Command": "Befehl",
+                    "$Keybind": "Tastenkombination",
+                    "$toggleSourceHeader": "Zwischen Header und Source Umschalten (C++)",
+                    "$save": "Aktuelle Datei Speichern",
+                    "$saveAll": "Alle Dateien Speichern",
+                    "$editorTabPrevious": "Vorheriger Editor Tab",
+                    "$editorTabNext": "Nächster Editor Tab",
+                    "$closeActiveFile": "Aktuelle Datei Schließen",
+                    "$PressKey": "Kombination drücken"
                 }
             }    
         }

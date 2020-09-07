@@ -28,6 +28,21 @@ RunConfig::Contents::Configuration Debugger::runConfig() const
     return runConfig_;
 }
 //---------------------------------------------------------------------------------------------------------------------
+void Debugger::onRawData(std::string const& raw)
+{
+    std::cout << raw << "\n";
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::onLogStream(std::string const& message)
+{
+    std::cout << message << "\n";
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::onConsoleStream(std::string const& message)
+{
+    std::cout << message << "\n";
+}
+//---------------------------------------------------------------------------------------------------------------------
 void Debugger::start(std::optional <std::unordered_map <std::string, std::string>> const& env)
 {
     DebuggerInterface::UserDefinedArguments args;
@@ -35,10 +50,14 @@ void Debugger::start(std::optional <std::unordered_map <std::string, std::string
     args.commandline = runConfig_.arguments;
     if (env)
         args.environment = env.value();
+    args.program = runConfig_.executeable;
+    args.directory = runConfig_.directory;
+
 
     auto envDo = [&]()
     {
         debugInterface_  = std::make_shared <DebuggerInterface::Debugger>(args);
+        debugInterface_->start();
     };
 
     if (!env)

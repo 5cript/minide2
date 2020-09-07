@@ -1,6 +1,7 @@
 #pragma once
 
 #include <debugger-interface/debugger.hpp>
+#include <debugger-interface/debugger_interface.hpp>
 
 #include "../workspace/run_config.hpp"
 
@@ -10,7 +11,7 @@
 #include <map>
 #include <string>
 
-class Debugger
+class Debugger : public DebuggerInterface::PickyListener
 {
 public:
     /**
@@ -49,6 +50,11 @@ public:
      *  Executes the debugger process
      */
     void start(std::optional <std::unordered_map <std::string, std::string>> const& env);
+
+public: // Debugger Interface Implementations
+    void onRawData(std::string const& raw) override;
+    void onLogStream(std::string const& message) override;
+    void onConsoleStream(std::string const& message) override;
 
 private:
     RunConfig::Contents::Configuration runConfig_;

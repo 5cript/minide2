@@ -4,6 +4,7 @@
 #include "../json.hpp"
 
 #include <string>
+#include <optional>
 
 class RunConfig
 {
@@ -17,6 +18,8 @@ public:
             std::string debugger;
             std::string arguments;
             std::string executeable;
+
+            std::optional <std::string> directory;
 
             // is a name to one of the configured enviroments
             std::string environment;

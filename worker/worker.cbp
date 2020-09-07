@@ -145,6 +145,13 @@
 		<Unit filename="../attender/attender/tcp_server.cpp" />
 		<Unit filename="../attender/attender/tcp_server.hpp" />
 		<Unit filename="../attender/attender/tcp_server_interface.hpp" />
+		<Unit filename="../debugger-interface/common_arguments.hpp" />
+		<Unit filename="../debugger-interface/debugger.hpp" />
+		<Unit filename="../debugger-interface/debugger_interface.hpp" />
+		<Unit filename="../debugger-interface/distributing_listener.hpp" />
+		<Unit filename="../debugger-interface/gdb_run_arguments.hpp" />
+		<Unit filename="../debugger-interface/input_parser.hpp" />
+		<Unit filename="../debugger-interface/lldb_run_arguments.hpp" />
 		<Unit filename="../tiny-process-library/process.cpp" />
 		<Unit filename="../tiny-process-library/process.hpp" />
 		<Unit filename="../tiny-process-library/process_win.cpp" />

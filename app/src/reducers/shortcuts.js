@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const initialState = 
 {
     bindings: {
@@ -14,6 +16,15 @@ module.exports = function reducer(state = initialState, action)
         {
             return {
                 bindings: action.payload.bindings
+            }
+        }
+        case('SET_KEY_BIND'): 
+        {
+            let bindings = _.clone(state.bindings);
+            bindings[action.payload.name] = action.payload.binding;
+
+            return {
+                bindings: bindings
             }
         }
         default:

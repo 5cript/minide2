@@ -13,6 +13,84 @@ import _ from 'lodash';
 // requires
 const fs = window.require('fs');
 
+export class KeybindIo
+{
+    constructor(home)
+    {
+        this.home = home;
+    }
+
+
+    loadKeybindsFromDrive = () =>
+    {
+        const keybinds = fs.readFileSync(this.home + "/keybinds.json", {encoding: 'utf-8'});
+        if (keybinds === null || keybinds === undefined || keybinds === '')
+        {
+            console.error('no keybinds');
+            return {};
+        }
+
+        const defaultTo = () => 
+        {
+            const def = this.makeDefault();
+            this.saveKeybindsToDrive(def);
+            return def;
+        }
+        try
+        {
+            const file = JSON.parse(keybinds);
+            if (file === undefined || file.bindings === undefined)
+                return defaultTo();
+            return file.bindings;
+        }
+        catch(exc)
+        {
+            console.error(exc);
+            return defaultTo();
+        }
+    }
+
+    saveKeybindsToDrive = (bindings) => 
+    {
+        fs.writeFileSync(
+            this.home + "/keybinds.json", 
+            JSON.stringify({bindings: bindings}, null, 4),
+            {encoding: 'utf-8'}
+        );
+    }
+
+    makeDefault = () =>
+    {
+        return {
+            save: {
+                key: 's',
+                ctrl: true
+            },
+            saveAll: {
+                key: 's',
+                ctrl: true,
+                shift: true
+            },
+            toggleSourceHeader: {
+                key: 'F11'
+            },
+            editorTabPrevious: {
+                key: 'tab',
+                ctrl: true,
+                shift: true
+            },
+            editorTabNext: {
+                key: 'tab',
+                ctrl: true
+            },
+            closeActiveFile: {
+                key: 'w',
+                ctrl: true
+            }
+        }
+    }
+}
+
 class KeybindActor extends React.Component 
 {
     isShortcut = (event, shortcutDefinition) =>
@@ -30,7 +108,8 @@ class KeybindActor extends React.Component
             key: shortcutDefinition.key,
             ctrlKey: shortcutDefinition.ctrl,
             altKey: shortcutDefinition.alt,
-            shiftKey: shortcutDefinition.shift
+            shiftKey: shortcutDefinition.shift,
+            location: shortcutDefinition.location
         };
 
         let is = true;
@@ -55,21 +134,15 @@ class KeybindActor extends React.Component
 
     loadKeybindsFromDrive = (home) =>
     {
-        const keybinds = fs.readFileSync(home + "/keybinds.json", {encoding: 'utf-8'});
-        if (keybinds === null || keybinds === undefined || keybinds === '')
-        {
-            console.error('no keybinds');
-            return;
-        }
+        this.home = home;
+        const io = new KeybindIo(this.home);
+        this.props.dispatch(setAllKeybinds(io.loadKeybindsFromDrive(home)))
+    }
 
-        try
-        {
-            this.props.dispatch(setAllKeybinds(JSON.parse(keybinds).bindings))
-        }
-        catch(exc)
-        {
-            console.error(exc);
-        }
+    saveKeybinds = () => 
+    {
+        const io = new KeybindIo(this.home);
+        io.saveKeybindsToDrive(this.props.shortcuts.bindings);
     }
 
     toggleSourceHeader = () => 

@@ -117,6 +117,7 @@ automata
 sol2
 IDE2.workspace
 IDE2.workspace.layout
+app/.vscode
 
 build-*
 app_backup

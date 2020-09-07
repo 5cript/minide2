@@ -124,6 +124,9 @@ namespace Routers
                 const auto id = impl_->idGenerator.generate_id();
                 sess.save_partial([&](auto& toSave, auto&)
                 {
+                    // this is potentially a bug.
+                    // save_partial was not meant to contain logic.
+                    // breaking this assumption might have side effects.
                     toSave.debuggerInstances[id] = Debugger{profile, id};
                     auto& debugger = toSave.debuggerInstances[id];
 

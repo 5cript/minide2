@@ -16,6 +16,7 @@ import reload from 'electron-reload';
 
 const createEnvironmentWindow  = require('./environment_settings');
 const createPreferencesWindow = require('./preferences_window');
+const createKeybindsWindow = require('./keybinds_window');
 const Dictionary = require('./util/localization.js');
 
 const electron = require('electron')
@@ -90,6 +91,23 @@ const menuTemplate = [
 						x: pos[0] + size[0] / 2,
 						y: pos[1] + size[1] / 2
 					}, server);
+				}
+			},
+			{
+				label: dict.translate('$EditKeybinds', 'menu'),
+				click: async e => 
+				{
+					const path = isDev
+						? `http://localhost:${port}?keybinds`
+						: `file://${__dirname}/../public/index.html?keybinds`
+					
+					const pos = mainWindow.getPosition();
+					const size = mainWindow.getSize();
+					console.log(mainWindow.home)
+					createKeybindsWindow(path, {
+						x: pos[0] + size[0] / 2,
+						y: pos[1] + size[1] / 2
+					}, server, mainWindow.home);
 				}
 			}
 		]
@@ -189,6 +207,8 @@ function createWindow()
 		let preferences;
 		if (fs.existsSync(home + "/preferences.json"))
 			preferences = JSON.parse(fs.readFileSync(home + "/preferences.json", 'utf8')).preferences;
+
+		mainWindow.home = home;
 
 		mainWindow.webContents.send('setHome', home);
 		mainWindow.webContents.send('preferences', preferences);

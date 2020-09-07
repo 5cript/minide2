@@ -4,6 +4,21 @@
 #include <fstream>
 #include <sstream>
 
+namespace
+{
+    template <typename T>
+    struct UnpackOptional
+    {
+        using type = T;
+    };
+
+    template <typename U>
+    struct UnpackOptional <std::optional <U>>
+    {
+        using type = U;
+    };
+}
+
 //#####################################################################################################################
 RunConfig::RunConfig(sfs::path const& root)
     : root_{root}
@@ -43,8 +58,14 @@ void RunConfig::transferExistingItems(json const& j)
     j.contains("configurations");
     json configs = j["configurations"];
 
-#define EXTRACT(jso, name, type, def) \
-    jso.contains(name) ? jso[name].get<type>() : def
+#define EXTRACT(jso, name, TYPE, def) \
+    [&]() -> TYPE \
+    { \
+        if (jso.contains(name)) \
+            return jso[name].get<typename UnpackOptional<TYPE>::type>(); \
+        else \
+            return def; \
+    }()
 
 #define EXTRACT_PROFILE(name, type) \
     EXTRACT(config, name, type, type{})
@@ -61,6 +82,7 @@ void RunConfig::transferExistingItems(json const& j)
             EXTRACT_PROFILE("debugger", std::string),
             EXTRACT_PROFILE("arguments", std::string),
             EXTRACT_PROFILE("executeable", std::string),
+            EXTRACT_PROFILE_DEF("directory", std::optional <std::string>, std::nullopt),
             EXTRACT_PROFILE("environment", std::string),
             EXTRACT_PROFILE_DEF("autostart", bool, true)
         };
