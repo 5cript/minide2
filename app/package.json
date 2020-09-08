@@ -4,7 +4,7 @@
   "description": "A minimal IDE",
   "version": "0.1.0",
   "private": true,
-  "main": "src/main.js",
+  "main": "src/windows/main_window.js",
   "build": {
     "appId": "minide2",
     "directories": {

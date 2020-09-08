@@ -1,6 +1,6 @@
 const electron = require('electron');
 const {ipcMain} = require('electron');
-const {minIdeHome} = require('./util/path_util');
+const {minIdeHome} = require('../util/path_util');
 const fs = require('fs');
 const BrowserWindow = electron.BrowserWindow;
 

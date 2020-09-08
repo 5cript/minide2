@@ -1,32 +1,17 @@
-/*
-import createEnvironmentWindow from './environment_settings';
-import createPreferencesWindow from './preferences_window';
-import Dictionary from './util/localization.js';
-
-import electron from 'electron';
-import {ipcMain} from 'electron';
-import {isDev} from 'electron-is-dev';
-import shortcut from 'electron-localshortcut';
-import {minIdeHome} from './util/path_util';
-import fs from 'fs';
-
-import reload from 'electron-reload';
-*/
-
-
 const createEnvironmentWindow  = require('./environment_settings');
 const createPreferencesWindow = require('./preferences_window');
 const createKeybindsWindow = require('./keybinds_window');
-const Dictionary = require('./util/localization.js');
+const createDebuggerSettingsWindow = require('./debugger_settings_window');
+const Dictionary = require('../util/localization.js');
 
 const electron = require('electron')
 const isDev = require('electron-is-dev')
 const shortcut = require('electron-localshortcut');
 const {ipcMain} = require('electron')
-const {minIdeHome} = require('./util/path_util');
+const {minIdeHome} = require('../util/path_util');
 const fs = require('fs');
 require('electron-reload')
-const store = require('./store_main');
+const store = require('../store_main');
 
 const BrowserWindow = electron.BrowserWindow;
 
@@ -43,6 +28,20 @@ let server = {
 	port: 43255,
 	authCookie: ''
 };
+
+const createSideWindow = ({factory, uriPart, args}) => 
+{
+	const path = isDev
+		? `http://localhost:${port}?${uriPart}`
+		: `file://${__dirname}/../public/index.html${uriPart}`
+	
+	const pos = mainWindow.getPosition();
+	const size = mainWindow.getSize();
+	factory(path, {
+		x: pos[0] + size[0] / 2,
+		y: pos[1] + size[1] / 2
+	}, ...args);
+}
 
 const menuTemplate = [
 	{
@@ -81,33 +80,33 @@ const menuTemplate = [
 				label: dict.translate('$Environment', 'menu'),
 				click: async e => 
 				{
-					const path = isDev
-						? `http://localhost:${port}?environments`
-						: `file://${__dirname}/../public/index.html?environments`
-					
-					const pos = mainWindow.getPosition();
-					const size = mainWindow.getSize();
-					createEnvironmentWindow(path, {
-						x: pos[0] + size[0] / 2,
-						y: pos[1] + size[1] / 2
-					}, server);
+					createSideWindow({
+						factory: createEnvironmentWindow,
+						uriPart: 'environments',
+						args: [server]
+					});
 				}
 			},
 			{
 				label: dict.translate('$EditKeybinds', 'menu'),
 				click: async e => 
 				{
-					const path = isDev
-						? `http://localhost:${port}?keybinds`
-						: `file://${__dirname}/../public/index.html?keybinds`
-					
-					const pos = mainWindow.getPosition();
-					const size = mainWindow.getSize();
-					console.log(mainWindow.home)
-					createKeybindsWindow(path, {
-						x: pos[0] + size[0] / 2,
-						y: pos[1] + size[1] / 2
-					}, server, mainWindow.home);
+					createSideWindow({
+						factory: createKeybindsWindow, 
+						uriPart: 'keybinds', 
+						args: [server, mainWindow.home]
+					});
+				}
+			},
+			{
+				label: dict.translate('$DebuggerSettings', 'menu'),
+				click: async e => 
+				{
+					createSideWindow({
+						factory: createDebuggerSettingsWindow, 
+						uriPart: 'debuggerSettings', 
+						args: [mainWindow.home]
+					});
 				}
 			}
 		]

@@ -45,6 +45,7 @@ class Keybinds extends React.Component
         ]
 
         ipcRenderer.on('setHome', (event, arg) => {
+            console.log(arg);
             this.home = arg;
             this.loadKeybinds();
         })
@@ -62,6 +63,8 @@ class Keybinds extends React.Component
     {
         if (this.keybindIo)
             this.keybindIo.saveKeybindsToDrive(binds);
+        else
+            console.error('could not save');
     }
 
     elementsAsArray = () => 

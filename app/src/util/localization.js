@@ -22,7 +22,8 @@ class Dictionary
                     "$Connect": "Connect",
                     "$Test": "TestAction_DEL_ME",
                     "$ReloadToolbar": "Reload toolbar",
-                    "$EditKeybinds": "Edit Keybinkds"
+                    "$EditKeybinds": "Edit Keybinds",
+                    "$DebuggerSettings": "Debugger Settings"
                 },
                 "explorer": {
                     "$OpenFiles": "Open Files",
@@ -138,7 +139,8 @@ class Dictionary
                     "$Connect": "Verbinden",
                     "$Test": "Testaktion_DEL_ME",
                     "$ReloadToolbar": "Toolbar neu laden",
-                    "$EditKeybinds": "Tastenkürzel anpassen"
+                    "$EditKeybinds": "Tastenkürzel Anpassen",
+                    "$DebuggerSettings": "Debugger Einstellungen"
                 },
                 "explorer": {
                     "$OpenFiles": "Offene Dateien",
