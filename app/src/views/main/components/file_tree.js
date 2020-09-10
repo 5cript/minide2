@@ -110,7 +110,7 @@ class FileView extends PureComponent
 
     onMouseEnter(v)
     {
-        if (this.lockHoverChange)
+        if (this.lockHoverChange || v.node.title === "")
             return;
         this.hoveredNode = v.node;
         this.props.dispatch(setHoveredNode(v.node.key));
@@ -118,7 +118,7 @@ class FileView extends PureComponent
 
     onMouseLeave(v)
     {
-        if (this.lockHoverChange)
+        if (this.lockHoverChange || this.hoveredNode === undefined)
             return;
         this.hoveredNode = undefined;
         this.props.dispatch(setHoveredNode(undefined));
