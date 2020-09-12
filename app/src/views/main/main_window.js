@@ -34,6 +34,7 @@ import DebugController from '../../debug_controller';
 import './styles/main.css'
 import ReactResizeDetector from 'react-resize-detector';
 import InputBox from '../../elements/input_box';
+import { setConfigHome } from '../../actions/misc_actions';
 
 // requires
 const {ipcRenderer} = window.require('electron');
@@ -547,6 +548,7 @@ class MainWindow extends React.Component
         ipcRenderer.on('setHome', (event, arg) => {
             this.home = arg;
             this.loadKeybindsIfPossible();
+            this.props.dispatch(setConfigHome(this.home));
 
             this.persistence = new LocalPersistence(this.home, window.require('fs'));
             try

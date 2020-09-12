@@ -146,7 +146,8 @@ class Dictionary
                     "$AdditionalCommandline": "Additional Commandline Arguments",
                     "$ProfileAlreadyExists": "Profile with that name already exists",
                     "$ProfileName": "Profile Name",
-                    "$ConfirmProfileRemove": "Do you really want to delete this profile?"
+                    "$ConfirmProfileRemove": "Do you really want to delete this profile?",
+                    "$SettingsSaveImmediately": "All changes save immediately"
                 }
             },
             "de_DE": {
@@ -287,7 +288,8 @@ class Dictionary
                     "$ProfileName": "Profilname",
                     "$AdditionalCommandline": "Zusätzliche Kommandozeilenargumente",
                     "$ProfileAlreadyExists": "Profil mit diesem Namen existiert bereits",
-                    "$ConfirmProfileRemove": "Wollen sie dieses Profil wirklich löschen?"
+                    "$ConfirmProfileRemove": "Wollen sie dieses Profil wirklich löschen?",
+                    "$SettingsSaveImmediately": "Alle Änderungen speichern direkt"
                 }
             }    
         }

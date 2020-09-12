@@ -9,6 +9,7 @@ const locale = require('./locale');
 const logs = require('./logs');
 const preferences = require('./preferences');
 const debugging = require('./debugging');
+const misc = require('./miscellaneous');
 
 module.exports = combineReducers({
     openFiles,
@@ -19,5 +20,6 @@ module.exports = combineReducers({
     locale,
     logs,
     preferences,
-    debugging
+    debugging,
+    misc
 })
