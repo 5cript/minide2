@@ -809,13 +809,15 @@ class MainWindow extends React.Component
                                 {
                                     case("Ok"):
                                     {
-                                        console.log(data);
                                         this.setState({inputForm: null});
+                                        break;
                                     }
                                     case("Cancel"):
                                     {
                                         this.setState({inputForm: null});
+                                        break;
                                     }
+                                    default: break;
                                 }
                             }}
                             dict={this.dict}

@@ -30,6 +30,14 @@ export function setDebuggingProfile(name, profile, merge)
     }
 }
 
+export function setDebugInitialLoadDone()
+{
+    return {
+        type: 'SET_DEBUG_LOAD_COMPLETE',
+        payload: {}
+    }
+}
+
 export function setGlobalDebuggerSettigns(settings)
 {
     return {

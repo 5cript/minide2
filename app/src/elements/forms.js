@@ -72,6 +72,7 @@ export class FlatForm extends React.Component
                                         return ''
                                 })())
                             }
+                            autoFocus={scheme.autofocus}
                         ></input>
                         {(() => {
                             if (!this.satisfiesRequirements(scheme))

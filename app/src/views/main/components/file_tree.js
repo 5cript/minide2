@@ -92,7 +92,7 @@ class FileView extends PureComponent
         if (this.hoveredNode === undefined)
             return;
 
-        const nodeKey = _.clone(this.hoveredNode.key);
+        //const nodeKey = _.clone(this.hoveredNode.key);
 
         let fileIndex = this.props.openFiles.findIndex(file => file.path === this.hoveredNode.key);
         if (this.props.openFiles[fileIndex] === undefined)

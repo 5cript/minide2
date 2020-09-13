@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 
 // Components
 import DropdownList from 'react-widgets/lib/DropdownList';
-import {FormGroup, FormLabel, FormControlLabel} from '@material-ui/core';
+import {FormGroup, FormControlLabel} from '@material-ui/core';
 import {DragDropContext} from 'react-beautiful-dnd';
 import SlimButton from '../../elements/button';
 import {MuiTabs, TabPanel} from '../../elements/tabs';
@@ -18,7 +18,7 @@ import _ from 'lodash';
 import ReduxPersistanceHelper from '../../util/redux_persist';
 
 // Actions
-import {setDebuggingProfiles, setGlobalDebuggerSettigns, setDebuggingProfile} from '../../actions/debugging_actions';
+import {setDebuggingProfiles, setGlobalDebuggerSettigns, setDebuggingProfile, setDebugInitialLoadDone} from '../../actions/debugging_actions';
 
 // Style
 import './styles/debugger_settings.css';
@@ -36,7 +36,6 @@ class DebuggerSettings extends React.Component
 
     state = {
         activeTab: 0,
-        selectedDebugger: '',
         selectedProfile: '',
         profileInputVisible: false,
         yesNoBoxVisible: false,
@@ -45,12 +44,21 @@ class DebuggerSettings extends React.Component
         okMessage: 'You should never see this'
     }
 
+    constructor(props)
+    {
+        super(props)
+
+        this.saveDebounced = _.debounce(this.saveImmediately, 100, {maxWait: 500});
+    }
+
     dndDragEnd = (dndOperation) =>
     {
     }
-    
-    save = () =>
+
+    saveImmediately = () =>
     {
+        if (!this.props.debugging.initialLoadDone)
+            return;
         const persistor = new ReduxPersistanceHelper(this.props.store);
         persistor.saveSelection('debugger_settings.json', state => {
             return {
@@ -59,14 +67,21 @@ class DebuggerSettings extends React.Component
             }            
         });
     }
+    
+    save = () =>
+    {
+        this.saveDebounced();
+    }
 
     load = () => 
     {
         const persistor = new ReduxPersistanceHelper(this.props.store);
         persistor.loadByDispatch('debugger_settings.json', [
             fileContent => setDebuggingProfiles(fileContent.profiles),
-            fileContent => setGlobalDebuggerSettigns(fileContent.globalSettings)
+            fileContent => setGlobalDebuggerSettigns(fileContent.globalSettings),
+            () => setDebugInitialLoadDone()
         ]);
+        console.log('load');
     }
 
     getProfiles = () => 
@@ -152,8 +167,20 @@ class DebuggerSettings extends React.Component
             return;
         }
 
-        let profiles = _.cloneDeep(this.getProfiles());
-        profiles.push({name: profileName});
+        const makeProfile = (name) => {
+            return {
+                name: name,
+                debugger: 'gdb',
+                path: 'gdb.exe',
+                fullyReadSymbols: true,
+                returnChildResult: true,
+                initCommandFile: null,
+                commandFile: null
+            }
+        };
+
+        let profiles = _.cloneDeep(this.props.debugging.profiles);
+        profiles.push(makeProfile(profileName));
 
         this.props.dispatch(setDebuggingProfiles(profiles));
         this.setState({
@@ -167,8 +194,8 @@ class DebuggerSettings extends React.Component
     {
         let reallyDelete = () => 
         {
-            let profiles = _.cloneDeep(this.getProfiles());
-            let profileIndex = profiles.findIndex(elem => elem === this.state.selectedProfile);
+            let profiles = _.cloneDeep(this.props.debugging.profiles);
+            let profileIndex = profiles.findIndex(elem => elem.name === this.state.selectedProfile);
             if (profileIndex === -1)
                 return;
 
@@ -183,12 +210,7 @@ class DebuggerSettings extends React.Component
             this.showYesNoBox(this.dict.translate('$ConfirmProfileRemove', 'debugger_settings'), reallyDelete)
     }
 
-    componentDidMount = () =>
-    {
-        this.load();
-    }
-
-    onSwitchChange = (affected, value) => 
+    setProfileProperty = (affected, value) => 
     {
         let o = {}
         o[affected] = value
@@ -205,21 +227,35 @@ class DebuggerSettings extends React.Component
 
     componentDidUpdate = () =>
     {
+        if (this.props.debugging.profiles.length > 0 && this.state.selectedProfile === '')
+        {
+            this.setState({
+                selectedProfile: this.props.debugging.profiles[0].name
+            })
+        }
         this.save();
     }
 
-    profileSwitchGet = (property) =>
+    componentDidMount = () =>
     {
+        this.load();
+    }
+
+    getProfileProperty = (property, defaul) =>
+    {
+        if (defaul === undefined)
+            console.error('ERROR, getProfileProperty called with undefined default, this is not allowed');
+
         if (this.state.selectedProfile === undefined)
-            return false;
+            return defaul;
 
         const profile = this.props.debugging.profiles.find(profile => {return profile.name === this.state.selectedProfile});
         if (profile === undefined)
-            return false;
+            return defaul;
 
         const prop = profile[property];
         if (prop === undefined)
-            return false;
+            return defaul;
 
         return prop;
     }
@@ -231,7 +267,11 @@ class DebuggerSettings extends React.Component
                 className="debuggerPathInputFrame"
             >
                 <label>{this.dict.translate("$Path", 'debugger_settings') + ":"}</label>
-                <MinimalInput className="debuggerFormInput"/>
+                <MinimalInput 
+                    className="debuggerFormInput"
+                    value={this.getProfileProperty('path', '')}
+                    onChange={e => this.setProfileProperty('path', e.target.value)}
+                />
             </div>
         );
     }
@@ -242,23 +282,18 @@ class DebuggerSettings extends React.Component
             <div className="debuggerAdditionalArgs">
                 <label className="debuggerSwitchLabel">{this.dict.translate("$AdditionalCommandline", 'debugger_settings')}</label>
                 <MinimalInput 
+                    className="debuggerFormInput"
                     id="debuggerAdditionalArgBox"
                     type="text" 
+                    value={this.getProfileProperty('additionCommandlineArguments', '')}
+                    onChange={e => this.setProfileProperty('additionCommandlineArguments', e.target.value)}
                 />
             </div>
         );
     }
 
-    render() {
-        // NOTE TO MY FUTURE SELF
-        // Allow X amount of debugger configuration and settings
-        // give these configs a name that can be accessed from the run config like "${DebuggerProfile:lldb}" if there is a profile called lldb.
-        // before creating a new debugger instance, these profiles (the settings) could then be merged into the run config
-        // for the server to read.
-        // make a selection box for what debugger it is (gdb, lldb).
-
-        // maybe something like:
-        // https://cdn.discordapp.com/attachments/745676647184990329/752688417284030544/unknown.png
+    render() 
+    {
         return (
             <div>
                 <DragDropContext
@@ -286,7 +321,6 @@ class DebuggerSettings extends React.Component
                                 {this.dict.translate('$SettingsSaveImmediately', 'debugger_settings')}
                             </div>
                             <div id="generalSettings">
-                                <FormLabel component="legend"></FormLabel>
                                 <FormGroup>
                                     <FormControlLabel
                                         control={<ThemedSwitch checked={this.props.debugging.globalSettings.buildBeforeRun} onChange={val => this.onGlobalSwitchChange('buildBeforeRun', val.target.checked)} name="buildBeforeDebug" />}
@@ -343,94 +377,103 @@ class DebuggerSettings extends React.Component
                                         <DropdownList
                                             data={this.debuggers}
                                             onChange={value => {
-                                                this.setState({selectedDebugger: value})
                                                 this.props.dispatch(setDebuggingProfile(this.state.selectedProfile, {
                                                     debugger: value
                                                 }, true))
                                             }}
-                                            value={this.state.selectedDebugger}
+                                            value={this.getProfileProperty('debugger', '')}
                                         />
                                     </div>
                                 </div>
 
                                 {/*GDB*/}
-                                <div id="gdbSettings" style={{display: this.state.selectedDebugger !== 'gdb' ? 'none' : undefined}}>
+                                <div id="gdbSettings" style={{display: this.getProfileProperty('debugger', '') !== 'gdb' ? 'none' : undefined}}>
                                     {this.debuggerPathComponent()}
                                     <div>
-                                        <ThemedSwitch checked={this.profileSwitchGet('fullyReadSymbols')} onChange={val => this.onSwitchChange('fullyReadSymbols', val.target.checked)} />
+                                        <ThemedSwitch checked={this.getProfileProperty('fullyReadSymbols', false)} onChange={val => this.setProfileProperty('fullyReadSymbols', val.target.checked)} />
                                         <label className="debuggerSwitchLabel">{this.dict.translate("$FullyReadSymbols", 'debugger_settings')}</label>
                                     </div>
                                     <div>
-                                        <ThemedSwitch checked={this.profileSwitchGet('neverReadSymbols')} onChange={val => this.onSwitchChange('neverReadSymbols', val.target.checked)} />
+                                        <ThemedSwitch checked={this.getProfileProperty('neverReadSymbols', false)} onChange={val => this.setProfileProperty('neverReadSymbols', val.target.checked)} />
                                         <label className="debuggerSwitchLabel">{this.dict.translate("$NeverReadSymbols", 'debugger_settings')}</label>
                                     </div>
                                     <div>
-                                        <ThemedSwitch checked={this.profileSwitchGet('returnChildResult')} onChange={val => this.onSwitchChange('returnChildResult', val.target.checked)} />
+                                        <ThemedSwitch checked={this.getProfileProperty('returnChildResult', false)} onChange={val => this.setProfileProperty('returnChildResult', val.target.checked)} />
                                         <label className="debuggerSwitchLabel">{this.dict.translate("$OutputChildResult", 'debugger_settings')}</label>
                                     </div>
                                     <div className="debuggerSettingsWithInput">
                                         <div>
                                             <ThemedSwitch checked={(() => {
-                                                const initComFile = this.profileSwitchGet('initCommandFile');
+                                                const initComFile = this.getProfileProperty('initCommandFile', false);
                                                 return initComFile !== undefined && initComFile !== null;
                                             })()} onChange={val => {
                                                 if (!val.target.checked)
-                                                    this.onSwitchChange('initCommandFile', null)
+                                                    this.setProfileProperty('initCommandFile', null)
                                                 else
-                                                    this.onSwitchChange('initCommandFile', '')
+                                                    this.setProfileProperty('initCommandFile', '')
                                             }} />
                                             <label className="debuggerSwitchLabel">{this.dict.translate("$InitCommandFile", 'debugger_settings') + ":"}</label>
                                         </div>
                                         <MinimalInput 
                                             className={classNames("debuggerFormInput", "debuggerAdditionalInput", (() => {
-                                                const initComFile = this.profileSwitchGet('initCommandFile');
+                                                const initComFile = this.getProfileProperty('initCommandFile', false);
                                                 return initComFile !== undefined && initComFile !== null;
                                             })() ? undefined : 'debuggerDisabledInput')} 
                                             type="text" 
                                             disabled={!(() => {
-                                                const initComFile = this.profileSwitchGet('initCommandFile');
+                                                const initComFile = this.getProfileProperty('initCommandFile', false);
                                                 return initComFile !== undefined && initComFile !== null;
                                             })()} 
+                                            value={(() => {
+                                                const prop = this.getProfileProperty('initCommandFile', '');
+                                                return prop === null ? '' : prop;
+                                            })()}
+                                            onChange={e => this.setProfileProperty('initCommandFile', e.target.value)}
                                         />
                                     </div>
                                     <div className="debuggerSettingsWithInput">
                                         <div>
                                             <ThemedSwitch checked={(() => {
-                                                const comFile = this.profileSwitchGet('commandFile');
+                                                const comFile = this.getProfileProperty('commandFile', false);
                                                 return comFile !== undefined && comFile !== null;
                                             })()} onChange={val => {
                                                 if (!val.target.checked)
-                                                    this.onSwitchChange('commandFile', null)
+                                                    this.setProfileProperty('commandFile', null)
                                                 else
-                                                    this.onSwitchChange('commandFile', '')
+                                                    this.setProfileProperty('commandFile', '')
                                             }} />
                                             <label className="debuggerSwitchLabel">{this.dict.translate("$CommandFile", 'debugger_settings') + ":"}</label>
                                         </div>
                                         <MinimalInput 
                                             className={classNames("debuggerFormInput", "debuggerAdditionalInput", (() => {
-                                                const comFile = this.profileSwitchGet('commandFile');
+                                                const comFile = this.getProfileProperty('commandFile', false);
                                                 return comFile !== undefined && comFile !== null;
                                             })() ? undefined : 'debuggerDisabledInput')} 
                                             type="text" 
                                             disabled={!(() => {
-                                                const comFile = this.profileSwitchGet('commandFile');
+                                                const comFile = this.getProfileProperty('commandFile', false);
                                                 return comFile !== undefined && comFile !== null;
-                                            })()} 
+                                            })()}  
+                                            value={(() => {
+                                                const prop = this.getProfileProperty('commandFile', '');
+                                                return prop === null ? '' : prop;
+                                            })()}
+                                            onChange={e => this.setProfileProperty('commandFile', e.target.value)}
                                         />
                                     </div>
                                     <div>
-                                        <ThemedSwitch checked={this.profileSwitchGet('ignoreGdbInit')} onChange={val => this.onSwitchChange('ignoreGdbInit', val.target.checked)} />
+                                        <ThemedSwitch checked={this.getProfileProperty('ignoreGdbInit', false)} onChange={val => this.setProfileProperty('ignoreGdbInit', val.target.checked)} />
                                         <label className="debuggerSwitchLabel">{this.dict.translate("$Ignore", 'debugger_settings') + " ~/.gdbinit"}</label>
                                     </div>
                                     <div>
-                                        <ThemedSwitch checked={this.profileSwitchGet('ignoreAllGdbInit')} onChange={val => this.onSwitchChange('ignoreAllGdbInit', val.target.checked)} />
+                                        <ThemedSwitch checked={this.getProfileProperty('ignoreAllGdbInit', false)} onChange={val => this.setProfileProperty('ignoreAllGdbInit', val.target.checked)} />
                                         <label className="debuggerSwitchLabel">{this.dict.translate("$IgnoreAll", 'debugger_settings') + " .gdbinit"}</label>
                                     </div>
                                     {this.additionalArgumentsComponents()}
                                 </div>
 
                                 {/*LLDB*/}
-                                <div id="lldbSettings" style={{display: this.state.selectedDebugger !== 'lldb' ? 'none' : undefined}}>
+                                <div id="lldbSettings" style={{display: this.getProfileProperty('debugger', '') !== 'lldb' ? 'none' : undefined}}>
                                     {this.debuggerPathComponent()}
                                     {this.additionalArgumentsComponents()}
                                 </div>
@@ -451,6 +494,7 @@ class DebuggerSettings extends React.Component
                                 key: 'profile',
                                 label: this.dict.translate('$ProfileName', 'debugger_settings'),
                                 type: 'input',
+                                autofocus: true,
                                 requirements: value => {return value !== undefined && value !== ''},
                                 requirementDescription: this.dict.translate('$MayNotBeEmpty', 'dialog')
                             }

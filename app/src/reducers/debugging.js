@@ -20,7 +20,8 @@ module.exports = function reducer(state={
         ignoreGdbInit: true,
         ignoreAllGdbInit: true,
         additionCommandlineArguments: ''
-    }*/]
+    }*/],
+    initialLoadDone: false
 }, action) 
 { 
     switch (action.type) 
@@ -35,7 +36,17 @@ module.exports = function reducer(state={
         }
         case('SET_GLOBAL_DEBUG_SETTINGS'): 
         {
-            return {...state, globalSettings: action.payload.settings}
+            return {
+                ...state, 
+                globalSettings: action.payload.settings,
+            }
+        }
+        case('SET_DEBUG_LOAD_COMPLETE'):
+        {
+            return {
+                ...state,
+                initialLoadDone: true
+            }
         }
         case('SET_DEBUG_PROFILE'):
         {
@@ -61,16 +72,10 @@ module.exports = function reducer(state={
 
                 for (let key in action.payload.profile)
                 {
-                    console.log(key, typeof(action.payload.profile[key]), '_'+action.payload.profile[key]);
                     if (action.payload.profile[key] === null)
-                    {
-                        console.log(key);
                         delete profiles[key];
-                    }
                 }
             }
-
-            console.log(profiles);
 
             return {
                 ...state,

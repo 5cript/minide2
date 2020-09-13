@@ -115,6 +115,8 @@ class Toolbar extends React.Component {
                 this.props.commonActions.startDebugger();
                 break;
             }
+            default:
+                break;
         }
     }
 
