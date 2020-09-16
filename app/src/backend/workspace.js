@@ -157,6 +157,22 @@ class Workspace extends Router
         }, onSuccess);
     }
 
+    loadRunConfig(onLoad, onError)
+    {
+        this.get(
+            this.url("/api/workspace/getRunConfigs"), 
+            response => {
+                response.json().then(json => {
+                    onLoad(json);
+                }).catch(err => {
+                    onError(err);
+                })
+            },
+            err => {
+                onError(err);
+            }
+        )
+    }
 }
 
 export default Workspace;

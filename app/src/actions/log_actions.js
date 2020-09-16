@@ -61,3 +61,17 @@ export function moveLogs(from, to)
         }
     }
 }
+
+export function addDebugTerminal(name, data, props, closeable, instanceId)
+{
+    return {
+        type: 'ADD_DEBUG_TERMINAL',
+        payload: {
+            name: name,
+            data: data,
+            props: props,
+            closeable: closeable,
+            instanceId: instanceId
+        }
+    }
+}

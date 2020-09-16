@@ -112,7 +112,14 @@ class Toolbar extends React.Component {
             }
             case('cpp_debug'):
             {
-                this.props.commonActions.startDebugger();
+                try
+                {
+                    this.props.commonActions.startDebugger();
+                }
+                catch(error)
+                {
+                    this.props.showOkBox(this.props.dict.translate(error.message, 'dialog'));
+                }
                 break;
             }
             default:

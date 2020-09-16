@@ -1,62 +1,197 @@
 #include "debugger.hpp"
 #include "../environment_lock.hpp"
 
+#include "../routers/streamer.hpp"
+#include "../streaming/common_messages/inline_message.hpp"
+
 #include <debugger-interface/debugger.hpp>
 #include <memory>
+#include <functional>
 
+using namespace std::string_literals;
+
+//#####################################################################################################################
+json unpackValue(std::unique_ptr <DebuggerInterface::Value> const& val)
+{
+    json j = {};
+    if (DebuggerInterface::isResult(val))
+    {
+        auto* res = static_cast <DebuggerInterface::Result*> (val.get());
+        j["variable"] = res->variable;
+        j["value"] = unpackValue(res->value);
+    }
+    else if (DebuggerInterface::isConst(val))
+    {
+        auto* res = static_cast <DebuggerInterface::Const*> (val.get());
+        j["value"] = res->data;
+    }
+    return j;
+}
+//---------------------------------------------------------------------------------------------------------------------
+std::vector <json> unpackResults(std::vector <DebuggerInterface::Result> const& results)
+{
+    std::vector <json> res;
+    for (auto const& i : results)
+    {
+        json j{
+            {"variable", i.variable}
+        };
+        if (i.value)
+            j["value"] = unpackValue(i.value);
+
+        res.push_back(std::move(j));
+    }
+    return res;
+}
 //#####################################################################################################################
 Debugger::Debugger
 (
-    RunConfig::Contents::Configuration const& usedConfig,
+    Routers::DataStreamer* streamer,
+    std::string const& remoteAddress,
+    int controlId,
+    RunConfig const& usedConfig,
     std::string instanceId
 )
-    : runConfig_{usedConfig}
+    : streamer_{streamer}
+    , remoteAddress_{remoteAddress}
+    , controlId_{controlId}
+    , runConfig_{usedConfig}
     , instanceId_{std::move(instanceId)}
     , debugInterface_{}
 {
 }
 //---------------------------------------------------------------------------------------------------------------------
-Debugger::~Debugger() = default;
+Debugger::~Debugger()
+{
+    std::cerr << "debugger instance destroyed\n";
+}
 //---------------------------------------------------------------------------------------------------------------------
 std::string_view Debugger::runConfigName() const
 {
     return runConfig_.name;
 }
 //---------------------------------------------------------------------------------------------------------------------
-RunConfig::Contents::Configuration Debugger::runConfig() const
+RunConfig Debugger::runConfig() const
 {
     return runConfig_;
 }
 //---------------------------------------------------------------------------------------------------------------------
+void Debugger::command(DebuggerInterface::MiCommand const& command) const
+{
+    if (debugInterface_)
+        debugInterface_->sendCommand(command);
+}
+//---------------------------------------------------------------------------------------------------------------------
 void Debugger::onRawData(std::string const& raw)
 {
-    std::cout << raw << "\n";
+    //std::cout << raw << "\n";
 }
 //---------------------------------------------------------------------------------------------------------------------
 void Debugger::onLogStream(std::string const& message)
 {
-    std::cout << message << "\n";
+    relayMessage(json{
+        {"messageType"s, "log_stream"s},
+        {"data"s, message}
+    });
 }
 //---------------------------------------------------------------------------------------------------------------------
 void Debugger::onConsoleStream(std::string const& message)
 {
-    std::cout << message << "\n";
+    relayMessage(json{
+        {"messageType"s, "console_stream"s},
+        {"data"s, message}
+    });
 }
 //---------------------------------------------------------------------------------------------------------------------
+void Debugger::onParserError(std::string const& message)
+{
+    relayMessage(json{
+        {"messageType"s, "parser_error"s},
+        {"data"s, message}
+    });
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::onStdErr(std::string const& text)
+{
+    relayMessage(json{
+        {"messageType"s, "stderr"s},
+        {"data"s, text}
+    });
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::onResult(DebuggerInterface::ResultRecord const& result)
+{
+    relayMessage(json{
+        {"messageType"s, "result"s},
+        {"status"s, static_cast <int> (result.status)},
+        {"results"s, unpackResults(result.results)}
+    });
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::onExec(DebuggerInterface::AsyncRecord const& record)
+{
+    relayAsyncRecord("exec_record", record);
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::onStatus(DebuggerInterface::AsyncRecord const& record)
+{
+    relayAsyncRecord("status_record", record);
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::onNotify(DebuggerInterface::AsyncRecord const& record)
+{
+    relayAsyncRecord("notify_record", record);
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::relayAsyncRecord(std::string const& type, DebuggerInterface::AsyncRecord const& record)
+{
+    json j{
+        {"messageType"s, type}
+    };
+
+    if (record.token)
+        j["token"] = record.token.value();
+
+    j["type"] = static_cast <int>(record.type);
+    j["status"] = record.status;
+    j["results"] = unpackResults(record.results);
+
+    relayMessage(j);
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::relayMessage(json j)
+{
+    if (!streamer_)
+        return;
+
+    j["instanceId"] = instanceId_;
+
+    streamer_->send
+    (
+        Routers::StreamChannel::Control,
+        remoteAddress_,
+        controlId_,
+        Streaming::makeMessage<Streaming::Messages::InlineMessage>
+        (
+            "debugger",
+            j
+        )
+    );
+}
 void Debugger::start(std::optional <std::unordered_map <std::string, std::string>> const& env)
 {
     DebuggerInterface::UserDefinedArguments args;
-    args.debuggerExecuteable = runConfig_.debugger;
+    args.debuggerExecuteable = runConfig_.debugger.path;
     args.commandline = runConfig_.arguments;
     if (env)
         args.environment = env.value();
     args.program = runConfig_.executeable;
     args.directory = runConfig_.directory;
 
-
-    auto envDo = [&]()
+    auto envDo = [this, &args]()
     {
         debugInterface_  = std::make_shared <DebuggerInterface::Debugger>(args);
+        debugInterface_->registerListener(this);
         debugInterface_->start();
     };
 

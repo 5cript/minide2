@@ -20,87 +20,82 @@ namespace
 }
 
 //#####################################################################################################################
-RunConfig::RunConfig(sfs::path const& root)
-    : root_{root}
-    , raw_{}
+void to_json(json& j, RunConfig const& env)
 {
-
+    j["name"] = env.name;
+    j["type"] = env.type;
+    j["debugger"] = env.debugger;
+    j["arguments"] = env.arguments;
+    j["executeable"] = env.executeable;
+    if (env.directory)
+        j["directory"] = env.directory.value();
+    j["environment"] = env.environment;
+    j["autostart"] = env.autostart;
 }
 //---------------------------------------------------------------------------------------------------------------------
-bool RunConfig::load()
+void from_json(json const& j, RunConfig& env)
 {
-    auto metaFile = root_ / ".minIDE" / "run.json";
-    if (!sfs::exists(metaFile))
-        return false;
-
-    std::ifstream reader{metaFile.string(), std::ios_base::binary};
-    if (!reader.good())
-        return false;
-
-    std::stringstream sstr;
-    sstr << reader.rdbuf();
-    raw_ = sstr.str();
-
-    auto j = json::parse(raw_);
-
-    transferExistingItems(j);
-
-    return true;
+    env.name = j["name"].get<std::string>();
+    env.type = j["type"].get<std::string>();
+    env.debugger = j["debugger"].get<RunConfig::Debugger>();
+    env.arguments = j["arguments"].get<std::string>();
+    env.executeable = j["executeable"].get<std::string>();
+    if (j.contains("directory"))
+        env.directory  = j["directory"].get<std::string>();
+    else
+        env.directory = std::nullopt;
+    env.environment = j["environment"].get<std::string>();
+    env.autostart = j["autostart"].get<bool>();
 }
 //---------------------------------------------------------------------------------------------------------------------
-std::string RunConfig::raw() const
+void to_json(json& j, RunConfig::Debugger const& env)
 {
-    return raw_;
+    if (env.commandFile)
+        j["commandFile"] = env.commandFile.value();
+    if (env.initCommandFile)
+        j["initCommandFile"] = env.initCommandFile.value();
+    j["debugger"] = env.debugger;
+    j["fullyReadSymbols"] = env.fullyReadSymbols;
+    j["returnChildResult"] = env.returnChildResult;
+    j["path"] = env.path;
+    j["name"] = env.name;
+    j["ignoreGdbInit"] = env.ignoreGdbInit;
+    j["ignoreAllGdbInit"] = env.ignoreAllGdbInit;
+    j["additionCommandlineArguments"] = env.additionalArguments;
 }
 //---------------------------------------------------------------------------------------------------------------------
-void RunConfig::transferExistingItems(json const& j)
+void from_json(json const& j, RunConfig::Debugger& env)
 {
-    j.contains("configurations");
-    json configs = j["configurations"];
+    if (j.contains("commandFile") && !j["commandFile"].is_null())
+        env.commandFile  = j["commandFile"].get<std::string>();
+    if (j.contains("initCommandFile") && !j["initCommandFile"].is_null())
+        env.initCommandFile  = j["initCommandFile"].get<std::string>();
+    env.debugger = j["debugger"].get<std::string>();
 
-#define EXTRACT(jso, name, TYPE, def) \
-    [&]() -> TYPE \
-    { \
-        if (jso.contains(name)) \
-            return jso[name].get<typename UnpackOptional<TYPE>::type>(); \
-        else \
-            return def; \
-    }()
+    if (j.contains("fullyReadSymbols"))
+        env.fullyReadSymbols = j["fullyReadSymbols"].get<bool>();
+    else
+        env.fullyReadSymbols = true;
 
-#define EXTRACT_PROFILE(name, type) \
-    EXTRACT(config, name, type, type{})
+    if (j.contains("returnChildResult"))
+        env.returnChildResult = j["returnChildResult"].get<bool>();
+    else
+        env.returnChildResult = true;
 
-#define EXTRACT_PROFILE_DEF(name, type, def) \
-    EXTRACT(config, name, type, def)
+    env.path = j["path"].get<std::string>();
+    env.name = j["name"].get<std::string>();
 
-    for (json config : configs)
-    {
-        RunConfig::Contents::Configuration cfg
-        {
-            EXTRACT_PROFILE("name", std::string),
-            EXTRACT_PROFILE("type", std::string),
-            EXTRACT_PROFILE("debugger", std::string),
-            EXTRACT_PROFILE("arguments", std::string),
-            EXTRACT_PROFILE("executeable", std::string),
-            EXTRACT_PROFILE_DEF("directory", std::optional <std::string>, std::nullopt),
-            EXTRACT_PROFILE("environment", std::string),
-            EXTRACT_PROFILE_DEF("autostart", bool, true)
-        };
-
-        content_.configs.push_back(cfg);
-    }
-
-#undef EXTRACT_PROFILE
-#undef EXTRACT
-}
-//---------------------------------------------------------------------------------------------------------------------
-std::optional <RunConfig::Contents::Configuration> RunConfig::findProfile(std::string const& name)
-{
-    auto res = std::find_if(std::begin(content_.configs), std::end(content_.configs), [&name](auto const& elem){
-        return elem.name == name;
-    });
-    if (res == std::end(content_.configs))
-        return std::nullopt;
-    return *res;
+    if (j.contains("ignoreGdbInit"))
+        env.ignoreGdbInit = j["ignoreGdbInit"].get<bool>();
+    else
+        env.ignoreGdbInit = false;
+    if (j.contains("ignoreAllGdbInit"))
+        env.ignoreAllGdbInit = j["ignoreAllGdbInit"].get<bool>();
+    else
+        env.ignoreAllGdbInit = false;
+    if (j.contains("additionCommandlineArguments"))
+        env.additionalArguments = j["additionCommandlineArguments"].get<std::string>();
+    else
+        env.additionalArguments = "";
 }
 //#####################################################################################################################

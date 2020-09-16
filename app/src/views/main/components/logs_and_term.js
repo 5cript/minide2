@@ -55,7 +55,7 @@ class LogsAndOthers extends React.Component
                             if (elem.logType === '_terminal')
                                 return (
                                     <TabPanel 
-                                        key="__terminalPanel" 
+                                        key={"__terminalPanel_" + elem.logName}
                                         className='terminalPanel'
                                         value={this.props.activeLog}
                                         index={i}
@@ -68,6 +68,20 @@ class LogsAndOthers extends React.Component
                                         ></TerminalInstance>
                                     </TabPanel>
                                 )
+
+                            else if (elem.logType === '_debug_terminal')
+                            {
+                                return (
+                                    <TabPanel
+                                        key={"_debug_terminal_" + elem.logName}
+                                        className='debugTerminalPanel'
+                                        value={this.props.activeLog}
+                                        index={i}
+                                    >
+                                        {"bleep"}
+                                    </TabPanel>
+                                )
+                            }
 
                             return (
                                 <TabPanel 

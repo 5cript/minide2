@@ -22,6 +22,7 @@ import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBa
 import {initializeToolbars} from '../../actions/toolbar_actions';
 import {addToLog, clearLog, focusLogByName, setLogType, moveLogs} from '../../actions/log_actions.js';
 import {setPreferences} from '../../actions/preferences_actions.js';
+import {setDebuggingProfiles, setGlobalDebuggerSettigns, setDebugInitialLoadDone} from '../../actions/debugging_actions';
 
 // Other
 import Backend from '../../backend_connector';
@@ -29,6 +30,7 @@ import _ from 'lodash';
 import Dictionary from '../../util/localization';
 import LocalPersistence from '../../util/persistence';
 import DebugController from '../../debug_controller';
+import ReduxPersistanceHelper from '../../util/redux_persist';
 
 // Style
 import './styles/main.css'
@@ -275,6 +277,10 @@ class MainWindow extends React.Component
             else if (head.type === "lua_rpc")
             {
                 this.handleLuaRpc(head.functionName, JSON.parse(head.data))
+            }
+            else if (head.type === "debugger")
+            {
+                this.debugController.onMessage(head);
             }
             else if (head.type === "lua_process")
             {
@@ -550,6 +556,13 @@ class MainWindow extends React.Component
             this.loadKeybindsIfPossible();
             this.props.dispatch(setConfigHome(this.home));
 
+            const persistor = new ReduxPersistanceHelper(this.props.store);
+            persistor.loadByDispatch('debugger_settings.json', [
+                fileContent => setDebuggingProfiles(fileContent.profiles),
+                fileContent => setGlobalDebuggerSettigns(fileContent.globalSettings),
+                () => setDebugInitialLoadDone()
+            ], this.home);
+
             this.persistence = new LocalPersistence(this.home, window.require('fs'));
             try
             {
@@ -628,7 +641,7 @@ class MainWindow extends React.Component
         })
     }
 
-    showYesNoBox(message, yesAction, noAction) 
+    showYesNoBox = (message, yesAction, noAction) =>
     {
         this.setState({
             yesNoBoxVisible: true,
@@ -638,7 +651,7 @@ class MainWindow extends React.Component
         this.noAction = noAction;
     }
 
-    showOkBox(message, okAction) 
+    showOkBox = (message, okAction) =>
     {
         this.setState({
             okBoxVisible: true,
@@ -647,7 +660,7 @@ class MainWindow extends React.Component
         this.okAction = okAction;
     }
 
-    onMessageBoxClose(whatButton)
+    onMessageBoxClose = (whatButton) =>
     {
         this.setState({
             yesNoBoxVisible: false
@@ -658,7 +671,7 @@ class MainWindow extends React.Component
             this.noAction();
     }
 
-    onOkBoxClose(whatButton)
+    onOkBoxClose = (whatButton) =>
     {
         this.setState({
             okBoxVisible: false
@@ -667,7 +680,7 @@ class MainWindow extends React.Component
             this.okAction();
     }
 
-    componentDidMount()
+    componentDidMount = () =>
     {
     }
 
@@ -751,6 +764,7 @@ class MainWindow extends React.Component
                             backend={this.backend} 
                             cmake={new CMakeToolbarEvents()}
                             commonActions={this.commonActions}
+                            showOkBox={this.showOkBox}
                         />
                     </Slide>
                 </div>

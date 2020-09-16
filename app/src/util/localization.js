@@ -66,7 +66,8 @@ class Dictionary
                     "$MayNotBeEmpty": "May not be empty",
                     "$Save": "Save",
                     "$NoActiveProject": "No active project",
-					"$FileOutsideWorkspace": "File is outside of the workspace. Do you really want to save?"
+					"$FileOutsideWorkspace": "File is outside of the workspace. Do you really want to save?",
+                    "$DebugProfileNotFound": "Debug profile not found"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Set as Active Project",
@@ -208,7 +209,8 @@ class Dictionary
                     "$MayNotBeEmpty": "Darf nicht leer sein",
                     "$Save": "Speichern",
                     "$NoActiveProject": "Kein aktives Projekt",
-					"$FileOutsideWorkspace": "Die Datei ist außerhalb des Arbeitsrausm. Wollen sie sie wirklich speichern?"
+                    "$FileOutsideWorkspace": "Die Datei ist außerhalb des Arbeitsrausm. Wollen sie sie wirklich speichern?",
+                    "$DebugProfileNotFound": "Debug Profil nicht gefunden"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Als aktives Projekt wählen",

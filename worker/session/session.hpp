@@ -22,7 +22,7 @@ public:
     WorkspaceInfo workspace;
     std::string remoteAddress;
     std::string terminalEnvironment;
-    std::unordered_map <std::string, Debugger> debuggerInstances;
+    std::unordered_map <std::string, std::shared_ptr <Debugger>> debuggerInstances;
 
     ToolbarStore toolbarStore;
 

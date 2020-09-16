@@ -10,7 +10,7 @@ module.exports = function reducer(state={
     },
     profiles: [/*{
         name: 'dummy',
-        debugger: 'gdb',
+        debugger: '${Profiles:blub}',
         path: '',
         fullyReadSymbols: true,
         neverReadSymbols: false,

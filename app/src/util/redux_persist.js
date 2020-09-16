@@ -20,10 +20,15 @@ class ReduxPersistanceHelper
      * Necessary, because dispatches are replayed to synchronize all electron windows.
      * Cannot bypass this system or the windows go out of sync.
      */
-    loadByDispatch = (outputFile, actionFactories) => 
+    loadByDispatch = (outputFile, actionFactories, homeOverride) => 
     {
-        const state = this.store.getState();
-        const path = state.misc.configHome + "/" + outputFile;
+        let home = homeOverride;
+        if (home === undefined)
+        {
+            const state = this.store.getState();
+            home = state.misc.configHome;
+        }
+        const path = home + "/" + outputFile;
         let fileContent;
         if (this.fs.existsSync(path))
             fileContent = JSON.parse(this.fs.readFileSync(path, 'utf8'));

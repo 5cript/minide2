@@ -50,7 +50,7 @@ namespace Routers
 
             readJsonBody(req, res, [req, res, this](json const& body)
             {
-                std::string runProfileName;
+                RunConfig runConf;
 
                 auto sess = this_session(req);
                 if (sess.workspace.root.empty())
@@ -58,51 +58,43 @@ namespace Routers
                 if (sess.workspace.activeProject.empty())
                     return respondWithError(res, "no active project");
 
-                if (body.contains("runProfileName"))
-                    runProfileName = body["runProfileName"].get<std::string>();
+                if (body.contains("runProfile"))
+                    runConf = body["runProfile"].get<RunConfig>();
                 else
-                    return respondWithError(res, "need runProfileName");
+                    return respondWithError(res, "need runProfile");
 
-                bool allowDuplicateSession = false;
+                [[maybe_unused]] bool allowDuplicateSession = false;
                 if (body.contains("allowDuplicate"))
                     allowDuplicateSession = body["allowDuplicate"].get<bool>();
 
-                RunConfig runConf{sess.workspace.activeProject};
-                try
+                auto replaceVariables = [&](std::string& str)
                 {
-                    runConf.load();
-                    auto raw = runConf.raw();
-                    if (raw.empty())
-                        return respondWithError(res, "run config is empty");
-                }
-                catch(std::exception const& exc)
+                    boost::algorithm::replace_all(str, "${ProjectRoot}"s, sess.workspace.activeProject.generic_string());
+                    boost::algorithm::replace_all(str, "${WorkspaceRoot}"s, sess.workspace.root.generic_string());
+                };
+
+                auto replaceVariablesOpt = [&](std::optional <std::string>& opt)
                 {
-                    return res->status(500).send(exc.what());
-                }
-
-                auto maybeProfile = runConf.findProfile(runProfileName);
-                if (!maybeProfile)
-                    return respondWithError(res, "profile with given name not found in active project");
-
-                auto profile = maybeProfile.value();
+                    if (opt)
+                        replaceVariables(opt.value());
+                };
 
                 // replace vars in exec.
-                boost::algorithm::replace_all(profile.executeable, "${ProjectRoot}"s, sess.workspace.activeProject.generic_string());
-                boost::algorithm::replace_all(profile.executeable, "${WorkspaceRoot}"s, sess.workspace.root.generic_string());
 
-                boost::algorithm::replace_all(profile.debugger, "${ProjectRoot}"s, sess.workspace.activeProject.generic_string());
-                boost::algorithm::replace_all(profile.debugger, "${WorkspaceRoot}"s, sess.workspace.root.generic_string());
+                replaceVariables(runConf.executeable);
+                replaceVariables(runConf.debugger.path);
+                replaceVariables(runConf.arguments);
 
-                // TODO: correct substitutes from a debugger settings file or something:
-                boost::algorithm::replace_all(profile.debugger, "${lldb}"s, "lldb-mi"s);
-                boost::algorithm::replace_all(profile.debugger, "${gdb}"s, "gdb"s);
+                replaceVariablesOpt(runConf.directory);
+                replaceVariablesOpt(runConf.debugger.commandFile);
+                replaceVariablesOpt(runConf.debugger.initCommandFile);
 
                 // extract environment for use
                 auto publicSettings = collection_->settingsProv().settings();
                 std::optional <std::unordered_map <std::string, std::string>> env;
-                if (profile.environment.empty() || profile.environment == "inherit" || profile.environment == "default")
+                if (runConf.environment.empty() || runConf.environment == "inherit" || runConf.environment == "default")
                 {
-                    env = publicSettings.compileEnvironment(profile.environment);
+                    env = publicSettings.compileEnvironment(runConf.environment);
                 }
 
                 if (!allowDuplicateSession)
@@ -111,9 +103,9 @@ namespace Routers
                     (
                         std::begin(sess.debuggerInstances),
                         std::end(sess.debuggerInstances),
-                        [&runProfileName](auto const& elem)
+                        [&runConf](auto const& elem)
                         {
-                            return elem.second.runConfigName() == runProfileName;
+                            return elem.second->runConfigName() == runConf.name;
                         }
                     );
 
@@ -127,15 +119,77 @@ namespace Routers
                     // this is potentially a bug.
                     // save_partial was not meant to contain logic.
                     // breaking this assumption might have side effects.
-                    toSave.debuggerInstances[id] = Debugger{profile, id};
+                    toSave.debuggerInstances[id] = std::make_shared <Debugger>
+                    (
+                        &collection_->streamer(),
+                        sess.remoteAddress,
+                        sess.controlId,
+                        runConf,
+                        id
+                    );
                     auto& debugger = toSave.debuggerInstances[id];
 
-                    debugger.start(env);
+                    debugger->start(env);
                 });
 
                 return jsonResponse(res, json{
                     {"instanceId", id}
                 });
+            });
+        });
+
+
+        cors_options(server, "/api/debugger/command", "POST", impl_->config.corsOption);
+        server.post("/api/debugger/command", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            readJsonBody(req, res, [req, res, this](json const& body)
+            {
+                std::string instanceId;
+                if (body.contains("instanceId"))
+                    instanceId = body["instanceId"].get<std::string>();
+                else
+                    return respondWithError(res, "need instance id");
+
+                DebuggerInterface::MiCommand miCommand;
+
+                json command;
+                if (!body.contains("command"))
+                    command = body["command"];
+                else
+                    return respondWithError(res, "need command object");
+
+                if (command.contains("token"))
+                    miCommand.token(command["token"].get<long long>());
+
+                if (command.contains("operation"))
+                    miCommand.operation(command["operation"].get<std::string>());
+                else
+                    return respondWithError(res, "command needs operation");
+
+                if (command.contains("params") && command["params"].is_array())
+                {
+                    std::vector<std::string> params = command["params"].get<std::vector <std::string>>();
+                    for (auto const& p : params)
+                        miCommand.param(p);
+                }
+
+                if (command.contains("options"))
+                {
+                    for (auto const& item : command["options"].items())
+                    {
+                        miCommand.option(item.key(), item.value());
+                    }
+                }
+
+                auto sess = this_session(req);
+                auto instance = sess.debuggerInstances.find(instanceId);
+                if (instance == std::end(sess.debuggerInstances))
+                    return respondWithError(res, "no debugger instance with that id found for current session");
+
+                instance->second->command(miCommand);
+                res->send_status(204);
             });
         });
     }

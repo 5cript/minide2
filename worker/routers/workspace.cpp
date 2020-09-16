@@ -669,6 +669,26 @@ namespace Routers
                 res->status(200).end();
             });
         });
+
+        cors_options(server, "/api/workspace/getRunConfigs", "GET", impl_->config.corsOption);
+        server.get("/api/workspace/getRunConfigs", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            auto sess = this_session(req);
+            if (sess.workspace.root.empty())
+                return respondWithError(res, "open a workspace first");
+            if (sess.workspace.activeProject.empty())
+                return respondWithError(res, "set an active project");
+
+            const auto runJsonFile = sess.workspace.activeProject / ".minIDE" / "run.json";
+            if (!sfs::exists(runJsonFile))
+                return res->send("{}");
+            if (!res->send_file(runJsonFile.string()))
+                return respondWithError(res, 404, "cannot open file or read file");
+            else
+                return;
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::tuple <
