@@ -170,7 +170,7 @@ namespace Routers
                 if (!keepAlive(id, stream, produ, idleCounter))
                     continue;
 
-                std::cout << "pop";
+                //std::cout << "pop";
                 auto iter = stream.queue.popMessage(id);
                 writeMessage(*produ, iter->msg);
                 stream.queue.unrefMessage(iter);

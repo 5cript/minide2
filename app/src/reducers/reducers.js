@@ -8,7 +8,7 @@ const toolbars = require('./toolbars');
 const locale = require('./locale');
 const logs = require('./logs');
 const preferences = require('./preferences');
-const debugging = require('./debugging');
+const debugging = require('./debugging_reducer');
 const misc = require('./miscellaneous');
 
 module.exports = combineReducers({

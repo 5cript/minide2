@@ -33,13 +33,15 @@ std::vector <json> unpackResults(std::vector <DebuggerInterface::Result> const& 
     std::vector <json> res;
     for (auto const& i : results)
     {
-        json j{
-            {"variable", i.variable}
-        };
         if (i.value)
-            j["value"] = unpackValue(i.value);
-
-        res.push_back(std::move(j));
+            res.push_back(unpackValue(i.value));
+        else
+        {
+            json j{
+                {"variable", i.variable}
+            };
+            res.push_back(std::move(j));
+        }
     }
     return res;
 }
@@ -82,9 +84,38 @@ void Debugger::command(DebuggerInterface::MiCommand const& command) const
         debugInterface_->sendCommand(command);
 }
 //---------------------------------------------------------------------------------------------------------------------
+void Debugger::command(std::string const& command) const
+{
+    if (debugInterface_)
+        debugInterface_->sendCommand(command + "\n");
+}
+//---------------------------------------------------------------------------------------------------------------------
 void Debugger::onRawData(std::string const& raw)
 {
-    //std::cout << raw << "\n";
+    /*
+    for (auto const& r : raw)
+    {
+        if (r > 32)
+            std::cout.put(r);
+        else
+        {
+            if (r == '\n')
+                std::cout << "\\n";
+            else if (r == '\r')
+                std::cout << "\\r";
+            else if (r == '\t')
+                std::cout << "\\t";
+            else if (r == ' ')
+                std::cout << "\\_";
+            else if (r == '\v')
+                std::cout << "\\v";
+            else
+                std::cout << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)r;
+        }
+    }
+    std::cout << "<EOR>\n";
+    */
+    std::cout << raw;
 }
 //---------------------------------------------------------------------------------------------------------------------
 void Debugger::onLogStream(std::string const& message)
@@ -143,6 +174,15 @@ void Debugger::onNotify(DebuggerInterface::AsyncRecord const& record)
     relayAsyncRecord("notify_record", record);
 }
 //---------------------------------------------------------------------------------------------------------------------
+void Debugger::onPartialRemain(std::string const& remain, std::string const& subject)
+{
+    relayMessage(json{
+        {"messageType"s, "partial_remain"s},
+        {"data"s, remain},
+        {"subject"s, subject}
+    });
+}
+//---------------------------------------------------------------------------------------------------------------------
 void Debugger::relayAsyncRecord(std::string const& type, DebuggerInterface::AsyncRecord const& record)
 {
     json j{
@@ -178,6 +218,7 @@ void Debugger::relayMessage(json j)
         )
     );
 }
+//---------------------------------------------------------------------------------------------------------------------
 void Debugger::start(std::optional <std::unordered_map <std::string, std::string>> const& env)
 {
     DebuggerInterface::UserDefinedArguments args;

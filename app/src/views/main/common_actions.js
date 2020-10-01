@@ -71,9 +71,9 @@ export default class CommonActions
     startDebugger = () => 
     {
         const state = this.getState();
-        this.debugController.startDebugger(state.debugging, () => {
+        this.debugController.startDebugger(state.debugging).then(() => {
 
-        }, err => {
+        }).catch(err => {
             console.log(err);
         });
     }

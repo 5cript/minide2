@@ -149,6 +149,9 @@ class Dictionary
                     "$ProfileName": "Profile Name",
                     "$ConfirmProfileRemove": "Do you really want to delete this profile?",
                     "$SettingsSaveImmediately": "All changes save immediately"
+                },
+                "debugger_terminal": {
+                    "$InstanceId": "Instance ID"
                 }
             },
             "de_DE": {
@@ -292,6 +295,9 @@ class Dictionary
                     "$ProfileAlreadyExists": "Profil mit diesem Namen existiert bereits",
                     "$ConfirmProfileRemove": "Wollen sie dieses Profil wirklich löschen?",
                     "$SettingsSaveImmediately": "Alle Änderungen speichern direkt"
+                },
+                "debugger_terminal": {
+                    "$InstanceId": "Instanz ID"
                 }
             }    
         }

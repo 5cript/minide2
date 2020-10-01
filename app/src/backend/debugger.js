@@ -8,24 +8,73 @@ class DebuggerRouter extends Router
         this.errorCallback = errorCallback;
     }
 
-    startDebugger(runProfile, onSuccess, onError)
+    startDebugger(runProfile)
     {
-        this.postJson(
-            this.url("/api/debugger/createInstance"), 
-            {
-                runProfile: runProfile
-            },
-            response => {
-                response.json().then(json => {
-                    onSuccess(json);
-                }).catch(err => {
-                    console.error('createInstance result should have been json', err);
-                })
-            },
-            err => {
-                onError(err);
-            }
-        );
+        return new Promise((resolve, reject) => {
+            this.postJson(
+                this.url("/api/debugger/createInstance"), 
+                {
+                    runProfile: runProfile
+                },
+                response => {
+                    response.json().then(json => {
+                        resolve(json);
+                    }).catch(err => {
+                        reject({
+                            message: 'createInstance result should have been json', 
+                            error: err
+                        });
+                    })
+                },
+                err => {
+                    reject(err);
+                }
+            );
+        });
+    }
+
+    sendCommand({instanceId, command, params, token, options}) 
+    {
+        let commandObj = {instanceId, command: {operation: command}};
+        if (token)
+            commandObj.command.token = token;
+        if (params)
+            commandObj.command.params = params;
+        if (options)
+            commandObj.command.options = options;
+
+        console.log(commandObj)
+
+        return new Promise((resolve, reject) => {
+            this.postJson(
+                this.url("/api/debugger/command"),
+                commandObj,
+                response => {
+                    resolve();
+                },
+                err => {
+                    reject(err);
+                }
+            );
+        })
+    }
+
+    sendRawCommand({instanceId, command}) 
+    {
+        let commandObj = {instanceId, command};
+
+        return new Promise((resolve, reject) => {
+            this.postJson(
+                this.url("/api/debugger/rawCommand"),
+                commandObj,
+                response => {
+                    resolve();
+                },
+                err => {
+                    reject(err);
+                }
+            );
+        })
     }
 }
 

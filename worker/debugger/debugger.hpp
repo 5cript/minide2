@@ -49,6 +49,7 @@ public:
     RunConfig runConfig() const;
 
     void command(DebuggerInterface::MiCommand const& command) const;
+    void command(std::string const& command) const;
 
     /**
      *  Returns the name of the run config used
@@ -70,6 +71,7 @@ public: // Debugger Interface Implementations
     void onExec(DebuggerInterface::AsyncRecord const& record) override;
     void onStatus(DebuggerInterface::AsyncRecord const& record) override;
     void onNotify(DebuggerInterface::AsyncRecord const& record) override;
+    void onPartialRemain(std::string const& remain, std::string const& subject) override;
 
 private:
     void relayMessage(json j);

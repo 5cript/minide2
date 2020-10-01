@@ -1,0 +1,70 @@
+.debuggerTerminal 
+{
+    background-color: var(--background-color-darker);
+    position: relative;
+    height: 100%;
+    widows: 100%;
+}
+
+.debuggerTerminalInstanceId
+{
+    font-size: 12px;
+    padding-left: 5px;
+    padding-top: 1px;
+    color: var(--foreground-accent);
+}
+
+.debuggerTerminalStatusBar
+{
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    height: 22px;
+    width: 100%;
+    background-color: var(--background-color-darker);
+    border-top: 1px solid var(--foreground-disabled);
+    border-bottom: 1px solid var(--background-color-very-bright);
+    margin-bottom: 2px;
+}
+
+.debuggerOutput
+{
+    width: 100%;
+    resize: none;
+    background-color: var(--background-color-darker);
+    color: var(--foreground-color);
+    height: calc(100% - 84px);
+    outline: none;
+    border: none;
+    border-bottom: 1px solid var(--background-color-very-bright);
+}
+
+.debuggerOutput :focus 
+{
+    outline: none;
+}
+
+.debuggerInputArea
+{
+    position: absolute;
+    height: 25px;
+    bottom: 25px;
+    width: 100%;
+    padding: 0px;
+    display: flex;
+}
+
+.debuggerTerminalPS1
+{
+    background-color: var(--background-color-darker);
+    color: var(--foreground-color);
+    outline-width: 0;
+    border: 0;
+    font-size: 15px;
+    padding-left: 5px;
+}
+
+.debuggerTerminalInput
+{
+    width: 100%;
+}

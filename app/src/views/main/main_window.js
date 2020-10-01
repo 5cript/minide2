@@ -29,7 +29,7 @@ import Backend from '../../backend_connector';
 import _ from 'lodash';
 import Dictionary from '../../util/localization';
 import LocalPersistence from '../../util/persistence';
-import DebugController from '../../debug_controller';
+import DebugController from '../../debugger/debug_controller';
 import ReduxPersistanceHelper from '../../util/redux_persist';
 
 // Style
@@ -795,6 +795,7 @@ class MainWindow extends React.Component
                                             height={height} 
                                             className="logsAndOthers"
                                             tabsId="mainLogTabs"
+                                            debugController={this.debugController}
                                         ></LogsAndOthers>
                                     }
                                 </ReactResizeDetector>

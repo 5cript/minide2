@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import TerminalInstance from './terminal';
 import LogPanel from './log';
+import DebuggerTerminal from './debugger_terminal';
 import {TabPanel, MuiTabs} from '../../../elements/tabs';
 
 // Actions
@@ -73,12 +74,16 @@ class LogsAndOthers extends React.Component
                             {
                                 return (
                                     <TabPanel
-                                        key={"_debug_terminal_" + elem.logName}
+                                        key={"_debug_terminal_" + elem.logName + elem.instanceId}
                                         className='debugTerminalPanel'
                                         value={this.props.activeLog}
                                         index={i}
                                     >
-                                        {"bleep"}
+                                        <DebuggerTerminal
+                                            instanceId={elem.instanceId}
+                                            dict={this.props.dict}
+                                            debugController={this.props.debugController}
+                                        ></DebuggerTerminal>
                                     </TabPanel>
                                 )
                             }

@@ -138,6 +138,35 @@ namespace Routers
             });
         });
 
+        cors_options(server, "/api/debugger/rawCommand", "POST", impl_->config.corsOption);
+        server.post("/api/debugger/rawCommand", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            readJsonBody(req, res, [req, res, this](json const& body)
+            {
+                std::string instanceId;
+                if (body.contains("instanceId"))
+                    instanceId = body["instanceId"].get<std::string>();
+                else
+                    return respondWithError(res, "need instance id");
+
+                std::string command;
+                if (body.contains("command"))
+                    command = body["command"].get<std::string>();
+                else
+                    return respondWithError(res, "need command string");
+
+                auto sess = this_session(req);
+                auto instance = sess.debuggerInstances.find(instanceId);
+                if (instance == std::end(sess.debuggerInstances))
+                    return respondWithError(res, "no debugger instance with that id found for current session");
+
+                instance->second->command(command);
+                res->send_status(204);
+            });
+        });
+
 
         cors_options(server, "/api/debugger/command", "POST", impl_->config.corsOption);
         server.post("/api/debugger/command", [this](auto req, auto res)
@@ -155,7 +184,7 @@ namespace Routers
                 DebuggerInterface::MiCommand miCommand;
 
                 json command;
-                if (!body.contains("command"))
+                if (body.contains("command"))
                     command = body["command"];
                 else
                     return respondWithError(res, "need command object");

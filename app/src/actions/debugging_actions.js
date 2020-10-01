@@ -47,3 +47,77 @@ export function setGlobalDebuggerSettigns(settings)
         }
     }
 }
+
+export function addDebuggerInstance(instanceId)
+{
+    return {
+        type: 'ADD_DEBUG_INSTANCE',
+        payload: {
+            instanceId: instanceId
+        }
+    }
+}
+
+export function removeDebuggerInstance(instanceId)
+{
+    return {
+        type: 'REMOVE_DEBUG_INSTANCE',
+        payload: {
+            instanceId: instanceId
+        }
+    }
+}
+
+export function debuggerConsoleStream(instanceId, data)
+{
+    return {
+        type: 'DEBUGGER_CONSOLE_STREAM',
+        payload: {
+            instanceId: instanceId,
+            data: data
+        }
+    }
+}
+
+export function debuggerAddLibrary(instanceId, library)
+{
+    return {
+        type: 'DEBUGGER_ADD_LIBRARY',
+        payload: {
+            instanceId: instanceId,
+            library: library
+        }
+    }
+}
+
+export function debuggerThreadCreated(instanceId, thread)
+{
+    return {
+        type: 'DEBUGGER_ADD_THREAD',
+        payload: {instanceId, thread}
+    }
+}
+
+export function debuggerThreadExit(instanceId, threadId)
+{
+    return {
+        type: 'DEBUGGER_THREAD_EXIT',
+        payload: {instanceId, threadId}
+    }
+}
+
+export function debuggerSetProcessLife(instanceId, alive)
+{
+    return {
+        type: 'DEBUGGER_SET_PROCESS_LIFE',
+        payload: {instanceId, alive}
+    }
+}
+
+export function debuggerSetProcessExitCode(instanceId, code)
+{
+    return {
+        type: 'DEBUGGER_SET_PROCESS_EXIT_CODE',
+        payload: {instanceId, code}
+    }
+}

@@ -23,14 +23,14 @@ namespace MinIDE::Scripting
         (
             std::string const& command,
             std::string const& execDir,
-            std::map <std::string, std::string> const& environment
+            std::unordered_map <std::string, std::string> const& environment
         );
 
         int execute
         (
             std::string const& command,
             std::string const& execDir,
-            std::map <std::string, std::string> const& environment,
+            std::unordered_map <std::string, std::string> const& environment,
             sol::protected_function const& onStdOut,
             sol::protected_function const& onStdErr,
             sol::protected_function const& onExit
