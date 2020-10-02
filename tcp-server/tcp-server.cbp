@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="tcp-server" />
+		<Option pch_mode="2" />
+		<Option compiler="msys2" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/tcp-server" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="msys2" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/tcp-server" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="msys2" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="-std=c++20" />
+			<Add directory=".." />
+		</Compiler>
+		<Linker>
+			<Add option="-lws2_32" />
+			<Add option="-lmswsock" />
+			<Add option="-lssl" />
+			<Add option="-lbrotlienc" />
+			<Add option="-lbrotlicommon" />
+			<Add option="-latomic" />
+			<Add option="-lboost_filesystem-mt" />
+			<Add option="-lboost_system-mt" />
+			<Add option="-lbcrypt" />
+			<Add option="-lcrypto" />
+			<Add option="-lcryptopp" />
+		</Linker>
+		<Unit filename="../attender/attender.hpp" />
+		<Unit filename="../attender/attender/callback_wrapper.cpp" />
+		<Unit filename="../attender/attender/callback_wrapper.hpp" />
+		<Unit filename="../attender/attender/conclusion_observer.hpp" />
+		<Unit filename="../attender/attender/connection_manager.cpp" />
+		<Unit filename="../attender/attender/connection_manager.hpp" />
+		<Unit filename="../attender/attender/cookie.cpp" />
+		<Unit filename="../attender/attender/cookie.hpp" />
+		<Unit filename="../attender/attender/date.cpp" />
+		<Unit filename="../attender/attender/date.hpp" />
+		<Unit filename="../attender/attender/debug.cpp" />
+		<Unit filename="../attender/attender/debug.hpp" />
+		<Unit filename="../attender/attender/encoding/base64.hpp" />
+		<Unit filename="../attender/attender/encoding/brotli.cpp" />
+		<Unit filename="../attender/attender/encoding/brotli.hpp" />
+		<Unit filename="../attender/attender/encoding/producer.cpp" />
+		<Unit filename="../attender/attender/encoding/producer.hpp" />
+		<Unit filename="../attender/attender/encoding/streaming_producer.cpp" />
+		<Unit filename="../attender/attender/encoding/streaming_producer.hpp" />
+		<Unit filename="../attender/attender/io_context/async_model.cpp" />
+		<Unit filename="../attender/attender/io_context/async_model.hpp" />
+		<Unit filename="../attender/attender/io_context/managed_io_context.hpp" />
+		<Unit filename="../attender/attender/io_context/thread_pooler.cpp" />
+		<Unit filename="../attender/attender/io_context/thread_pooler.hpp" />
+		<Unit filename="../attender/attender/lifetime_binding.cpp" />
+		<Unit filename="../attender/attender/lifetime_binding.hpp" />
+		<Unit filename="../attender/attender/mime.cpp" />
+		<Unit filename="../attender/attender/mime.hpp" />
+		<Unit filename="../attender/attender/mount_options.cpp" />
+		<Unit filename="../attender/attender/mount_options.hpp" />
+		<Unit filename="../attender/attender/mounting.cpp" />
+		<Unit filename="../attender/attender/mounting.hpp" />
+		<Unit filename="../attender/attender/net_core.hpp" />
+		<Unit filename="../attender/attender/request.cpp" />
+		<Unit filename="../attender/attender/request.hpp" />
+		<Unit filename="../attender/attender/request_header.cpp" />
+		<Unit filename="../attender/attender/request_header.hpp" />
+		<Unit filename="../attender/attender/request_parser.cpp" />
+		<Unit filename="../attender/attender/request_parser.hpp" />
+		<Unit filename="../attender/attender/resolver.hpp" />
+		<Unit filename="../attender/attender/response.cpp" />
+		<Unit filename="../attender/attender/response.hpp" />
+		<Unit filename="../attender/attender/response_code.cpp" />
+		<Unit filename="../attender/attender/response_code.hpp" />
+		<Unit filename="../attender/attender/response_header.cpp" />
+		<Unit filename="../attender/attender/response_header.hpp" />
+		<Unit filename="../attender/attender/router.cpp" />
+		<Unit filename="../attender/attender/router.hpp" />
+		<Unit filename="../attender/attender/session/authorizer_interface.hpp" />
+		<Unit filename="../attender/attender/session/basic_authorizer.cpp" />
+		<Unit filename="../attender/attender/session/basic_authorizer.hpp" />
+		<Unit filename="../attender/attender/session/memory_session_storage.hpp" />
+		<Unit filename="../attender/attender/session/session.cpp" />
+		<Unit filename="../attender/attender/session/session.hpp" />
+		<Unit filename="../attender/attender/session/session_control.hpp" />
+		<Unit filename="../attender/attender/session/session_cookie_generator_interface.cpp" />
+		<Unit filename="../attender/attender/session/session_cookie_generator_interface.hpp" />
+		<Unit filename="../attender/attender/session/session_data.hpp" />
+		<Unit filename="../attender/attender/session/session_manager.cpp" />
+		<Unit filename="../attender/attender/session/session_manager.hpp" />
+		<Unit filename="../attender/attender/session/session_storage_interface.hpp" />
+		<Unit filename="../attender/attender/session/uuid_session_cookie_generator.cpp" />
+		<Unit filename="../attender/attender/session/uuid_session_cookie_generator.hpp" />
+		<Unit filename="../attender/attender/settings.hpp" />
+		<Unit filename="../attender/attender/ssl_context_interface.hpp" />
+		<Unit filename="../attender/attender/ssl_contexts/ssl_example_context.cpp" />
+		<Unit filename="../attender/attender/ssl_contexts/ssl_example_context.hpp" />
+		<Unit filename="../attender/attender/tcp_basic_server.cpp" />
+		<Unit filename="../attender/attender/tcp_basic_server.hpp" />
+		<Unit filename="../attender/attender/tcp_connection.cpp" />
+		<Unit filename="../attender/attender/tcp_connection.hpp" />
+		<Unit filename="../attender/attender/tcp_connection_base.hpp" />
+		<Unit filename="../attender/attender/tcp_connection_interface.hpp" />
+		<Unit filename="../attender/attender/tcp_fwd.hpp" />
+		<Unit filename="../attender/attender/tcp_read_sink.cpp" />
+		<Unit filename="../attender/attender/tcp_read_sink.hpp" />
+		<Unit filename="../attender/attender/tcp_secure_connection.cpp" />
+		<Unit filename="../attender/attender/tcp_secure_connection.hpp" />
+		<Unit filename="../attender/attender/tcp_secure_server.cpp" />
+		<Unit filename="../attender/attender/tcp_secure_server.hpp" />
+		<Unit filename="../attender/attender/tcp_server.cpp" />
+		<Unit filename="../attender/attender/tcp_server.hpp" />
+		<Unit filename="../attender/attender/tcp_server_interface.hpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="overloaded.hpp" />
+		<Unit filename="stream_connection.cpp" />
+		<Unit filename="stream_connection.hpp" />
+		<Unit filename="tcp_connection.hpp" />
+		<Unit filename="tcp_connection_manager.hpp" />
+		<Unit filename="tcp_server.cpp" />
+		<Unit filename="tcp_server.hpp" />
+		<Extensions>
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

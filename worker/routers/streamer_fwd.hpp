@@ -2,5 +2,7 @@
 
 namespace Routers
 {
-    class DataStreamer;
+    class HttpDataStreamer;
+
+    using DataStreamer = HttpDataStreamer;
 }

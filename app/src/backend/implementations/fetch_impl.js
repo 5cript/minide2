@@ -1,65 +1,17 @@
-import WorkspaceApi from './backend/workspace';
-import ToolbarApi from './backend/toolbar';
-import Router from './backend/router';
-import DebuggerRouter from './backend/debugger';
+import Router from '../router';
 
-class Backend extends Router
+class FetchImplementation extends Router
 {
     constructor(store, controlCallback, dataCallback, errorCallback, onConnectionLoss)
     {
         super(store);
-        this.controlBuffer = '';
-        this.dataBuffer = '';
         this.controlCallback = controlCallback;
         this.dataCallback = dataCallback;
         this.errorCallback = errorCallback;
         this.onConnectionLoss = onConnectionLoss;
-
-        this.workspaceRoutes = new WorkspaceApi(store, errorCallback);
-        this.toolbarRoutes = new ToolbarApi(store, errorCallback);
-        this.debuggerRoutes = new DebuggerRouter(store, errorCallback);
-
-        this.routers = [
-            this.workspaceRoutes
-        ];
-
-        if (!this.controlCallback) {
-            this.controlCallback = (json) => {
-                console.log("WARNING! please supply a control callback");
-                console.log(json)
-            }
-        }
-        if (!this.dataCallback) {
-            this.dataCallback = (json) => {
-                console.log("WARNING! please supply a data callback");
-                console.log(json)
-            }
-        }
-        if (!this.errorCallback) {
-            this.errorCallback = (msg) => {
-                console.error(msg);
-            }
-        }
-        if (!this.onConnectionLoss) {
-            this.connectionLoss = () => {
-                console.error('connection lost');
-            }
-        }
-    }
-
-    workspace()
-    {
-        return this.workspaceRoutes;
-    }
-
-    toolbar()
-    {
-        return this.toolbarRoutes;
-    }
-
-    debugger()
-    {
-        return this.debuggerRoutes;
+        
+        this.controlBuffer = '';
+        this.dataBuffer = '';
     }
 
     handleControlMessage(json)
@@ -80,16 +32,6 @@ class Backend extends Router
                 this.routers[i].setDataId(this.dataId);
         }
         this.dataCallback(json);
-    }
-
-    authenticate(continuation) 
-    {
-        let url = this.url("/api/authenticate");
-
-        this.authFetch(url).then((res) => {
-            if (res.status < 300)
-                continuation();
-        })
     }
 
     readControl()
@@ -144,64 +86,6 @@ class Backend extends Router
         });
     }
 
-    /*
-    readControl()
-    {
-        let url = this.url("/api/streamer/control");
-
-        let options = {
-            method: 'GET',
-            url: url,
-            responseType: 'stream',
-            adapter: httpAdapter
-        }
-        options = this.authInfo(options)
-        let decoder = new TextDecoder();
-
-        console.log('boop')
-        axios.get(url, options)
-        .then(response => 
-        {
-            const stream = response.data;
-            stream.on('data', value => 
-            {
-                console.log(value)
-                if (value)
-                    this.controlBuffer += decoder.decode(value, {stream: true});
-                let size = parseInt(this.controlBuffer.substr(0, 10));
-                if (isNaN(size)) 
-                {
-                    console.error('oh big no! expected number in stream');
-                    return;
-                }
-                if (this.controlBuffer.length >= size + 12) 
-                {
-                    try 
-                    {
-                        let json = JSON.parse(this.controlBuffer.substr(11, size));
-                        this.controlBuffer = this.controlBuffer.slice(12 + size);
-                        this.handleControlMessage(json);
-                    }
-                    catch(e) 
-                    {
-                        console.error("error in control stream reader",e);
-                    }
-                }
-            })
-            stream.on('end', () => 
-            {
-                console.log('end')
-                this.onConnectionLoss('control');
-            })
-        })
-        .catch(reason => 
-        {
-            console.log(reason)
-            this.onConnectionLoss('control_error');
-        });
-    }
-    */
-
     readData()
     {
         let url = this.url("/api/streamer/data");
@@ -251,4 +135,4 @@ class Backend extends Router
     }
 }
 
-export default Backend;
+export default FetchImplementation;

@@ -129,3 +129,9 @@ debugger-interface
 lldb-mi
 mplex
 twisted-spirit
+
+tcp-server/bin/
+tcp-server/obj/
+tcp-server/tcp-server.depend
+tcp-server/tcp-server.layout
+tcp-server/tcp-server_build_log.html

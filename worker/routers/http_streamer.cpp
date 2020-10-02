@@ -1,4 +1,4 @@
-#include "streamer.hpp"
+#include "http_streamer.hpp"
 
 #include "../streaming/common_messages/welcome.hpp"
 #include "../streaming/common_messages/binary_data.hpp"
@@ -18,7 +18,7 @@ using namespace std::string_literals;
 namespace Routers
 {
 //#####################################################################################################################
-    DataStreamer::DataStreamer(RouterCollection* collection, attender::tcp_server& server, Config const& config)
+    HttpDataStreamer::HttpDataStreamer(RouterCollection* collection, attender::tcp_server& server, Config const& config)
         : BasicRouter{collection, &server}
         , endAllStreams_{false}
         , controlStream_{}
@@ -30,17 +30,17 @@ namespace Routers
         registerRoutes(server);
     }
 //---------------------------------------------------------------------------------------------------------------------
-    DataStreamer::~DataStreamer()
+    HttpDataStreamer::~HttpDataStreamer()
     {
         shutdownAll();
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void DataStreamer::shutdownAll()
+    void HttpDataStreamer::shutdownAll()
     {
         endAllStreams_.store(true);
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void DataStreamer::broadcast(StreamChannel channel, Streaming::Message&& msg)
+    void HttpDataStreamer::broadcast(StreamChannel channel, Streaming::Message&& msg)
     {
         switch (channel)
         {
@@ -50,7 +50,7 @@ namespace Routers
         }
     }
 //---------------------------------------------------------------------------------------------------------------------
-    int DataStreamer::send(StreamChannel channel, std::string const& addr, int id, Streaming::Message&& msg)
+    int HttpDataStreamer::send(StreamChannel channel, std::string const& addr, int id, Streaming::Message&& msg)
     {
         auto doWithChannel = [&](auto& stream)
         {
@@ -78,7 +78,7 @@ namespace Routers
         }
     }
 //---------------------------------------------------------------------------------------------------------------------
-    int DataStreamer::send(StreamChannel channel, std::string const& addr, int id, json const& json, std::string const& type)
+    int HttpDataStreamer::send(StreamChannel channel, std::string const& addr, int id, json const& json, std::string const& type)
     {
         return send
         (
@@ -96,7 +96,7 @@ namespace Routers
         );
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void DataStreamer::registerRoutes(attender::tcp_server& server)
+    void HttpDataStreamer::registerRoutes(attender::tcp_server& server)
     {
         using namespace attender;
 
@@ -320,12 +320,12 @@ namespace Routers
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void DataStreamer::respondWithError(attender::response_handler* res, char const* msg)
+    void HttpDataStreamer::respondWithError(attender::response_handler* res, char const* msg)
     {
 
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void DataStreamer::readExcept(boost::system::error_code ec)
+    void HttpDataStreamer::readExcept(boost::system::error_code ec)
     {
 
     }

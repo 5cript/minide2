@@ -25,7 +25,7 @@ import {setPreferences} from '../../actions/preferences_actions.js';
 import {setDebuggingProfiles, setGlobalDebuggerSettigns, setDebugInitialLoadDone} from '../../actions/debugging_actions';
 
 // Other
-import Backend from '../../backend_connector';
+import Backend from '../../backend/backend_connector';
 import _ from 'lodash';
 import Dictionary from '../../util/localization';
 import LocalPersistence from '../../util/persistence';
