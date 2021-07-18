@@ -11,9 +11,12 @@
 
 #include <string>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <map>
 #include <string>
+#include <thread>
+#include <functional>
 
 class Debugger : public DebuggerInterface::PickyListener
 {
@@ -29,8 +32,9 @@ public:
         Streaming::StreamerBase* streamer,
         std::string const& remoteAddress,
         int controlId,
-        RunConfig const& usedConfig = {},
-        std::string instanceId = {}
+        RunConfig const& usedConfig,
+        std::string instanceId,
+        std::function <void(std::string)> onExit
     );
     ~Debugger();
 
@@ -61,6 +65,8 @@ public:
      */
     void start(std::optional <std::unordered_map <std::string, std::string>> const& env);
 
+    void stop();
+
 public: // Debugger Interface Implementations
     void onRawData(std::string const& raw) override;
     void onLogStream(std::string const& message) override;
@@ -83,9 +89,12 @@ private:
     int controlId_;
     RunConfig runConfig_;
     std::string instanceId_;
+    std::mutex relayLock_;
 
     // shared_ptr should in theory be unique_ptr, but
     // this class has to be copyable. Also could implement that for unique_ptr, but having share semantics here is irrelevant.
     // maybe fix later
     std::shared_ptr <DebuggerInterface::Debugger> debugInterface_;
+    std::unique_ptr<std::jthread> debuggerWatchdog_;
+    std::function <void(std::string)> onExit_;
 };

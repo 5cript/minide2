@@ -151,7 +151,8 @@ class Dictionary
                     "$SettingsSaveImmediately": "All changes save immediately"
                 },
                 "debugger_terminal": {
-                    "$InstanceId": "Instance ID"
+                    "$InstanceId": "Instance ID",
+                    "$DebuggerDied": "Debugger Terminated"
                 }
             },
             "de_DE": {
@@ -297,7 +298,8 @@ class Dictionary
                     "$SettingsSaveImmediately": "Alle Änderungen speichern direkt"
                 },
                 "debugger_terminal": {
-                    "$InstanceId": "Instanz ID"
+                    "$InstanceId": "Instanz ID",
+                    "$DebuggerDied": "Debugger beendet"
                 }
             }    
         }

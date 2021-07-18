@@ -101,6 +101,8 @@
 		<Unit filename="../debugger-interface/input_parser.hpp" />
 		<Unit filename="../debugger-interface/lldb_run_arguments.hpp" />
 		<Unit filename="../debugger-interface/process/process.hpp" />
+		<Unit filename="../hash-library/sha256.cpp" />
+		<Unit filename="../hash-library/sha256.h" />
 		<Unit filename="../tiny-process-library/process.cpp" />
 		<Unit filename="../tiny-process-library/process.hpp" />
 		<Unit filename="../tiny-process-library/process_win.cpp" />
@@ -130,6 +132,8 @@
 		<Unit filename="main.hpp" />
 		<Unit filename="public_settings.cpp" />
 		<Unit filename="public_settings.hpp" />
+		<Unit filename="routers/authenticator.cpp" />
+		<Unit filename="routers/authenticator.hpp" />
 		<Unit filename="routers/debugger.cpp" />
 		<Unit filename="routers/debugger.hpp" />
 		<Unit filename="routers/http_streamer.cpp" />
@@ -139,7 +143,6 @@
 		<Unit filename="routers/settings_provider.cpp" />
 		<Unit filename="routers/settings_provider.hpp" />
 		<Unit filename="routers/settings_provider_fwd.hpp" />
-		<Unit filename="routers/streamer.hpp" />
 		<Unit filename="routers/streamer_fwd.hpp" />
 		<Unit filename="routers/terminal.cpp" />
 		<Unit filename="routers/terminal.hpp" />
@@ -169,6 +172,8 @@
 		<Unit filename="session/session_obtainer.cpp" />
 		<Unit filename="session/session_obtainer.hpp" />
 		<Unit filename="session/session_storage.hpp" />
+		<Unit filename="session/temporary_session.cpp" />
+		<Unit filename="session/temporary_session.hpp" />
 		<Unit filename="session/toolbar_store.cpp" />
 		<Unit filename="session/toolbar_store.hpp" />
 		<Unit filename="settings/environment.cpp" />
@@ -188,13 +193,12 @@
 		<Unit filename="streaming/common_messages/welcome.hpp" />
 		<Unit filename="streaming/id.cpp" />
 		<Unit filename="streaming/id.hpp" />
-		<Unit filename="streaming/stream.cpp" />
-		<Unit filename="streaming/stream.hpp" />
 		<Unit filename="streaming/stream_message.hpp" />
 		<Unit filename="streaming/stream_queue.cpp" />
 		<Unit filename="streaming/stream_queue.hpp" />
 		<Unit filename="streaming/stream_session.cpp" />
 		<Unit filename="streaming/stream_session.hpp" />
+		<Unit filename="streaming/streamer_base.hpp" />
 		<Unit filename="streaming/ws_streamer.cpp" />
 		<Unit filename="streaming/ws_streamer.hpp" />
 		<Unit filename="streaming/ws_streamer_fwd.hpp" />

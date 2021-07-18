@@ -94,7 +94,8 @@ module.exports = function reducer(state={
         {
             let instances = _.clone(state.instances);
             instances[action.payload.instanceId] = {
-                instanceId: action.payload.instanceId
+                instanceId: action.payload.instanceId,
+                debuggerAlive: true
             };
             return {
                 ...state,
@@ -183,6 +184,19 @@ module.exports = function reducer(state={
                 return state;
 
             instances[action.payload.instanceId].alive = action.payload.alive;
+
+            return {
+                ...state,
+                instances
+            }
+        }
+        case('DEBUGGER_SET_ALIVE'):
+        {
+            let instances = _.clone(state.instances);
+            if (instances[action.payload.instanceId] === undefined)
+                return state;
+
+            instances[action.payload.instanceId].debuggerAlive = action.payload.alive;
 
             return {
                 ...state,

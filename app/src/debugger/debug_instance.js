@@ -4,6 +4,7 @@ import {
     debuggerThreadExit,
     debuggerThreadCreated,
     debuggerSetProcessLife,
+    debuggerSetAlive,
     debuggerSetProcessExitCode
 } from '../actions/debugging_actions';
 import {unpackConstant, dedash} from './value_unpacker';
@@ -32,6 +33,11 @@ class DebugInstance
     onConsoleStream(data)
     {
         this.printToConsole(data);
+    }
+
+    onDebuggerExit(info)
+    {
+        this.store.dispatch(debuggerSetAlive(this.instanceId, false));
     }
 
     printToConsole(data)

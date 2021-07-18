@@ -193,11 +193,6 @@ namespace Routers
             enable_cors(req, res, impl_->config.corsOption);
 
             auto sess = this_session(req);
-            std::cout << sess.controlId << "\n";
-            std::cout << sess.dataId << "\n";
-            std::cout << sess.workspace.root << "\n";
-            std::cout << "---\n";
-
             res->status(200).send("ok dokey");
         });
 

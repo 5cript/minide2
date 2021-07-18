@@ -114,6 +114,14 @@ export function debuggerSetProcessLife(instanceId, alive)
     }
 }
 
+export function debuggerSetAlive(instanceId, alive)
+{
+    return {
+        type: 'DEBUGGER_SET_ALIVE',
+        payload: {instanceId, alive}
+    }
+}
+
 export function debuggerSetProcessExitCode(instanceId, code)
 {
     return {

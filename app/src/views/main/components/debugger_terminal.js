@@ -43,11 +43,20 @@ class DebuggerTerminal extends React.Component
         if (consoleData === undefined || consoleData === null)
             consoleData = "";
 
+        const alive = this.props.debugging.instances[this.props.instanceId].debuggerAlive;
+
         return (
             <div className="debuggerTerminal">
                 <div className="debuggerTerminalStatusBar">
                     <div>{this.props.dict.translate('$InstanceId', 'debugger_terminal') + ": "}</div>
-                    <div className="debuggerTerminalInstanceId">{this.props.instanceId}</div>
+                    <div className="debuggerTerminalInstanceId" style={{
+                        color: alive ? "rgb(219, 255, 153)" : "rgb(255, 128, 128)"
+                    }}>{this.props.instanceId}</div>
+                    <div
+                        style={{display: alive ? 'none' : null}}
+                    >
+                        {"(" + this.props.dict.translate('$DebuggerDied', 'debugger_terminal') + ")"}
+                    </div>
                 </div>
                 <textarea 
                     ref={tarea => this.textArea = tarea}

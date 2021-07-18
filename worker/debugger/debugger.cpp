@@ -9,6 +9,7 @@
 #include <functional>
 
 using namespace std::string_literals;
+using namespace std::chrono_literals;
 
 //#####################################################################################################################
 json unpackValue(std::unique_ptr <DebuggerInterface::Value> const& val)
@@ -52,20 +53,25 @@ Debugger::Debugger
     std::string const& remoteAddress,
     int controlId,
     RunConfig const& usedConfig,
-    std::string instanceId
+    std::string instanceId,
+    std::function<void(std::string)> onExit
 )
     : streamer_{streamer}
     , remoteAddress_{remoteAddress}
     , controlId_{controlId}
     , runConfig_{usedConfig}
     , instanceId_{std::move(instanceId)}
+    , relayLock_{}
     , debugInterface_{}
+    , debuggerWatchdog_{}
+    , onExit_{std::move(onExit)}
 {
 }
 //---------------------------------------------------------------------------------------------------------------------
 Debugger::~Debugger()
 {
     std::cerr << "debugger instance destroyed\n";
+    stop();
 }
 //---------------------------------------------------------------------------------------------------------------------
 std::string_view Debugger::runConfigName() const
@@ -115,7 +121,7 @@ void Debugger::onRawData(std::string const& raw)
     }
     std::cout << "<EOR>\n";
     */
-    std::cout << raw;
+    //std::cout << raw;
 }
 //---------------------------------------------------------------------------------------------------------------------
 void Debugger::onLogStream(std::string const& message)
@@ -201,6 +207,8 @@ void Debugger::relayAsyncRecord(std::string const& type, DebuggerInterface::Asyn
 //---------------------------------------------------------------------------------------------------------------------
 void Debugger::relayMessage(json j)
 {
+    std::scoped_lock guard{relayLock_};
+
     if (!streamer_)
         return;
 
@@ -217,6 +225,12 @@ void Debugger::relayMessage(json j)
             j
         )
     );
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Debugger::stop()
+{
+    debuggerWatchdog_.reset();
+    debugInterface_->stop();
 }
 //---------------------------------------------------------------------------------------------------------------------
 void Debugger::start(std::optional <std::unordered_map <std::string, std::string>> const& env)
@@ -240,5 +254,22 @@ void Debugger::start(std::optional <std::unordered_map <std::string, std::string
         environmentLockedDo(envDo);
     else
         doWithModifiedPath(envDo, env.value().at("PATH"));
+
+    debuggerWatchdog_ = std::make_unique<std::jthread>([this](std::stop_token state){
+        for (;!state.stop_requested();)
+        {
+            if (auto status = debugInterface_->tryGetExitStatus(); status)
+            {
+                relayMessage(json{
+                    {"messageType"s, "debugger_exit"s},
+                    {"exit_status"s, *status}
+                });
+                debuggerWatchdog_->detach();
+                onExit_(instanceId_);
+                break;
+            }
+            std::this_thread::sleep_for(250ms);
+        }
+    });
 }
 //#####################################################################################################################

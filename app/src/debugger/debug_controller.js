@@ -132,6 +132,12 @@ class DebugController
                 });
                 break;
             }
+            case('debugger_exit'):
+            {
+                instance.onDebuggerExit({
+                    exitStatus: message.exit_status
+                })
+            }
             default:
                 break;
         }
