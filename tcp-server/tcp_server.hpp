@@ -5,8 +5,8 @@
 #include "overloaded.hpp"
 #include "stream_connection.hpp"
 
-#include <attender/attender/tcp_server_interface.hpp>
-#include <attender/attender/ssl_context_interface.hpp>
+#include <attender/http/http_server_interface.hpp>
+#include <attender/ssl_contexts/ssl_context_interface.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
@@ -18,7 +18,7 @@ namespace Tcp
 {
     namespace asio = boost::asio;
 
-    class StreamServer : public attender::tcp_server_interface
+    class StreamServer : public attender::http_server_interface
     {
     public:
         StreamServer

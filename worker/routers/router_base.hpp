@@ -3,6 +3,7 @@
 #include "../routers_fwd.hpp"
 #include "../json.hpp"
 #include "../session/session.hpp"
+#include "../session/temporary_session.hpp"
 
 #include <attender/attender.hpp>
 
@@ -48,47 +49,16 @@ namespace Routers
         res->type("application/json").send(resp.dump());
     }
 
-
-    /**
-     *  A session that when dying, will save itself.
-     */
-    class TemporarySession : public Session
-    {
-    public:
-        using server_type = attender::tcp_server;
-
-    public:
-        explicit TemporarySession(server_type* server, Session&& sess);
-        TemporarySession(TemporarySession const&) = delete;
-        TemporarySession& operator=(TemporarySession const&) = delete;
-        TemporarySession(TemporarySession&&) = default;
-        TemporarySession& operator=(TemporarySession&&) = default;
-
-        /**
-         *  Used to be automatic, but could race or be in improper order.
-         *  ASIO calls can be synchronous as it seems, if they're small.
-         *  Which then can lead to a state that is unmodified save after the modded one.
-         */
-        void save();
-
-        void save_partial(std::function <void(Session& toSave, Session const& toReadFrom)> const& extractor);
-
-        ~TemporarySession();
-
-    private:
-        server_type* server_;
-    };
-
     /**
      *  Every router has this as a base class.
      */
     class BasicRouter
     {
     public:
-        using server_type = attender::tcp_server;
+        using server_type = attender::http_server;
 
     public:
-        BasicRouter(RouterCollection* collection, server_type* server);
+        BasicRouter(CommunicationCenter* collection, server_type* server);
         ~BasicRouter() = default;
 
     protected:
@@ -102,7 +72,7 @@ namespace Routers
          */
         TemporarySession this_session(attender::request_handler* req);
 
-        RouterCollection* collection_;
+        CommunicationCenter* collection_;
         server_type* server_;
     };
 
@@ -140,16 +110,6 @@ namespace Routers
         else
             throw std::runtime_error("session control not installed");
         return std::optional <Session>{s};
-    }
-
-    template <typename ServerT>
-    void setSession(ServerT& server, Session const& s)
-    {
-        auto* manager = server.get_session_manager();
-        if (manager != nullptr)
-            manager->save_session(s);
-        else
-            throw std::runtime_error("session control not installed");
     }
 
     template <typename ResT>

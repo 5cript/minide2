@@ -1,11 +1,11 @@
 #include "debugger.hpp"
 #include "../debugger/debugger.hpp"
 #include "../workspace/run_config.hpp"
-#include "../routers.hpp"
+#include "../communication_center.hpp"
 
 #include <boost/algorithm/string/replace.hpp>
 
-#include <attender/attender/session/uuid_session_cookie_generator.hpp>
+#include <attender/session/uuid_session_cookie_generator.hpp>
 
 #include <optional>
 #include <string>
@@ -27,7 +27,7 @@ namespace Routers
         }
     };
 //#####################################################################################################################
-    DebuggerRouter::DebuggerRouter(RouterCollection* collection, attender::tcp_server& server, Config const& config)
+    DebuggerRouter::DebuggerRouter(CommunicationCenter* collection, attender::http_server& server, Config const& config)
         : BasicRouter(collection, &server)
         , impl_{new DebuggerRouter::Implementation(config)}
     {
@@ -36,12 +36,12 @@ namespace Routers
 //---------------------------------------------------------------------------------------------------------------------
     DebuggerRouter::~DebuggerRouter() = default;
 //---------------------------------------------------------------------------------------------------------------------
-    void DebuggerRouter::registerRoutes(attender::tcp_server& server)
+    void DebuggerRouter::registerRoutes(attender::http_server& server)
     {
         addCreateInstanceRoute(server);
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void DebuggerRouter::addCreateInstanceRoute(attender::tcp_server& server)
+    void DebuggerRouter::addCreateInstanceRoute(attender::http_server& server)
     {
         cors_options(server, "/api/debugger/createInstance", "POST", impl_->config.corsOption);
         server.post("/api/debugger/createInstance", [this](auto req, auto res)

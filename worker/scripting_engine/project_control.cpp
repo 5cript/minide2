@@ -1,6 +1,6 @@
 #include "project_control.hpp"
 #include "../workspace/stream_messages/file_content.hpp"
-#include "../routers/streamer.hpp"
+#include "../streaming/streamer_base.hpp"
 #include "../filesystem/relations.hpp"
 
 #include <fstream>
@@ -13,14 +13,14 @@ namespace MinIDE::Scripting
     {
         std::weak_ptr <StateCollection> weakStateRef;
         SessionObtainer sessionAccess;
-        Routers::DataStreamer* streamer;
+        Streaming::StreamerBase* streamer;
         Config config;
 
         Implementation
         (
             std::weak_ptr <StateCollection>&& stateRef,
             SessionObtainer&& sessionAccess,
-            Routers::DataStreamer* streamer,
+            Streaming::StreamerBase* streamer,
             Config const& config
         )
             : weakStateRef{std::move(stateRef)}
@@ -35,7 +35,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> weakStateRef,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Config const& config
     )
         : impl_{new LuaProjectControl::Implementation(std::move(weakStateRef), std::move(sessionAccess), streamer, config)}
@@ -186,7 +186,7 @@ namespace MinIDE::Scripting
 
             auto result = impl_->streamer->send
             (
-                Routers::StreamChannel::Data,
+                Streaming::StreamChannel::Data,
                 s.value().remoteAddress,
                 s.value().dataId,
                 fc.release()
@@ -206,7 +206,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> state,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Config const& config
     )
     {

@@ -1,9 +1,13 @@
 import WorkspaceApi from './workspace';
 import ToolbarApi from './toolbar';
-import FetchImplementation from './implementations/fetch_impl';
-import NetTcpImplementation from './implementations/net_tcp_impl';
+//import FetchImplementation from './implementations/fetch_impl';
+//import NetTcpImplementation from './implementations/net_tcp_impl';
+import WebSocketImplementation from './implementations/ws_impl';
 import DebuggerRouter from './debugger';
 import Router from './router';
+import {
+    setSessionId
+} from '../actions/backend_actions';
 
 class Backend extends Router
 {
@@ -22,7 +26,8 @@ class Backend extends Router
         ];
 
         //this.impl = new FetchImplementation(store, controlCallback, dataCallback, errorCallback, onConnectionLoss);
-        this.impl = new NetTcpImplementation(store, controlCallback, dataCallback, errorCallback, onConnectionLoss);
+        //this.impl = new NetTcpImplementation(store, controlCallback, dataCallback, errorCallback, onConnectionLoss);
+        this.impl = new WebSocketImplementation(store, controlCallback, dataCallback, errorCallback, onConnectionLoss);
     }
 
     workspace()
@@ -43,8 +48,9 @@ class Backend extends Router
     authenticate(continuation) 
     {
         let url = this.url("/api/authenticate");
-
-        this.authFetch(url).then((res) => {
+        this.authFetch(url).then(async (res) => {
+            const response = await res.json();
+            this.store.dispatch(setSessionId(response.aSID));
             if (res.status < 300)
                 continuation();
         })

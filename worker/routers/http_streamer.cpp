@@ -18,16 +18,20 @@ using namespace std::string_literals;
 namespace Routers
 {
 //#####################################################################################################################
-    HttpDataStreamer::HttpDataStreamer(RouterCollection* collection, attender::tcp_server& server, Config const& config)
+    HttpDataStreamer::HttpDataStreamer(CommunicationCenter* collection, attender::http_server& server, Config const& config)
         : BasicRouter{collection, &server}
+        , StreamerBase{config}
         , endAllStreams_{false}
         , controlStream_{}
         , dataStream_{}
         , maxStreamListeners_{config.maxStreamListeners}
         , safeIdChecks_{config.streamIdCheck}
-        , config_{config}
     {
         registerRoutes(server);
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void HttpDataStreamer::start()
+    {
     }
 //---------------------------------------------------------------------------------------------------------------------
     HttpDataStreamer::~HttpDataStreamer()
@@ -40,17 +44,17 @@ namespace Routers
         endAllStreams_.store(true);
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void HttpDataStreamer::broadcast(StreamChannel channel, Streaming::Message&& msg)
+    void HttpDataStreamer::broadcast(Streaming::StreamChannel channel, Streaming::Message&& msg)
     {
         switch (channel)
         {
-            case(StreamChannel::Control): return controlStream_.queue.broadcastMessage(std::move(msg));
-            case(StreamChannel::Data): return dataStream_.queue.broadcastMessage(std::move(msg));
+            case(Streaming::StreamChannel::Control): return controlStream_.queue.broadcastMessage(std::move(msg));
+            case(Streaming::StreamChannel::Data): return dataStream_.queue.broadcastMessage(std::move(msg));
             default: return;
         }
     }
 //---------------------------------------------------------------------------------------------------------------------
-    int HttpDataStreamer::send(StreamChannel channel, std::string const& addr, int id, Streaming::Message&& msg)
+    int HttpDataStreamer::send(Streaming::StreamChannel channel, std::string const& addr, int id, Streaming::Message&& msg)
     {
         auto doWithChannel = [&](auto& stream)
         {
@@ -72,13 +76,13 @@ namespace Routers
 
         switch (channel)
         {
-            case(StreamChannel::Control): return doWithChannel(controlStream_);
-            case(StreamChannel::Data): return doWithChannel(dataStream_);
+            case(Streaming::StreamChannel::Control): return doWithChannel(controlStream_);
+            case(Streaming::StreamChannel::Data): return doWithChannel(dataStream_);
             default: return -3;
         }
     }
 //---------------------------------------------------------------------------------------------------------------------
-    int HttpDataStreamer::send(StreamChannel channel, std::string const& addr, int id, json const& json, std::string const& type)
+    int HttpDataStreamer::send(Streaming::StreamChannel channel, std::string const& addr, int id, json const& json, std::string const& type)
     {
         return send
         (
@@ -96,7 +100,7 @@ namespace Routers
         );
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void HttpDataStreamer::registerRoutes(attender::tcp_server& server)
+    void HttpDataStreamer::registerRoutes(attender::http_server& server)
     {
         using namespace attender;
 
@@ -194,14 +198,6 @@ namespace Routers
             if (connectionBasedStreamer->joinable())
                 connectionBasedStreamer->detach();
         };
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        cors_options(server, "/api/authenticate", "GET", config_.corsOption);
-        server.get("/api/authenticate", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)
-        {
-            enable_cors(req, res, config_.corsOption);
-            if (server.authenticate_session(req, res))
-                res->status(200).end();
-        });
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         cors_options(server, "/api/streamer/control", "GET", config_.corsOption);
         server.get("/api/streamer/control", [this, &server, commonStreamSetup, consumeLoop, commonCleanup](auto req, auto res)

@@ -3,6 +3,7 @@
 #include "state.hpp"
 #include "../session/session_obtainer.hpp"
 #include "../config.hpp"
+#include "../streaming/streamer_base.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -21,7 +22,7 @@ namespace MinIDE::Scripting
         (
             std::weak_ptr <StateCollection> weakStateRef,
             SessionObtainer sessionAccess,
-            Routers::DataStreamer* streamer,
+            Streaming::StreamerBase* streamer,
             Config const& config
         );
         ~LuaProjectControl();
@@ -92,7 +93,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> state,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Config const& config
     );
 }

@@ -5,7 +5,7 @@
 #include "toolbar_store.hpp"
 #include "../debugger/debugger.hpp"
 
-#include <attender/attender/session/session.hpp>
+#include <attender/session/session.hpp>
 #include <string>
 #include <functional>
 #include <mutex>

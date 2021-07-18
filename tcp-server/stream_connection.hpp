@@ -7,7 +7,7 @@ namespace Tcp
     class StreamConnection
     {
     public:
-        StreamConnection(attender::tcp_connection_interface* connection);
+        StreamConnection(attender::http_connection_interface* connection);
         ~StreamConnection();
 
         StreamConnection& operator=(StreamConnection const&) = delete;
@@ -17,8 +17,8 @@ namespace Tcp
 
         void readSome(
             std::function <bool( // <-- return true if you want the read handler to be removed
-                attender::tcp_connection_interface::buffer_iterator begin,
-                attender::tcp_connection_interface::buffer_iterator end
+                attender::http_connection_interface::buffer_iterator begin,
+                attender::http_connection_interface::buffer_iterator end
             )> const& onRecv,
             std::function <void(boost::system::error_code)> const& onError = [](auto){}
         );
@@ -32,7 +32,7 @@ namespace Tcp
         void close();
 
     private:
-        attender::tcp_connection_interface* connection_;
+        attender::http_connection_interface* connection_;
         std::function <void()> onClose_;
     };
 }

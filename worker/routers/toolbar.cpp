@@ -4,7 +4,7 @@
 #include "../variant.hpp"
 #include "../filesystem/home_directory.hpp"
 #include "../session/session_obtainer.hpp"
-#include "../routers.hpp"
+#include "../communication_center.hpp"
 
 #include <nlohmann/json.hpp>
 #include <iterator>
@@ -23,7 +23,7 @@ namespace Routers
     struct Toolbar::Implementation
     {
         Config config;
-        attender::tcp_server* server;
+        attender::http_server* server;
 
         Implementation(Config const& config)
             : config{config}
@@ -90,7 +90,7 @@ namespace Routers
         }
     }
 //#####################################################################################################################
-    Toolbar::Toolbar(RouterCollection* collection, attender::tcp_server& server, Config const& config)
+    Toolbar::Toolbar(CommunicationCenter* collection, attender::http_server& server, Config const& config)
         : BasicRouter{collection, &server}
         , impl_{new Toolbar::Implementation(config)}
     {
@@ -99,7 +99,7 @@ namespace Routers
 //---------------------------------------------------------------------------------------------------------------------
     Toolbar::~Toolbar() = default;
 //---------------------------------------------------------------------------------------------------------------------
-    void Toolbar::registerRoutes(attender::tcp_server& server)
+    void Toolbar::registerRoutes(attender::http_server& server)
     {
         using namespace Toolbars::Types;
 
@@ -224,7 +224,13 @@ namespace Routers
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Toolbar::loadToolbars(Session& session, std::string const& id, DataStreamer* streamer, SettingsProvider* settingsProv)
+    void Toolbar::loadToolbars
+    (
+        Session& session,
+        std::string const& id,
+        Streaming::StreamerBase* streamer,
+        SettingsProvider* settingsProv
+    )
     {
         auto toolbars = inHomeDirectory() / "toolbars";
         session.toolbarStore.reset();

@@ -26,6 +26,8 @@ let port = '3000';
 let server = {
 	ip: '[::1]',
 	port: 43255,
+	controlPort: 43256,
+	dataPort: 43256,
 	authCookie: ''
 };
 
@@ -207,6 +209,8 @@ function createWindow()
 		if (fs.existsSync(home + "/preferences.json"))
 			preferences = JSON.parse(fs.readFileSync(home + "/preferences.json", 'utf8')).preferences;
 
+		console.log('preferences loaded', preferences);
+
 		mainWindow.home = home;
 
 		mainWindow.webContents.send('setHome', home);
@@ -214,6 +218,8 @@ function createWindow()
 		mainWindow.webContents.send('setBackend', {
 			ip: preferences.backend.host,
 			port: preferences.backend.port,
+			controlPort: preferences.backend.controlPort,
+			dataPort: preferences.backend.dataPort,
 			autoConnect: preferences.backend.autoConnect
 		});
 	});
@@ -223,6 +229,9 @@ function createWindow()
 		forceQuit = true;
 		mainWindow.close();
 	});
+
+	/*
+	REMOVE ME AT SOME POINT, if truely not needed anymore. cookie trick.
 
 	ipcMain.on('haveCookieUpdate', (event, arg) => 
 	{
@@ -247,6 +256,7 @@ function createWindow()
 
 		event.returnValue = 0;
 	});
+	*/
 
 	registerShortcuts(mainWindow);
 }

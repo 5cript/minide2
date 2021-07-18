@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../routers/streamer_fwd.hpp"
+#include "../streaming/streamer_base.hpp"
 
 #include <debugger-interface/debugger.hpp>
 #include <debugger-interface/debugger_interface.hpp>
@@ -26,7 +26,7 @@ public:
      */
     Debugger
     (
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         std::string const& remoteAddress,
         int controlId,
         RunConfig const& usedConfig = {},
@@ -78,7 +78,7 @@ private:
     void relayAsyncRecord(std::string const& type, DebuggerInterface::AsyncRecord const& record);
 
 private:
-    Routers::DataStreamer* streamer_;
+    Streaming::StreamerBase* streamer_;
     std::string remoteAddress_;
     int controlId_;
     RunConfig runConfig_;

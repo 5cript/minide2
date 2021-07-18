@@ -1,33 +1,32 @@
-#include "routers.hpp"
+#include "communication_center.hpp"
 
 //#####################################################################################################################
-RouterCollection::RouterCollection(attender::tcp_server* server, Config const& config)
+CommunicationCenter::CommunicationCenter(attender::http_server* server, Config const& config)
     : server_{server}
+    , authenticator_{this, *server, config}
     , workspace_{this, *server, config}
     , toolbar_{this, *server, config}
-    , streamer_{this, *server, config}
+    , httpStreamer_{this, *server, config}
     , terminal_{this, *server, config}
     , settingsProvider_{this, *server, config}
     , debuggerRouter_{this, *server, config}
+    , wsStreamer_{this, server->get_io_context(), config}
 {
 }
 //---------------------------------------------------------------------------------------------------------------------
-void RouterCollection::endStreaming()
+CommunicationCenter::~CommunicationCenter() = default;
+//---------------------------------------------------------------------------------------------------------------------
+Routers::DataStreamer& CommunicationCenter::httpStreamer()
 {
-    streamer_.shutdownAll();
+    return httpStreamer_;
 }
 //---------------------------------------------------------------------------------------------------------------------
-RouterCollection::~RouterCollection()
+Streaming::WebsocketStreamer& CommunicationCenter::streamer()
 {
-    endStreaming();
+    return wsStreamer_;
 }
 //---------------------------------------------------------------------------------------------------------------------
-Routers::DataStreamer& RouterCollection::streamer()
-{
-    return streamer_;
-}
-//---------------------------------------------------------------------------------------------------------------------
-Routers::SettingsProvider& RouterCollection::settingsProv()
+Routers::SettingsProvider& CommunicationCenter::settingsProv()
 {
     return settingsProvider_;
 }

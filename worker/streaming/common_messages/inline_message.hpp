@@ -11,7 +11,7 @@ namespace Streaming::Messages
         mutable json payload;
 
         InlineMessage() = default;
-        InlineMessage(std::string type, json const& payload)
+        InlineMessage(std::string type, json const& payload = {})
             : type{std::move(type)}
             , payload(payload)
         {

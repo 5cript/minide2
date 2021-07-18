@@ -18,7 +18,16 @@ import CommonActions from './common_actions';
 // Actions
 import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, setActiveFile, moveOpenFile} from '../../actions/open_file_actions';
-import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
+import {
+    setConnected, 
+    setConnectMessage, 
+    setTryingToConnect, 
+    setSessionId, 
+    setBackendPort, 
+    setBackendIp, 
+    setBackendControlPort, 
+    setBackendDataPort
+} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
 import {addToLog, clearLog, focusLogByName, setLogType, moveLogs} from '../../actions/log_actions.js';
 import {setPreferences} from '../../actions/preferences_actions.js';
@@ -270,10 +279,16 @@ class MainWindow extends React.Component
     {
         try
         {
-            if (head.type === "welcome")
-                ipcRenderer.sendSync('haveCookieUpdate', {});
-            else if (head.type === "keep_alive")
+            if (head.type === "keep_alive")
             {}
+            else if (head.type === "rejected_authentication")
+            {
+                console.log('control stream authentication rejected');
+            }
+            else if (head.type === "authentication_accepted")
+            {
+                this.backend.readData();
+            }
             else if (head.type === "lua_rpc")
             {
                 this.handleLuaRpc(head.functionName, JSON.parse(head.data))
@@ -459,32 +474,11 @@ class MainWindow extends React.Component
                 console.error("backend didn't send a message type. notify this to the backend dev");
                 return;
             }
-
-            if (head.type === "file_tree") 
+            else if (head.type === "rejected_authentication")
             {
-                this.handleTreeUpdates(head, data);
-                return;
+                console.log('data stream authentication rejected');
             }
-
-            if (head.type === "file_content") 
-            {
-                let data = '';
-                if (head.chunks !== undefined)
-                    data = head.chunks.join();
-                this.callOnEditor(monaco => {
-                    monaco.updateFileModel({
-                        uri: head.path, 
-                        isAbsolute: head.isAbsolutePath, 
-                        data: data,
-                        focusLineNumber: head.line,
-                        focusColumn: head.linePos
-                    });
-                })
-                this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
-                return;
-            }
-
-            if (head.type === "welcome")
+            else if (head.type === "authentication_accepted")
             {
                 this.props.dispatch(setConnected(true));
                 this.backend.toolbar().loadAll(res => {
@@ -500,6 +494,26 @@ class MainWindow extends React.Component
                         this.backend.workspace().openWorkspace(wspace);
                     }
                 }
+            }
+            else if (head.type === "file_tree") 
+            {
+                this.handleTreeUpdates(head, data);
+            }
+            else if (head.type === "file_content") 
+            {
+                let data = '';
+                if (head.chunks !== undefined)
+                    data = head.chunks.join();
+                this.callOnEditor(monaco => {
+                    monaco.updateFileModel({
+                        uri: head.path, 
+                        isAbsolute: head.isAbsolutePath, 
+                        data: data,
+                        focusLineNumber: head.line,
+                        focusColumn: head.linePos
+                    });
+                })
+                this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
             }
         }
         catch(e)
@@ -587,6 +601,8 @@ class MainWindow extends React.Component
         {
             this.props.dispatch(setBackendIp(arg.ip));
             this.props.dispatch(setBackendPort(arg.port));
+            this.props.dispatch(setBackendControlPort(arg.controlPort));
+            this.props.dispatch(setBackendDataPort(arg.dataPort));
             if (arg.autoConnect && this.props.backend.connected === false)
                 this.debouncedStart()
         })
@@ -630,14 +646,6 @@ class MainWindow extends React.Component
             }
             if (!anyFound)
                 ipcRenderer.sendSync('closeNow', '');
-        })
-
-        ipcRenderer.on('cookie', (event, arg) => {
-            if (arg.name === 'aSID')
-            {
-                this.props.dispatch(setSessionId(arg.value));
-                this.backend.readData();
-            }
         })
     }
 

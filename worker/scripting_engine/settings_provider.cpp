@@ -1,6 +1,6 @@
 #include "settings_provider.hpp"
 
-#include "../routers/streamer.hpp"
+#include "../streaming/streamer_base.hpp"
 #include "../routers/settings_provider.hpp"
 #include "../streaming/common_messages/messages_from_lua.hpp"
 
@@ -14,14 +14,14 @@ namespace MinIDE::Scripting
     {
         std::weak_ptr <StateCollection> weakStateRef;
         SessionObtainer sessionAccess;
-        Routers::DataStreamer* streamer;
+        Streaming::StreamerBase* streamer;
         Routers::SettingsProvider* settingsProv;
 
         Implementation
         (
             std::weak_ptr <StateCollection>&& stateRef,
             SessionObtainer&& sessionAccess,
-            Routers::DataStreamer* streamer,
+            Streaming::StreamerBase* streamer,
             Routers::SettingsProvider* settingsProv
         )
             : weakStateRef{std::move(stateRef)}
@@ -36,7 +36,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> weakStateRef,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Routers::SettingsProvider* settingsProv
     )
         : impl_{new LuaSettingsProvider::Implementation
@@ -76,7 +76,7 @@ namespace MinIDE::Scripting
         {
             impl_->streamer->send
             (
-                StreamChannel::Control,
+                Streaming::StreamChannel::Control,
                 s.value().remoteAddress,
                 s.value().controlId,
                 Streaming::makeMessage<Streaming::Messages::LuaErrorMessage>
@@ -94,7 +94,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> state,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Routers::SettingsProvider* settingsProv
     )
     {

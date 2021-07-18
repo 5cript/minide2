@@ -10,11 +10,11 @@ namespace Routers
     class Terminal : public BasicRouter
     {
     public:
-        Terminal(RouterCollection* collection, attender::tcp_server& server, Config const& config);
+        Terminal(CommunicationCenter* collection, attender::http_server& server, Config const& config);
         ~Terminal();
 
     private:
-        void registerRoutes(attender::tcp_server& server);
+        void registerRoutes(attender::http_server& server);
 
     private:
         struct Implementation;

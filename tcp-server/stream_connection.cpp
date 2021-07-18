@@ -1,13 +1,13 @@
 #include "stream_connection.hpp"
 
-#include <attender/attender/tcp_connection_interface.hpp>
-#include <attender/attender/tcp_server_interface.hpp>
-#include <attender/attender/connection_manager.hpp>
+#include <attender/http/http_connection_interface.hpp>
+#include <attender/http/http_server_interface.hpp>
+#include <attender/http/connection_manager.hpp>
 
 namespace Tcp
 {
 //#####################################################################################################################
-    StreamConnection::StreamConnection(attender::tcp_connection_interface* connection)
+    StreamConnection::StreamConnection(attender::http_connection_interface* connection)
         : connection_{connection}
     {
     }
@@ -25,8 +25,8 @@ namespace Tcp
 //---------------------------------------------------------------------------------------------------------------------
     void StreamConnection::readSome(
         std::function <bool(
-            attender::tcp_connection_interface::buffer_iterator begin,
-            attender::tcp_connection_interface::buffer_iterator end
+            attender::http_connection_interface::buffer_iterator begin,
+            attender::http_connection_interface::buffer_iterator end
         )> const& onRecv,
         std::function <void(boost::system::error_code)> const& onError
     )

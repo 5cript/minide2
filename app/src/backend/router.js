@@ -5,9 +5,13 @@ class Router
         this.store = store;
     }
 
-    url(url)
+    url(url, protocol)
     {
-        return this.getHost() + url;
+        if (protocol === undefined)
+        {
+            protocol = "http";
+        }
+        return this.getHost(protocol) + url;
     }
     authInfo(obj)
     {
@@ -41,10 +45,10 @@ class Router
         obj = this.authInfo(obj);
         return fetch(url, obj)
     }
-    getHost()
+    getHost(protocol)
     {
         let state = this.store.getState();
-        return "http://" + state.backend.ip + ":" + state.backend.port;
+        return protocol + "://" + state.backend.ip + ":" + state.backend.port;
     }
     setControlId(controlId)
     {

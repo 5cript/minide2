@@ -13,11 +13,11 @@ namespace Routers
     class Workspace : public BasicRouter
     {
     public:
-        Workspace(RouterCollection* collection, attender::tcp_server& server, Config const& config);
+        Workspace(CommunicationCenter* collection, attender::http_server& server, Config const& config);
         ~Workspace();
 
     private:
-        void registerRoutes(attender::tcp_server& server);
+        void registerRoutes(attender::http_server& server);
 
         /**
          *  Returns an pair of <E, P>. There was an error if E is non-empty

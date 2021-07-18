@@ -28,6 +28,26 @@ export function setBackendPort(port)
     }
 }
 
+export function setBackendControlPort(port) 
+{
+    return {
+        type: 'SET_CONTROL_PORT',
+        payload: {
+            port: port
+        }
+    }
+}
+
+export function setBackendDataPort(port) 
+{
+    return {
+        type: 'SET_DATA_PORT',
+        payload: {
+            port: port
+        }
+    }
+}
+
 /**
  * Used in blocker bar
  * @param msg message in blocker bar.

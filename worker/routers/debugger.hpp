@@ -3,7 +3,6 @@
 #include "router_base.hpp"
 
 #include "../toolbars/basic_toolbar.hpp"
-#include "../routers/streamer.hpp"
 #include "../routers/settings_provider_fwd.hpp"
 #include "../config.hpp"
 
@@ -14,12 +13,12 @@ namespace Routers
     class DebuggerRouter : public BasicRouter
     {
     public:
-        DebuggerRouter(RouterCollection* collection, attender::tcp_server& server, Config const& config);
+        DebuggerRouter(CommunicationCenter* collection, attender::http_server& server, Config const& config);
         ~DebuggerRouter();
 
     private:
-        void registerRoutes(attender::tcp_server& server);
-        void addCreateInstanceRoute(attender::tcp_server& server);
+        void registerRoutes(attender::http_server& server);
+        void addCreateInstanceRoute(attender::http_server& server);
 
     private:
         struct Implementation;

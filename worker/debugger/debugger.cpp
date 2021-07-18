@@ -1,7 +1,7 @@
 #include "debugger.hpp"
 #include "../environment_lock.hpp"
 
-#include "../routers/streamer.hpp"
+#include "../streaming/streamer_base.hpp"
 #include "../streaming/common_messages/inline_message.hpp"
 
 #include <debugger-interface/debugger.hpp>
@@ -48,7 +48,7 @@ std::vector <json> unpackResults(std::vector <DebuggerInterface::Result> const& 
 //#####################################################################################################################
 Debugger::Debugger
 (
-    Routers::DataStreamer* streamer,
+    Streaming::StreamerBase* streamer,
     std::string const& remoteAddress,
     int controlId,
     RunConfig const& usedConfig,
@@ -208,7 +208,7 @@ void Debugger::relayMessage(json j)
 
     streamer_->send
     (
-        Routers::StreamChannel::Control,
+        Streaming::StreamChannel::Control,
         remoteAddress_,
         controlId_,
         Streaming::makeMessage<Streaming::Messages::InlineMessage>
