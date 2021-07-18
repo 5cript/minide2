@@ -7,6 +7,8 @@ import {connect} from 'react-redux';
 // Utility
 import classNames from 'classnames';
 import {splitCommandLine} from '../../../util/command_line_splitter';
+import {removeDebuggerInstance} from '../../../actions/debugging_actions';
+import {removeDebugTerminal} from '../../../actions/log_actions';
 
 // Styles
 import './styles/debugger_terminal.css';
@@ -31,6 +33,14 @@ class DebuggerTerminal extends React.Component
         });
         */
 
+        const instance = this.props.debugging.instances[this.props.instanceId];
+        if (instance !== undefined && instance.debuggerAlive === false && (value === "q" || value === "quit"))
+        {
+            this.props.dispatch(removeDebuggerInstance(this.props.instanceId));
+            this.props.dispatch(removeDebugTerminal(this.props.instanceId));
+            return;
+        }
+
         this.props.debugController.sendRawCommand({
             instanceId: this.props.instanceId,
             command: value
@@ -39,11 +49,15 @@ class DebuggerTerminal extends React.Component
 
     render = () =>
     {
-        let consoleData = this.props.debugging.instances[this.props.instanceId].consoleStream;
+        const instance = this.props.debugging.instances[this.props.instanceId];
+        if (instance === undefined)
+            return <div />;
+
+        let consoleData = instance.consoleStream;
         if (consoleData === undefined || consoleData === null)
             consoleData = "";
 
-        const alive = this.props.debugging.instances[this.props.instanceId].debuggerAlive;
+        const alive = instance.debuggerAlive;
 
         return (
             <div className="debuggerTerminal">

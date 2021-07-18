@@ -63,6 +63,38 @@ module.exports = function reducer(state={
                 activeLog: logs.length - 1
             }
         }
+        case 'REMOVE_DEBUG_TERMINAL': 
+        {
+            let logs = _.cloneDeep(state.logs);
+            let ordering = [...state.ordering];
+
+            const index = logs.findIndex(elem => elem.instanceId === action.payload.instanceId);
+            if (index === -1)
+                return state;            
+            logs.splice(index, 1);
+
+            console.log(ordering);
+
+            const orderingIndex = ordering.findIndex(elem => elem === index);
+            if (orderingIndex === -1)
+                return state;
+            ordering.splice(orderingIndex, 1);
+
+            ordering.map(elem => {
+                if (elem > index)
+                    return elem - 1;
+                return elem;
+            });
+            
+            console.log(ordering);
+
+            return {
+                ...state,
+                logs: logs,
+                ordering: ordering,
+                activeLog: state.activeLog >= logs.length ? logs.length - 1 : state.activeLog
+            }
+        }
         case 'SET_ACTIVE_LOG': 
         {
             return {
