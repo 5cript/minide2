@@ -73,8 +73,6 @@ module.exports = function reducer(state={
                 return state;            
             logs.splice(index, 1);
 
-            console.log(ordering);
-
             const orderingIndex = ordering.findIndex(elem => elem === index);
             if (orderingIndex === -1)
                 return state;
@@ -85,8 +83,6 @@ module.exports = function reducer(state={
                     return elem - 1;
                 return elem;
             });
-            
-            console.log(ordering);
 
             return {
                 ...state,

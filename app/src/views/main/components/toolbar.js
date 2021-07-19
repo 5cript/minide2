@@ -11,7 +11,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import { Combobox } from 'react-widgets';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { MuiThemeProvider, createTheme } from '@material-ui/core/styles';
 import HamburgerMenu from 'react-hamburger-menu';
 import ContextMenu from '../../../elements/context_menu';
 
@@ -54,7 +54,7 @@ const StyledLabel = styled(InputLabel)({
     fontSize: '9px'
 })
 
-const HoverFix = createMuiTheme({
+const HoverFix = createTheme({
     overrides: {
         MuiIconButton: {
             root: {

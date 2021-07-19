@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 // Utility
 import classNames from 'classnames';
-import {splitCommandLine} from '../../../util/command_line_splitter';
+// import {splitCommandLine} from '../../../util/command_line_splitter';
 import {removeDebuggerInstance} from '../../../actions/debugging_actions';
 import {removeDebugTerminal} from '../../../actions/log_actions';
 

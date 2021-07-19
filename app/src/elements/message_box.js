@@ -2,7 +2,7 @@ import React from 'react';
 
 // Components
 import StyledButton from './button';
-import ReactModal from 'react-modal-resizable-draggable';
+import ReactModal from './modal';
 import TextareaAutosize from 'react-textarea-autosize';
 
 // Styles

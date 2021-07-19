@@ -137,6 +137,7 @@ class DebugController
                 instance.onDebuggerExit({
                     exitStatus: message.exit_status
                 })
+                break;
             }
             default:
                 break;

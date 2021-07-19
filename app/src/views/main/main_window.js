@@ -22,7 +22,6 @@ import {
     setConnected, 
     setConnectMessage, 
     setTryingToConnect, 
-    setSessionId, 
     setBackendPort, 
     setBackendIp, 
     setBackendControlPort, 

@@ -23,6 +23,7 @@ module.exports = function createKeybindsWindow(path, parentCenter, server, home)
 			webPreferences: {
 				webSecurity: true,
 				nodeIntegration: true,
+				contextIsolation: false,
 				allowEval: false,
 				enableRemoteModule: true
 			}

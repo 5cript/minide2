@@ -175,6 +175,7 @@ function createWindow()
 			webSecurity: true,
 			nodeIntegration: true,
 			allowEval: false,
+			contextIsolation: false,
 			enableRemoteModule: true
 		},
 	})

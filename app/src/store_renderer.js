@@ -1,17 +1,16 @@
-import {createStore, applyMiddleware} from 'redux';
-import { forwardToMain, replayActionRenderer, getInitialStateRenderer } from 'electron-redux';
+import {createStore} from 'redux';
+import {stateSyncEnhancer, composeWithStateSync} from 'electron-redux/renderer';
 
 import reducer from './reducers/reducers';
-const initialState = getInitialStateRenderer();
+
+window.__ElectronReduxBridge = {
+    stateSyncEnhancer: () => {},
+    composeWithStateSync
+}
 
 const store = createStore(
     reducer,
-    initialState,
-    applyMiddleware(
-        forwardToMain
-    )
+    stateSyncEnhancer()
 );
-
-replayActionRenderer(store);
 
 export default store;

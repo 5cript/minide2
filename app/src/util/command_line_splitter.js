@@ -5,7 +5,7 @@ export function splitCommandLine(command)
     let inQuote = false;
     let accumulator = '';
     let slashOnce = false;
-    for (let i = 0; i != command.length; ++i) 
+    for (let i = 0; i !== command.length; ++i) 
     {
         switch (command[i])
         {

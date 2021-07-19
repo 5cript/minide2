@@ -7,7 +7,7 @@ let isVisible = false;
 
 module.exports = function createDebuggerSettingsWindow(path, parentCenter, home)
 {
-    const w = 1200;
+    const w = 1600;
     const h = 800;
 
 	if (isVisible === false)
@@ -23,6 +23,7 @@ module.exports = function createDebuggerSettingsWindow(path, parentCenter, home)
 			webPreferences: {
 				webSecurity: true,
 				nodeIntegration: true,
+				contextIsolation: false,
 				allowEval: false,
 				enableRemoteModule: true
 			}

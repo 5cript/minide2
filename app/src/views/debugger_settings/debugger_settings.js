@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 
 // Components
-import DropdownList from 'react-widgets/lib/DropdownList';
+import DropdownList from 'react-widgets/DropdownList';
 import {FormGroup, FormControlLabel} from '@material-ui/core';
 import {DragDropContext} from 'react-beautiful-dnd';
 import SlimButton from '../../elements/button';
