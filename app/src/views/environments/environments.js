@@ -20,7 +20,8 @@ import Environment from '../../backend/environment';
 
 // Styles
 import './styles/environments.css';
-import '../../styles/react-widgets.css';
+import '../../styles/constants.css';
+import '../../styles/react-widgets.scss';
 
 // Requires
 const {ipcRenderer} = window.require('electron');

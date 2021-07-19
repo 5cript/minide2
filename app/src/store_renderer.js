@@ -4,7 +4,8 @@ import {stateSyncEnhancer, composeWithStateSync} from 'electron-redux/renderer';
 import reducer from './reducers/reducers';
 
 window.__ElectronReduxBridge = {
-    stateSyncEnhancer: () => {},
+    stateSyncEnhancer: () => {
+    },
     composeWithStateSync
 }
 
