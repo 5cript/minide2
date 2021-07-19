@@ -1,13 +1,10 @@
 import {createStore} from 'redux';
 import {stateSyncEnhancer, composeWithStateSync} from 'electron-redux/renderer';
+import {preload} from 'electron-redux/preload';
 
 import reducer from './reducers/reducers';
 
-window.__ElectronReduxBridge = {
-    stateSyncEnhancer: () => {
-    },
-    composeWithStateSync
-}
+preload();
 
 const store = createStore(
     reducer,
