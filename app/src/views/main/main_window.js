@@ -637,14 +637,14 @@ class MainWindow extends React.Component
                 if (!file.synchronized)
                 {
                     this.showYesNoBox(this.dict.translate('$CloseWithUnsavedChanges', 'dialog'), () => {
-                        ipcRenderer.sendSync('closeNow', '');
+                        ipcRenderer.send('closeNow', '');
                     })
                     anyFound = true;
                     break;
                 }
             }
             if (!anyFound)
-                ipcRenderer.sendSync('closeNow', '');
+                ipcRenderer.send('closeNow', '');
         })
     }
 
@@ -810,6 +810,9 @@ class MainWindow extends React.Component
                         </div>
                     </SplitterLayout>
                 </div>
+
+                {/*Default Invisible Elements And Special Components Here*/}
+
                 <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
                 <MessageBox boxStyle="Ok" dict={this.dict} visible={this.state.okBoxVisible} message={this.state.okBoxMessage} onButtonPress={(wb)=>{this.onOkBoxClose(wb);}}/>
                 <MessageBox

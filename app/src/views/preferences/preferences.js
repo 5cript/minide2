@@ -160,14 +160,14 @@ class Preferences extends React.Component
 
     save = (successAction) => 
     {        
-        ipcRenderer.sendSync('applicationPreferencesSaved', this.toJson(true));
-        ipcRenderer.sendSync('closePrefWindow', '');
+        ipcRenderer.send('applicationPreferencesSaved', this.toJson(true));
+        ipcRenderer.send('closePrefWindow', '');
         return '';
     }
 
     cancel = () => 
     {
-        ipcRenderer.sendSync('closePrefWindow', '');
+        ipcRenderer.send('closePrefWindow', '');
     }
 
     load = () => 

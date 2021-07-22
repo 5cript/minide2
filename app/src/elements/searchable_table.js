@@ -14,8 +14,10 @@ import styled from 'styled-components';
 const SearchInput = withStyles({
     root: {
         height: '25px',
+        width: '100%',
         minHeight: 0,
         margin: 0,
+        border: '1px solid var(--background-disabled)',
         color: 'var(--foreground-color)'
     }
 })(Input);

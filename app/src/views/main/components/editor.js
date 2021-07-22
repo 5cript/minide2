@@ -2,11 +2,12 @@ import React from 'react';
 
 // Components
 import MonacoEditor from 'react-monaco-editor';
-import ReactResizeDetector from 'react-resize-detector';
+import {withResizeDetector} from 'react-resize-detector';
 import MessageBox from '../../../elements/message_box';
 import {Droppable, Draggable} from 'react-beautiful-dnd';
 
 // Other
+import _ from 'lodash';
 import {pathModifier} from '../../../util/path_util';
 import extensionToLanguage from '../../../util/extension_to_lang';
 
@@ -65,6 +66,10 @@ class MonacoEditorComponent extends React.Component
     constructor(props)
     {
         super(props)
+
+        this.throttledModelLoad = _.throttle(() => {
+            this.loadSelectedModel();
+        }, 500);
 
         this.currentPath = null;
         this.viewStates = {};
@@ -201,9 +206,14 @@ class MonacoEditorComponent extends React.Component
         }
     }
 
-    componentDidUpdate = () =>
+    componentDidUpdate = (prevProps) =>
     {
-        this.loadSelectedModel();
+        this.throttledModelLoad();
+
+        if (this.props.width !== prevProps.width || this.props.height !== prevProps.height) {
+            if (this.editor)
+                this.editor.layout();
+        }
     }
 
     render() 
@@ -211,21 +221,12 @@ class MonacoEditorComponent extends React.Component
         const options = this.compileMonacoOptions();
 
         return (
-            <ReactResizeDetector
-                handleHeight
-                handleWidth
-                onResize={()=> {
-                    if (this.editor)
-                        this.editor.layout();
-                }}
-            >
-                <MonacoEditor
-                    theme={this.state.theme}
-                    onChange={(v, e) => {this.onChange(v, e)}}
-                    editorDidMount={this.onMount}
-                    options={options}
-                />
-            </ReactResizeDetector>
+            <MonacoEditor
+                theme={this.state.theme}
+                onChange={(v, e) => {this.onChange(v, e)}}
+                editorDidMount={this.onMount}
+                options={options}
+            />
         );
     }
 }
@@ -235,7 +236,7 @@ let ConnectedEditor = connect(state => {
         openFiles: state.openFiles.openFiles,
         activeFile: state.openFiles.activeFile
     }
-}, null, null, {forwardRef: true})(MonacoEditorComponent);
+}, null, null, {forwardRef: true})(withResizeDetector(MonacoEditorComponent));
 
 class CodeEditor extends React.Component 
 {
