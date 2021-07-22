@@ -453,10 +453,11 @@ class MainWindow extends React.Component
 
     callOnEditor = (fn) => 
     {
+        console.log(this.editor);
         if (this.editor)
         {
-            console.log(this.editor)
             const monaco = this.editor.getMonaco();
+            console.log(monaco);
             if (monaco)
             {
                 fn(monaco);

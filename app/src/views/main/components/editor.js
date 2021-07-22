@@ -67,7 +67,7 @@ class MonacoEditorComponent extends React.Component
     {
         super(props)
 
-        this.throttledModelLoad = _.throttle(() => {
+        this.throttledModelLoad = _.debounce(() => {
             this.loadSelectedModel();
         }, 500);
 
@@ -80,6 +80,7 @@ class MonacoEditorComponent extends React.Component
 
     onMount = (editor, monaco) => 
     {
+        this.props.refWorkaround(this);
         this.editor = editor;
         this.monaco = monaco;
         editor.focus();
@@ -236,7 +237,7 @@ let ConnectedEditor = connect(state => {
         openFiles: state.openFiles.openFiles,
         activeFile: state.openFiles.activeFile
     }
-}, null, null, {forwardRef: true})(withResizeDetector(MonacoEditorComponent));
+}, null, null)(withResizeDetector(MonacoEditorComponent));
 
 class CodeEditor extends React.Component 
 {
@@ -342,7 +343,7 @@ class CodeEditor extends React.Component
                         }
                     </Droppable>
                 </div>
-                <ConnectedEditor ref={this.setMonacoRef} id='MonacoWrap' language="javascript" />
+                <ConnectedEditor refWorkaround={this.setMonacoRef} id='MonacoWrap' language="javascript" />
                 <MessageBox boxStyle="YesNo" dict={this.props.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
             </div>
         )
