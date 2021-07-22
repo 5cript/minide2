@@ -30,6 +30,7 @@ let server = {
 	dataPort: 43256,
 	authCookie: ''
 };
+let fastClickExitTimes = [];
 
 const createSideWindow = ({factory, uriPart, args}) => 
 {
@@ -196,6 +197,20 @@ function createWindow()
 
 	mainWindow.on('close', (e) => 
 	{
+		fastClickExitTimes.push(new Date());
+		if (fastClickExitTimes.length == 3)
+		{
+			diff = 
+				((fastClickExitTimes[2] - fastClickExitTimes[1]) +
+				(fastClickExitTimes[1] - fastClickExitTimes[0])) / 2
+			;
+			if (Math.abs(diff) < 250)
+			{
+				// close anyway on fast clicks.
+				return;
+			}
+			fastClickExitTimes.shift();
+		}
 		if (!forceQuit) 
 		{
 			mainWindow.webContents.send('closeIssued');

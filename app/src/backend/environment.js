@@ -15,7 +15,7 @@ class Environment extends Router
 
     saveAll(environments, onSuccess, onError)
     {
-        this.postJson(this.url("/api/settings/environment/save"), -1, {'environments': environments}, onSuccess, onError);
+        this.postJson(this.url("/api/settings/environment/save"), {'environments': environments}, onSuccess, onError);
     }
 }
 

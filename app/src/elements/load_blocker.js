@@ -53,6 +53,8 @@ class LoadBlocker extends React.Component
                 customStyles={{
                     overflow: 'hidden'
                 }}
+                onClose={() => {
+                }}
             >
                 <MoonLoader
                     size={100}

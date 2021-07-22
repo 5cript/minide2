@@ -119,14 +119,14 @@ class Router
             if (res.status >= 400) 
             {
                 if (onFailure !== undefined) {
-                    res.text().then(body => {
+                    res.json().then(body => {
                         onFailure(body);   
                     }).catch(r => {
                         onFailure(r);
                     })
                 }
                 else
-                    res.text().then((value) => {
+                    res.json().then((value) => {
                         this.errorCallback(value);
                     });
                 return;

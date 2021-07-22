@@ -71,7 +71,7 @@ namespace Routers
                 try
                 {
                     if (!body.contains("environments"))
-                        return res->status(400).send("need environments in json body");
+                        return respondWithError(res, "need environments in json body");
 
                     std::unordered_map <std::string, SettingParts::Environment> envs;
                     envs = body["environments"].get<decltype(envs)>();
