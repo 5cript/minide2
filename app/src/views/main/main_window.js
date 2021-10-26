@@ -39,6 +39,7 @@ import Dictionary from '../../util/localization';
 import LocalPersistence from '../../util/persistence';
 import DebugController from '../../debugger/debug_controller';
 import ReduxPersistanceHelper from '../../util/redux_persist';
+import GutterControl from './gutter_control';
 
 // Style
 import './styles/main.css'
@@ -737,6 +738,15 @@ class MainWindow extends React.Component
     setEditorRef = (editor) => 
     {
         this.editor = editor;
+        if (this.editor)
+        {
+            this.editor.emplaceGutterControl(GutterControl, this.props.store)
+            console.log('gutter control installed');
+        }
+        else
+        {
+            console.log('gutter control not installed right now');
+        }
     }
 
     setKeybindActor = (actor) => 

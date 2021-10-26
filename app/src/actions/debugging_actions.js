@@ -129,3 +129,35 @@ export function debuggerSetProcessExitCode(instanceId, code)
         payload: {instanceId, code}
     }
 }
+
+export function debuggerSetFocussedInstance(instanceId)
+{
+    return {
+        type: 'DEBUGGER_SET_FOCUSSED_INSTANCE',
+        payload: {instanceId}
+    }
+}
+
+export function debuggerToggleBreakpoint(name, file, line)
+{
+    return {
+        type: 'DEBUGGER_TOGGLE_BREAKPOINT',
+        payload: {name, file, line}
+    }
+}
+
+export function debuggerAddSessionData(name)
+{
+    return {
+        type: 'DEBUGGER_ADD_SESSION_DATA',
+        payload: {name}
+    }
+}
+
+export function debuggerRemoveSessionData(name)
+{
+    return {
+        type: 'DEBUGGER_REMOVE_SESSION_DATA',
+        payload: {name}
+    }
+}

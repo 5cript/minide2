@@ -11,6 +11,7 @@ import {TabPanel, MuiTabs} from '../../../elements/tabs';
 
 // Actions
 import {focusLogByName} from '../../../actions/log_actions';
+import {debuggerSetFocussedInstance} from '../../../actions/debugging_actions';
 
 // Other
 //import _ from 'lodash'
@@ -45,7 +46,17 @@ class LogsAndOthers extends React.Component
         return (
             <div className='tabContainer'>
                 <MuiTabs
-                    onChange={(viewIndex) => this.props.dispatch(focusLogByName(tabLabels[viewIndex]))}
+                    onChange={(viewIndex) => {
+                        const log = this.props.logs.logs.find(log => {
+                            return log.logName === tabLabels[viewIndex];
+                        })
+                        if (log && log.logType === '_debug_terminal')
+                        {
+                            this.props.dispatch(debuggerSetFocussedInstance(log.instanceId));
+                        }
+                        this.props.dispatch(focusLogByName(tabLabels[viewIndex]))
+                        
+                    }}
                     value={activeLabel}
                     tabLabels={tabLabels}
                     id={this.props.tabsId}

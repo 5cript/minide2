@@ -17,6 +17,7 @@ import {setActiveFile, removeOpenFile, setActiveFileContent} from '../../../acti
 
 // Style
 import './styles/editor.css';
+import './styles/gutter.css';
 
 /*
 const SimpleIconButton = styled(IconButton)({
@@ -63,29 +64,82 @@ class MonacoEditorComponent extends React.Component
         },        
     }
 
+    models = {}
+    currentPath = null;
+
     constructor(props)
     {
         super(props)
 
-        this.throttledModelLoad = _.debounce(() => {
+        this.throttledModelLoad = _.throttle(() => {
             this.loadSelectedModel();
-        }, 500);
+        }, 100);
 
-        this.currentPath = null;
         this.viewStates = {};
         this.positions = {};
         this.voidModel = null;
         this.voidModelPath = '/_/mindide/voidmodel';
+        this.models[this.voidModelPath] = {};
     }
 
     onMount = (editor, monaco) => 
     {
-        this.props.refWorkaround(this);
         this.editor = editor;
         this.monaco = monaco;
         editor.focus();
         this.voidModel = this.monaco.editor.createModel('', undefined, this.monaco.Uri.parse(this.voidModelPath));
         this.setModel(this.voidModelPath);
+        this.props.refWorkaround(this);
+
+        this.registerEvents();
+    }
+
+    emplaceGutterControl = (gutterControlClass, store) => 
+    {
+        this.gutterControl = new gutterControlClass(store, this);
+    }
+
+    registerEvents = () =>
+    {
+        this.editor.onMouseMove(event => {
+            if(event.target.type === 2) // gutter
+                this.gutterControl?.onMouseMove(event);
+        });
+        this.editor.onMouseDown(event => {
+            if(event.target.type === 2) // gutter
+                this.gutterControl?.onMouseDown(event);
+        })
+        this.editor.onDidChangeModelContent(event => {
+            if (this.currentPath === null)
+                return;
+
+            console.log(event);
+            // modify breakpoints:
+            event.changes.forEach(change => {
+                const start = change.range.startLineNumber;
+                const end = change.range.endLineNumber;
+                if (start === end)
+                {
+                    return;
+                }
+                this.forAllFilteredBreakpoints(breakpoint => {
+                    return breakpoint.file === this.currentPath;
+                }, breakpoint => {
+                    if (breakpoint.line >= start && breakpoint.line <= end)
+                    {
+                        this.gutterControl.removeBreakpoint(breakpoint.line);
+                    }
+                })
+            });
+        })
+    }
+
+    forAllFilteredBreakpoints = (filter, func) => {
+        for (const sessionId in this.props.debugging.sessionData)
+        {
+            const session = this.props.debugging.sessionData[sessionId];
+            session.breakpoints.filter(filter).forEach(func);
+        }
     }
 
     openFileContent = () => 
@@ -93,6 +147,32 @@ class MonacoEditorComponent extends React.Component
         if (this.props.activeFile > -1)
             return this.props.openFiles[this.props.activeFile].content;
         return "";
+    }
+
+    createModel = (data, uri) =>
+    {
+        const muri = this.monaco.Uri.parse(uri);
+        this.models[uri] = {};
+        return this.monaco.editor.createModel(data, this.languageFromExtension(uri), muri);
+    }
+
+    updateActiveModel = (obj) =>
+    {
+        if (this.currentPath === null)
+            return;
+
+        this.models[this.currentPath] = {
+            ...this.models[this.currentPath],
+            ...obj
+        };
+    }
+
+    getActiveModel = () => 
+    {
+        if (this.currentPath === null)
+            return undefined;
+        
+        return this.models[this.currentPath];
     }
 
     updateFileModel = ({uri, data, focusLineNumber, focusColumn}) => 
@@ -103,7 +183,7 @@ class MonacoEditorComponent extends React.Component
         const muri = this.monaco.Uri.parse(uri);
         let model = this.monaco.editor.getModel(muri);
         if (model === null)
-            model = this.monaco.editor.createModel(data, this.languageFromExtension(uri), muri);
+            model = this.createModel(data, uri);
         else
         {
             this.resetViewState(uri);
@@ -114,14 +194,51 @@ class MonacoEditorComponent extends React.Component
         if (focusLineNumber !== undefined && focusLineNumber !== null)
             this.jumpTo(focusLineNumber, focusColumn ? focusColumn : 0);
     }
+
+    unsetDecorations = (model) => {
+        if (this.currentPath === null)
+            return;
+            
+        const deco = this.models[this.currentPath].decorations;
+        if (deco === undefined)
+            return;
+        model.deltaDecorations(deco, []);
+    }
+
+    setDecorations = (model) => {
+        // breakpoints:
+        let deco = [];
+        for (const sessionId in this.props.debugging.sessionData)
+        {
+            const session = this.props.debugging.sessionData[sessionId]
+            deco.push(...model.deltaDecorations([], session.breakpoints.filter(breakpoint => breakpoint.file === this.currentPath).map(breakpoint => {return(
+                {
+                    range: {
+                        endColumn: 1,
+                        endLineNumber: breakpoint.line,
+                        startColumn: 1,
+                        startLineNumber: breakpoint.line
+                    },
+                    options: {
+                        isWholeLine: true,
+                        glyphMarginClassName: 'gutterBreakpoint',
+                        stickiness: this.monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+                    }
+                })
+            })));
+        }
+        this.updateActiveModel({decorations: deco});
+    }
     
     setModel = (path, model) => 
     {
+        this.unsetDecorations(this.monaco.editor.getModel(this.monaco.Uri.parse(this.currentPath)));
+
         if (model === null || model === undefined)
             model = this.monaco.editor.getModel(this.monaco.Uri.parse(path));
         if (model === null || model === undefined)
             return;
-
+            
         // save current editor states
         if (this.currentPath !== null)
         {
@@ -130,6 +247,7 @@ class MonacoEditorComponent extends React.Component
         }
         this.currentPath = path;
         this.editor.setModel(model);
+        this.setDecorations(model);
 
         // restore states
         if (this.viewStates[path])
@@ -188,7 +306,8 @@ class MonacoEditorComponent extends React.Component
             return this.state.options;
 
         let optionAddtions = {
-            model: null
+            model: null,
+            glyphMargin: true,
         }
 
         return {
@@ -235,7 +354,8 @@ class MonacoEditorComponent extends React.Component
 let ConnectedEditor = connect(state => {
     return {
         openFiles: state.openFiles.openFiles,
-        activeFile: state.openFiles.activeFile
+        activeFile: state.openFiles.activeFile,
+        debugging: state.debugging
     }
 }, null, null)(withResizeDetector(MonacoEditorComponent));
 
@@ -278,6 +398,11 @@ class CodeEditor extends React.Component
     setMonacoRef = (monaco) => 
     {
         this.monaco = monaco;
+    }
+
+    emplaceGutterControl = (...args) => 
+    {
+        this.monaco.emplaceGutterControl(...args);
     }
 
     render() 

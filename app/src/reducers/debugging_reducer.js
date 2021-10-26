@@ -26,10 +26,21 @@ module.exports = function reducer(state={
         /*
         SOME_INSTANCE_ID: {
             instanceId: 'bla',
-            consoleStream: 'bla\nbla'
+            consoleStream: 'bla\nbla',
+            sessionData: 'default'
         }
          */
-    }
+    },
+    focussedInstance: null,
+    sessionData: {
+        'default': {
+            breakpoints: [/*{
+                file: '/test-project/main.cpp',
+                line: 7
+            }*/]
+        }
+    },
+    activeSessionData: 'default'
 }, action) 
 { 
     switch (action.type) 
@@ -37,6 +48,17 @@ module.exports = function reducer(state={
         case('SET_RUN_CONFIG'):
         {
             return {...state, selectedConfig: action.payload.runConfigName}
+        }
+        case('REMOVE_OPEN_FILE'):
+        {
+            let sessionData = _.cloneDeep(state.sessionData);
+            for (const sessionId in sessionData)
+            {
+                sessionData[sessionId].breakpoints = sessionData[sessionId].breakpoints.filter(breakpoint =>
+                    breakpoint.file !== action.payload.path
+                );
+            }
+            return {...state, sessionData: sessionData};
         }
         case('SET_DEBUG_PROFILES'):
         {
@@ -61,7 +83,7 @@ module.exports = function reducer(state={
             if (action.payload.name === undefined)
                 return state;
 
-            let profiles = _.clone(state.profiles);
+            let profiles = _.cloneDeep(state.profiles);
             let profileIndex = profiles.findIndex(profile => profile.name === action.payload.name);
             if (profileIndex === -1)
                 return state;
@@ -92,23 +114,29 @@ module.exports = function reducer(state={
         }
         case('ADD_DEBUG_INSTANCE'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             instances[action.payload.instanceId] = {
                 instanceId: action.payload.instanceId,
-                debuggerAlive: true
+                debuggerAlive: true,
+                sessionData: 'initial',
             };
             return {
                 ...state,
-                instances: instances
+                instances: instances,
+                focussedInstance: instances.length === 1 ? 0 : state.focussedInstance
             }
         }
         case('REMOVE_DEBUG_INSTANCE'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             delete instances[action.payload.instanceId];
+            let focussed = instances.length === 0 ? -1 : state.focussedInstance;
+            if (focussed >= instances.length)
+                focussed = 0;
             return {
                 ...state,
-                instances: instances
+                instances: instances,
+                focussedInstance: focussed
             }
         }
         case('DEBUGGER_CONSOLE_STREAM'):
@@ -117,7 +145,7 @@ module.exports = function reducer(state={
             if (maybeInstance === undefined)
                 return state;
 
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
 
             if (instances[action.payload.instanceId].consoleStream === undefined)
                 instances[action.payload.instanceId].consoleStream = "";
@@ -129,7 +157,7 @@ module.exports = function reducer(state={
         }
         case('DEBUGGER_ADD_LIBRARY'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             if (instances[action.payload.instanceId] === undefined)
                 return state;
 
@@ -144,7 +172,7 @@ module.exports = function reducer(state={
         }
         case('DEBUGGER_ADD_THREAD'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             if (instances[action.payload.instanceId] === undefined)
                 return state;
 
@@ -159,7 +187,7 @@ module.exports = function reducer(state={
         }
         case('DEBUGGER_THREAD_EXIT'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             if (instances[action.payload.instanceId] === undefined)
                 return state;
 
@@ -179,7 +207,7 @@ module.exports = function reducer(state={
         }
         case('DEBUGGER_SET_PROCESS_LIFE'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             if (instances[action.payload.instanceId] === undefined)
                 return state;
 
@@ -192,7 +220,7 @@ module.exports = function reducer(state={
         }
         case('DEBUGGER_SET_ALIVE'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             if (instances[action.payload.instanceId] === undefined)
                 return state;
 
@@ -205,7 +233,7 @@ module.exports = function reducer(state={
         }
         case('DEBUGGER_SET_PROCESS_EXIT_CODE'):
         {
-            let instances = _.clone(state.instances);
+            let instances = _.cloneDeep(state.instances);
             if (instances[action.payload.instanceId] === undefined)
                 return state;
 
@@ -215,6 +243,55 @@ module.exports = function reducer(state={
                 ...state,
                 instances
             }
+        }
+        case('DEBUGGER_TOGGLE_BREAKPOINT'):
+        {
+            let sessionData = _.cloneDeep(state.sessionData);
+            let data = sessionData[action.payload.name]
+            if (data === undefined)
+                return state;
+
+            if (data.breakpoints === undefined || data.breakpoints === null)
+                data.breakpoints = []
+
+            let breakpointIndex = data.breakpoints.findIndex(element => {
+                return element.file === action.payload.file &&
+                       element.line === action.payload.line;
+            });
+
+            if (breakpointIndex === -1)
+                data.breakpoints.push({
+                    file: action.payload.file,
+                    line: action.payload.line
+                });
+            else
+                data.breakpoints.splice(breakpointIndex, 1);
+
+            sessionData[action.payload.name] = data;
+            return {
+                ...state,
+                sessionData
+            }
+        }
+        case('DEBUGGER_SET_FOCUSSED_INSTANCE'):
+        {
+            return {
+                ...state,
+                focussedInstance: state.instances.findIndex(instance => {
+                    return instance.instanceId === action.payload.instanceId;
+                })
+            }
+        }
+        case('DEBUGGER_ADD_SESSION_DATA'):
+        {
+            // TODO
+            return state;
+        }
+        case('DEBUGGER_REMOVE_SESSION_DATA'):
+        {
+            if (action.payload.name === state.defaultSessionDataInstance)
+                return state;
+            return state;
         }
         default:
             return state;
