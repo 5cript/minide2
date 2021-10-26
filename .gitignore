@@ -119,11 +119,11 @@ IDE2.workspace
 IDE2.workspace.layout
 app/.vscode
 
+.vscode/*
 build-*
+build/*
 app_backup
 frontend_
-x
-y
 libbacktrace
 debugger-interface
 lldb-mi
