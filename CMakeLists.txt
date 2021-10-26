@@ -4,6 +4,7 @@ project(minide2 VERSION 0.1.0)
 
 include(cmake/options.cmake)
 include(cmake/project_settings.cmake)
+include(cmake/packages.cmake)
 
 add_subdirectory(attender)
 add_subdirectory(automata)
