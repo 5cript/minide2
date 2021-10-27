@@ -2,9 +2,10 @@
 
 #include "filesystem/filesystem.hpp"
 #include "termination_handler.hpp"
-#include "log.hpp"
+#include "server/backend_control.hpp"
 
 #include <backend/config.hpp>
+#include <backend/log.hpp>
 #include <special-paths/special_paths.hpp>
 #include <attender/io_context/managed_io_context.hpp>
 #include <attender/io_context/thread_pooler.hpp>
@@ -34,8 +35,13 @@ int main()
             std::stringstream sstr;
             sstr << std::this_thread::get_id();
             LOG() << "Uncaught exception in thread " << sstr.str() << ": " << exc.what() << "\n";
+            std::exit(1);
         }
     };
+
+    BackendControl wsServer{context.get_io_service()};
+    wsServer.start(std::to_string(config.websocketPort));
+    std::cin.get();
 }
 
 void setupLog()

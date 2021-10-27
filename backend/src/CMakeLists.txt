@@ -11,6 +11,8 @@ add_executable(
     "backend/filesystem/filesystem.cpp"
     "backend/filesystem/home_directory.cpp"
     "backend/filesystem/relations.cpp"
+    "backend/server/backend_control.cpp"
+    "backend/server/frontend_user_session.cpp"
     "backend/settings/environment.cpp"
     "backend/log.cpp"
     "backend/public_settings.cpp"
