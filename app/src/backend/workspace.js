@@ -1,177 +1,101 @@
-import Router from './router'
+import ApiBase from './apibase'
 
 import sha256 from 'crypto-js/sha256';
 import CryptoJS from 'crypto-js';
+import * as Base64 from 'js-base64';
 
-class Workspace extends Router
+class Workspace extends ApiBase
 {
-    constructor(state, errorCallback)
+    constructor(state, errorCallback, writeMessage)
     {
-        super(state);
+        super(state, writeMessage);
         this.errorCallback = errorCallback;
     }
 
-    openWorkspace(path, onSuccess)
+    openWorkspace = async (path) =>
     {
-        let url = this.url("/api/workspace/open");
-        this.authFetch(
-            url, 
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    "id": this.dataId,
-                    "path": path
-                })
-            }
-        ).then(res => {
-            if (res.status >= 300) {
-                res.text().then((value) => {
-                    this.errorCallback(value);
-                });
-                return;
-            }
-            if (onSuccess)
-                onSuccess(path);
+        return this.writeMessage("/api/workspace/open", {
+            "id": this.dataId,
+            "path": path
         });
     }    
 
-    saveFile(path, content, onSuccess)
+    saveFile = async (path, content) =>
     {
-        let hash = sha256(content);
-        let json = JSON.stringify({path: path, sha256: hash.toString(CryptoJS.enc.Hex)});
-        let jsonLen = json.length.toString(16).toUpperCase();
-        jsonLen = "0x" + ("0000000" + jsonLen).slice(-8);
-        let payload = jsonLen + '|' + json + content;
-        
-        let url = this.url("/api/workspace/saveFile");
-        this.authFetch(
-            url,
-            {
-                method: 'PUT',
-                body: payload
-            }
-        ).then(res => {
-            if (res.status >= 300) {
-                res.text().then((value) => {
-                    this.errorCallback(value);
-                });
-                return;
-            }
-            if (res.status === 200 || res.status === 204)
-                onSuccess();
+        return this.writeMessage("/api/workspace/saveFile", {
+            path: path,
+            sha256: sha256(content).toString(CryptoJS.enc.Hex),
+            data: Base64.encode(content)
         });
     }
 
-    enumDirectory(path)
+    enumDirectory = async (path) =>
     {
-        this.postJson(this.url("/api/workspace/enlist"), {
+        return this.writeMessage("/api/workspace/enlist", {
             path: path
         });
     }
 
-    createFile(path, onFailure)
+    createFile = async (path, onFailure) =>
     {
-        this.saveFile(path, '', () => {
-            this.loadFile(path, undefined, fail => {
-                if (onFailure)
-                    onFailure(this.tryParseJson(fail));
-            });
+        return this.saveFile(path, '').then(() => {
+            return this.loadFile(path, undefined);
         })
     }
 
-    loadFile(path, optionalFlag, onFailure)
+    loadFile = async (path, optionalFlag) =>
     {
         const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
             ? optionalFlag
             : undefined
         ;
-        this.postJson(
-            this.url("/api/workspace/loadFile"), 
-            {
-                path: path,
-                flag: flag
-            }, 
-            ()=>{}, 
-            fail => {
-                // assuming json, if it looks like json
-                if (onFailure)
-                    onFailure(this.tryParseJson(fail));
-            }
-        );
-    }
-
-    deleteFile(path)
-    {
-        this.postJson(this.url("/api/workspace/deleteFile"), {
-            path: path
-        });
-    }
-
-    loadProjectMetafile(onSuccess, onFailure)
-    {
-        this.get
-        (
-            this.url("/api/workspace/loadProjectMeta"), 
-            (res) => 
-            {
-                if (onSuccess)
-                    res.json().then(json => {
-                        onSuccess(json);
-                    }).catch(fail => {
-                        onFailure(fail);
-                    });
-            },
-            (failInfo) => 
-            {
-                if (onFailure)
-                    onFailure(failInfo);
-            }
-        )
-    }
-
-    injectProjectSettings(settings)
-    {
-        this.postJson(this.url("/api/workspace/changeProjectMeta"), settings);
-    }
-
-    toggleSourceHeader(path, optionalFlag)
-    {
-        const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
-            ? optionalFlag
-            : undefined
-        ;
-        this.postJson(this.url("/api/workspace/toggleSourceHeader"), {
+        return this.writeMessage("/api/workspace/loadFile", {
             path: path,
             flag: flag
         });
     }
 
-    setActiveProject(path, onSuccess)
+    deleteFile = async (path) =>
     {
-        this.postJson(this.url("/api/workspace/setActiveProject"), {
+        return this.writeMessage("/api/workspace/deleteFile", {
             path: path
-        }, onSuccess);
+        });
     }
 
-    loadRunConfig(onLoad, onError)
+    loadProjectMetafile = async () =>
     {
-        this.get(
-            this.url("/api/workspace/getRunConfigs"), 
-            response => {
-                response.json().then(json => {
-                    onLoad(json);
-                }).catch(err => {
-                    onError(err);
-                })
-            },
-            err => {
-                onError(err);
-            }
-        )
+        return this.writeMessage("/api/workspace/loadProjectMeta");
+    }
+
+    injectProjectSettings = async (settings) =>
+    {
+        return this.writeMessage("/api/workspace/changeProjectMeta", {
+            settings: settings
+        })
+    }
+
+    toggleSourceHeader = async (path, optionalFlag) =>
+    {
+        const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
+            ? optionalFlag
+            : undefined
+        ;
+        return this.writeMessage("/api/workspace/toggleSourceHeader", {
+            path: path,
+            flag: flag
+        });
+    }
+
+    setActiveProject = async (path) =>
+    {
+        return this.writeMessage("/api/workspace/setActiveProject", {
+            path: path
+        });
+    }
+
+    loadRunConfig = async () =>
+    {
+        return this.writeMessage("/api/workspace/getRunConfigs");
     }
 }
 

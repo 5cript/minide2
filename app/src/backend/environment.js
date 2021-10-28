@@ -1,21 +1,23 @@
-import Router from './router'
+import ApiBase from './apibase'
 
-class Environment extends Router
+class Environment extends ApiBase
 {
-    constructor(state, errorCallback)
+    constructor(state, errorCallback, writeMessage)
     {
-        super(state);
+        super(state, writeMessage);
         this.errorCallback = errorCallback;
     }
 
-    loadAll(onSuccess, onError)
-    {        
-        this.getJsonWithCallbacks("/api/settings/environment/load", onSuccess, onError);
+    loadAll = async () =>
+    {       
+        return this.writeMessage("/api/settings/environment/load");
     }
 
-    saveAll(environments, onSuccess, onError)
+    saveAll = async (environments) =>
     {
-        this.postJson(this.url("/api/settings/environment/save"), {'environments': environments}, onSuccess, onError);
+        return this.writeMessage("/api/settings/environment/save", {
+            'environments': environments
+        });
     }
 }
 

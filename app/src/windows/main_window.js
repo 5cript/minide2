@@ -233,9 +233,8 @@ function createWindow()
 		mainWindow.webContents.send('preferences', preferences);
 		mainWindow.webContents.send('setBackend', {
 			ip: preferences.backend.host,
-			port: preferences.backend.port,
-			controlPort: preferences.backend.controlPort,
-			dataPort: preferences.backend.dataPort,
+			httpPort: preferences.backend.httpPort,
+			websocketPort: preferences.backend.websocketPort,
 			autoConnect: preferences.backend.autoConnect
 		});
 	});

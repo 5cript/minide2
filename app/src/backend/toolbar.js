@@ -1,83 +1,64 @@
-import Router from './router';
+import Router from './apibase';
 
 class ToolbarApi extends Router
 {
-    constructor(state, errorCallback)
+    constructor(state, errorCallback, writeMessage)
     {
-        super(state);
+        super(state, writeMessage);
         this.errorCallback = errorCallback;
     }
 
-    loadAll(onSuccess)
+    loadAll = async () =>
     {
-        this.postJson(this.url("/api/toolbar/loadAll"), {
-        }, onSuccess);
+        return this.writeMessage("/api/toolbar/loadAll");
     }
 
-    callAction(toolbarId, itemId, onSuccess)
+    callAction = async (toolbarId, itemId) =>
     {
-        this.postJson(this.url("/api/toolbar/callAction"), {
+        return this.writeMessage("/api/toolbar/callAction", {
             toolbarId: toolbarId,
             itemId: itemId
-        }, (result) => {
-            result.json().then(json => {
-                if (onSuccess)
-                    onSuccess(json);
-            }).catch(err => {
-                console.error('action result should have been json', err);
-            })
-        }, (err) => {
-            console.error(err);
-        })
+        });
     }
 
-    cancelAction(toolbarId, itemId, force, onSuccess)
+    cancelAction = async (toolbarId, itemId, force) =>
     {
-        this.postJson(this.url("/api/toolbar/cancelAction"), {
+        return this.writeMessage("/api/toolbar/cancelAction", {
             toolbarId: toolbarId,
             itemId: itemId,
             force: force
-        }, (result) => {
-            result.json().then(json => {
-                if (onSuccess)
-                    onSuccess(json);
-            }).catch(err => {
-                console.error('cancel result should have been json', err);
-            })
-        }, (err) => {
-            console.error(err);
-        })
+        });
     }
 
-    menuAction(toolbarId, itemId, label)
+    menuAction = async (toolbarId, itemId, label) =>
     {
-        this.postJson(this.url("/api/toolbar/menuAction"), {
+        return this.writeMessage("/api/toolbar/menuAction", {
             toolbarId: toolbarId,
             itemId:  itemId,
             menuEntryLabel: label
-        })
+        });
     }
 
-    loadCombobox(toolbarId, itemId)
+    loadCombobox = async (toolbarId, itemId) =>
     {
-        this.postJson(this.url("/api/toolbar/loadCombobox"), {
+        return this.writeMessage("/api/toolbar/loadCombobox", {
             toolbarId: toolbarId,
             itemId: itemId
-        })
+        });
     }
 
-    comboxSelect(toolbarId, itemId, selected)
+    comboxSelect = async (toolbarId, itemId, selected) =>
     {
-        this.postJson(this.url("/api/toolbar/comboboxSelect"), {
+        return this.writeMessage("/api/toolbar/comboboxSelect", {
             toolbarId: toolbarId,
             itemId: itemId,
             selected: selected
         })
     }
 
-    logDoubleClick(toolbarId, logName, lineNumber, lineString)
+    logDoubleClick = async (toolbarId, logName, lineNumber, lineString) =>
     {
-        this.postJson(this.url("/api/toolbar/logDoubleClick"), {
+        return this.writeMessage("/api/toolbar/logDoubleClick", {
             toolbarId: toolbarId,
             logName: logName,
             lineNumber: lineNumber,

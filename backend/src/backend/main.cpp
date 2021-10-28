@@ -34,13 +34,14 @@ int main()
         {
             std::stringstream sstr;
             sstr << std::this_thread::get_id();
-            LOG() << "Uncaught exception in thread " << sstr.str() << ": " << exc.what() << "\n";
+            LOG() << "Uncaught exception in thread " << sstr.str() << ": " << exc.what() << ".\n";
             std::exit(1);
         }
     };
 
-    BackendControl wsServer{context.get_io_service()};
-    wsServer.start(std::to_string(config.websocketPort));
+    std::shared_ptr<BackendControl> wsServer = std::make_shared<BackendControl>(context.get_io_service());
+    wsServer->start(std::to_string(config.websocketPort));
+    LOG() << "Running ws server on " << config.websocketPort << ".\n";
     std::cin.get();
 }
 
@@ -64,7 +65,7 @@ void setupLog()
         logPath(),
         10
     );
-    LOG() << "Build Time and Date: " << __DATE__ << " " << __TIME__ << '\n';
+    LOG() << "Build Time and Date: " << __DATE__ << " " << __TIME__ << '.\n';
 }
 
 void setupSignalHandler()

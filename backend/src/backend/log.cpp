@@ -4,6 +4,7 @@
 #include <chrono>
 #include <sstream>
 #include <cstdio>
+#include <iostream>
 
 //#####################################################################################################################
 static Logger logger;
@@ -94,69 +95,46 @@ Logger& LogProxy::log()
 {
     return logger;
 }
-//---------------------------------------------------------------------------------------------------------------------
-void LogProxy::disable()
-{
-    disabled_ = true;
-}
-//---------------------------------------------------------------------------------------------------------------------
-LogProxy::~LogProxy()
-{
-    //if (!disabled_)
-        //logger.write('\n');
-}
 //#####################################################################################################################
 LogProxy logImpl(char const* file, char const* func, int line, bool stamp)
 {
     if (stamp)
         logger.stamp(file, func, line);
-    auto proxy = LogProxy{};
     return {};
 }
 //---------------------------------------------------------------------------------------------------------------------
-LogProxy&& operator<<(LogProxy&& proxy, std::ios_base&(*manip)(std::ios_base&))
+LogProxy operator<<(LogProxy&& proxy, std::ios_base&(*manip)(std::ios_base&))
 {
     logger.manipulate(manip);
-    return std::move(proxy);
+    return proxy;
 }
 //---------------------------------------------------------------------------------------------------------------------
-LogProxy&& operator<<(LogProxy&& proxy, std::_Setw)
+LogProxy operator<<(LogProxy&& proxy, std::_Setw)
 {
-    return std::move(proxy);
+    return proxy;
 }
 //---------------------------------------------------------------------------------------------------------------------
-LogProxy&& operator<<(LogProxy&& proxy, std::string const& value)
-{
-    logger.write(value);
-    return std::move(proxy);
-}
-//---------------------------------------------------------------------------------------------------------------------
-LogProxy&& operator<<(LogProxy&& proxy, char value)
+LogProxy operator<<(LogProxy&& proxy, std::string const& value)
 {
     logger.write(value);
-    if (value == '\n')
-        proxy.disable();
-    return std::move(proxy);
+    return proxy;
 }
 //---------------------------------------------------------------------------------------------------------------------
-LogProxy&& operator<<(LogProxy&& proxy, std::string_view const& value)
+LogProxy operator<<(LogProxy&& proxy, char value)
 {
     logger.write(value);
-    return std::move(proxy);
+    return proxy;
 }
 //---------------------------------------------------------------------------------------------------------------------
-LogProxy&& operator<<(LogProxy&& proxy, char const* value)
+LogProxy operator<<(LogProxy&& proxy, std::string_view const& value)
 {
-    if (strcmp(value, "\n") == 0)
-    {
-        logger.write('\n');
-        proxy.disable();
-        return std::move(proxy);
-    }
-    else
-    {
-        logger.write(value);
-        return std::move(proxy);
-    }
+    logger.write(value);
+    return proxy;
+}
+//---------------------------------------------------------------------------------------------------------------------
+LogProxy operator<<(LogProxy&& proxy, char const* value)
+{
+    logger.write(value);
+    return proxy;
 }
 //#####################################################################################################################

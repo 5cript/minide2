@@ -22,10 +22,9 @@ import {
     setConnected, 
     setConnectMessage, 
     setTryingToConnect, 
-    setBackendPort, 
     setBackendIp, 
-    setBackendControlPort, 
-    setBackendDataPort
+    setBackendHttpPort, 
+    setBackendWebsocketPort
 } from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
 import {addToLog, clearLog, focusLogByName, setLogType, moveLogs} from '../../actions/log_actions.js';
@@ -127,13 +126,11 @@ class MainWindow extends React.Component
         (
             props.store,
             // Control Callback
-            (...args) => {this.onControlStream(...args);}, 
-            // Data Callback
-            (...args) => {this.onDataStream(...args);}, 
+            (...args) => {this.onMessage(...args);}, 
+            // on Connection Loss
+            (...args) => {this.onConnectionLoss(...args);},
             // Error Callback
             (...args) => {this.onStreamError(...args);},
-            // on Connection Loss
-            (...args) => {this.onConnectionLoss(...args);}
         );
         
         this.debugController = new DebugController(this.backend, props.store);
@@ -145,6 +142,11 @@ class MainWindow extends React.Component
             this.backend,
             this.debugController
         );
+        
+        this.connectToBackend = _.debounce(() => {
+            this.props.dispatch(setTryingToConnect(true));
+            this.backend.authenticate().then(_ => this.backend.connect());
+        }, 300)
     }
 
     isShortcut(event, shortcutDefinition)
@@ -275,7 +277,7 @@ class MainWindow extends React.Component
         }
     }
 
-    onControlStream(head, data)
+    onMessage(head, data)
     {
         try
         {
@@ -284,10 +286,6 @@ class MainWindow extends React.Component
             else if (head.type === "rejected_authentication")
             {
                 console.log('control stream authentication rejected');
-            }
-            else if (head.type === "authentication_accepted")
-            {
-                this.backend.readData();
             }
             else if (head.type === "lua_rpc")
             {
@@ -440,36 +438,6 @@ class MainWindow extends React.Component
                     }
                 );
             }
-            else
-            {
-                // Unhandled:
-                console.log(head);
-            }
-        }
-        catch(e)
-        {
-            console.error(e);
-        }
-    }
-
-    callOnEditor = (fn) => 
-    {
-        console.log(this.editor);
-        if (this.editor)
-        {
-            const monaco = this.editor.getMonaco();
-            console.log(monaco);
-            if (monaco)
-            {
-                fn(monaco);
-            }
-        }
-    }
-
-    onDataStream(head, data)
-    {
-        try
-        {
             if (head.type === undefined || head.type === null) 
             {
                 console.error("backend didn't send a message type. notify this to the backend dev");
@@ -516,10 +484,29 @@ class MainWindow extends React.Component
                 })
                 this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
             }
+            else
+            {
+                // Unhandled:
+                console.log(head);
+            }
         }
         catch(e)
         {
             console.error(e);
+        }
+    }
+
+    callOnEditor = (fn) => 
+    {
+        console.log(this.editor);
+        if (this.editor)
+        {
+            const monaco = this.editor.getMonaco();
+            console.log(monaco);
+            if (monaco)
+            {
+                fn(monaco);
+            }
         }
     }
 
@@ -554,10 +541,6 @@ class MainWindow extends React.Component
 
     registerIpcHandler = () => 
     {
-        this.debouncedStart = _.debounce(() => {
-            this.backend.authenticate(() => {this.backend.readControl()});
-        }, 300)
-
         ipcRenderer.on('openWorkspace', (event, arg) => 
         {
             if (arg.canceled)
@@ -600,18 +583,17 @@ class MainWindow extends React.Component
 
         ipcRenderer.on('setBackend', (event, arg) =>
         {
+            console.log(arg);
             this.props.dispatch(setBackendIp(arg.ip));
-            this.props.dispatch(setBackendPort(arg.port));
-            this.props.dispatch(setBackendControlPort(arg.controlPort));
-            this.props.dispatch(setBackendDataPort(arg.dataPort));
+            this.props.dispatch(setBackendHttpPort(arg.httpPort));
+            this.props.dispatch(setBackendWebsocketPort(arg.websocketPort));
             if (arg.autoConnect && this.props.backend.connected === false)
-                this.debouncedStart()
+                this.connectToBackend()
         })
 
         ipcRenderer.on('connectBackend', (event, arg) => 
         {
-            this.props.dispatch(setTryingToConnect(true));
-            this.backend.authenticate(() => {this.backend.readControl()});
+            this.connectToBackend();
         })
         
         ipcRenderer.on('testBackend', (event, arg) => 

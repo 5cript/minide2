@@ -1,8 +1,7 @@
 module.exports = function reducer(state={
     ip: '',
-    port: 0,
-    controlPort: 0,
-    dataPort: 0,
+    httpPort: 0,
+    websocketPort: 0,
     connected: false,
     connectMessage: '',
     sessionId: '',
@@ -14,14 +13,11 @@ module.exports = function reducer(state={
         case 'SET_IP': {
             return {...state, ip: action.payload.ip}
         }
-        case 'SET_PORT': {
-            return {...state, port: action.payload.port}
+        case 'SET_HTTP_PORT': {
+            return {...state, httpPort: action.payload.port}
         }
-        case 'SET_CONTROL_PORT': {
-            return {...state, controlPort: action.payload.port}
-        }
-        case 'SET_DATA_PORT': {
-            return {...state, dataPort: action.payload.port}
+        case 'SET_WEBSOCKET_PORT': {
+            return {...state, websocketPort: action.payload.port}
         }
         case 'SET_CONNECTION_STATUS': {
             if (action.payload.connected === true)

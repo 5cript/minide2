@@ -1,80 +1,35 @@
-import Router from './router'
+import ApiBase from './apibase'
 
-class DebuggerRouter extends Router
+class DebuggerRouter extends ApiBase
 {
-    constructor(state, errorCallback)
+    constructor(state, errorCallback, writeMessage)
     {
-        super(state);
+        super(state, writeMessage);
         this.errorCallback = errorCallback;
     }
 
-    startDebugger(runProfile)
+    startDebugger = async (runProfile) =>
     {
-        return new Promise((resolve, reject) => {
-            this.postJson(
-                this.url("/api/debugger/createInstance"), 
-                {
-                    runProfile: runProfile
-                },
-                response => {
-                    response.json().then(json => {
-                        resolve(json);
-                    }).catch(err => {
-                        reject({
-                            message: 'createInstance result should have been json', 
-                            error: err
-                        });
-                    })
-                },
-                err => {
-                    reject(err);
-                }
-            );
+        return this.writeMessage("/api/debugger/createInstance", {
+            runProfile: runProfile
         });
     }
 
-    sendCommand({instanceId, command, params, token, options}) 
+    sendCommand = async ({instanceId, command, params, token, options}) =>
     {
-        let commandObj = {instanceId, command: {operation: command}};
-        if (token)
-            commandObj.command.token = token;
-        if (params)
-            commandObj.command.params = params;
-        if (options)
-            commandObj.command.options = options;
-
-        console.log(commandObj)
-
-        return new Promise((resolve, reject) => {
-            this.postJson(
-                this.url("/api/debugger/command"),
-                commandObj,
-                response => {
-                    resolve();
-                },
-                err => {
-                    reject(err);
-                }
-            );
-        })
+        return this.writeMessage("/api/debugger/command", {
+            instanceId, command: {
+                operation: command,
+                token: token,
+                params: params,
+                options: options
+            }
+        });
     }
 
-    sendRawCommand({instanceId, command}) 
+    sendRawCommand = async ({instanceId, command}) =>
     {
-        let commandObj = {instanceId, command};
-
-        return new Promise((resolve, reject) => {
-            this.postJson(
-                this.url("/api/debugger/rawCommand"),
-                commandObj,
-                response => {
-                    resolve();
-                },
-                err => {
-                    reject(err);
-                }
-            );
-        })
+        return this.writeMessage("/api/debugger/rawCommand", {instanceId, command});
     }
 }
 

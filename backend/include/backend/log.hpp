@@ -6,8 +6,7 @@
 #include <string>
 #include <utility>
 #include <string_view>
-
-#include <boost/optional.hpp>
+#include <optional>
 
 class Logger
 {
@@ -64,30 +63,22 @@ class LogProxy
 public:
     Logger& log();
 
-    /**
-     *  Do not print endline anymore.
-     **/
-    void disable();
-
     LogProxy() = default;
-    ~LogProxy();
+    ~LogProxy() = default;
 
     LogProxy& operator=(LogProxy const&) = delete;
     LogProxy(LogProxy const&) = delete;
 
     LogProxy(LogProxy&&) = default;
     LogProxy& operator=(LogProxy&&) = default;
-
-private:
-    bool disabled_;
 };
 
-LogProxy&& operator<<(LogProxy&& proxy, std::string const& value);
-LogProxy&& operator<<(LogProxy&& proxy, std::string_view const& value);
-LogProxy&& operator<<(LogProxy&& proxy, char value);
-LogProxy&& operator<<(LogProxy&& proxy, char const* value);
-LogProxy&& operator<<(LogProxy&& proxy, std::ios_base&(*manip)(std::ios_base&));
-LogProxy&& operator<<(LogProxy&& proxy, std::_Setw);
+LogProxy operator<<(LogProxy&& proxy, std::string const& value);
+LogProxy operator<<(LogProxy&& proxy, std::string_view const& value);
+LogProxy operator<<(LogProxy&& proxy, char value);
+LogProxy operator<<(LogProxy&& proxy, char const* value);
+LogProxy operator<<(LogProxy&& proxy, std::ios_base&(*manip)(std::ios_base&));
+LogProxy operator<<(LogProxy&& proxy, std::_Setw);
 
 template <
     typename T,
@@ -96,14 +87,14 @@ template <
         !std::is_enum<T>::value
     >::type
 >
-LogProxy&& operator<<(LogProxy&& proxy, T value)
+LogProxy operator<<(LogProxy&& proxy, T value)
 {
     proxy.log().write(value);
-    return std::move(proxy);
+    return proxy;
 }
 
 template <typename T>
-LogProxy&& operator<<(LogProxy&& proxy, boost::optional <T> const& opt)
+LogProxy operator<<(LogProxy&& proxy, std::optional <T> const& opt)
 {
     if (opt)
         return operator<<(std::move(proxy), opt.get());
