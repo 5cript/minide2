@@ -42,7 +42,7 @@ module.exports = function reducer(state = initialState, action)
     {
         case 'OPEN_WORKSPACE': 
         {
-            return {...state, root: action.payload.payload}
+            return {...state, root: action.payload.path}
         }
         case 'SET_HOVERED_NODE': 
         {

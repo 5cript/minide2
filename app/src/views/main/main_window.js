@@ -145,8 +145,34 @@ class MainWindow extends React.Component
         
         this.connectToBackend = _.debounce(() => {
             this.props.dispatch(setTryingToConnect(true));
-            this.backend.authenticate().then(_ => this.backend.connect());
+            this.backend.connect().then(() => {
+                this.backend.authenticate().then((authResponse) => {
+                    this.props.dispatch(setConnected(authResponse.authenticated));
+                    if (authResponse.authenticated)
+                        this.onAuthenticationSuccess();
+                });
+            });
         }, 300)
+    }
+
+    onAuthenticationSuccess = () =>
+    {
+        if (this.props.preferences.backend.autoLoadLastProject)
+        {
+            const lastWorkspace = this.persistence.getLastWorspace(this.currentHost());
+            if (lastWorkspace)
+            {
+                this.backend.workspace().openWorkspace(lastWorkspace).then((response) => {
+                    console.log(response);
+                });
+                /*
+                this.backend.workspace().setActiveProject(lastActive).then(() => {
+                    this.props.dispatch(setActiveProject(lastActive))
+                    this.onActiveProjectChange(lastActive);
+                });
+                */
+            }
+        }
     }
 
     isShortcut(event, shortcutDefinition)
@@ -191,6 +217,7 @@ class MainWindow extends React.Component
 
     handleTreeUpdates(head, data)
     {
+        /*
         let firstLoad = false
         if (_.isEmpty(this.props.workspaceRoot))
         {
@@ -201,7 +228,9 @@ class MainWindow extends React.Component
         {
             this.props.dispatch(setFileTreeBranch(head.origin, head.tree.files, head.tree.directories));
         }
+        */
 
+        /*
         if (firstLoad && this.props.preferences.backend.autoLoadLastProject)
         {
             const lastActive = this.persistence.getLastActive(this.currentHost());
@@ -215,6 +244,7 @@ class MainWindow extends React.Component
                 });
             }
         }
+        */
     }
 
     initToolbars = (json) =>
@@ -243,258 +273,260 @@ class MainWindow extends React.Component
 
     showProjectSettigns({settingsFile})
     {
+        /*
         if (this.props.activeProject === undefined || this.props.activeProject === null || this.props.activeProject === '')
             return this.showOkBox(this.dict.translate("$NoActiveProject", "dialog"));
         if (this.props.workspaceRoot === undefined || this.props.workspaceRoot === null || this.props.workspaceRoot === '')
             return;
 
         this.backend.workspace().loadFile(this.props.activeProject + "/.minIDE/" + settingsFile, "projectSettings");
+        */
     }
 
-    handleLuaRpc(func, data)
-    {
-        switch (func)
-        {
-            case('showProjectSettings'):
-                return this.showProjectSettigns(data);
-            case('setComboboxData'):
-                return this.toolbar.comboboxLoaded(
-                    data.toolbarId,
-                    data.itemId,
-                    data.items
-                )
-            case('actionCompleted'):
-            {
-                if (this.toolbar)
-                {
-                    this.toolbar.setItemNotRunning(data.toolbarId, data.itemId);
-                }
+    // handleLuaRpc(func, data)
+    // {
+    //     switch (func)
+    //     {
+    //         case('showProjectSettings'):
+    //             return this.showProjectSettigns(data);
+    //         case('setComboboxData'):
+    //             return this.toolbar.comboboxLoaded(
+    //                 data.toolbarId,
+    //                 data.itemId,
+    //                 data.items
+    //             )
+    //         case('actionCompleted'):
+    //         {
+    //             if (this.toolbar)
+    //             {
+    //                 this.toolbar.setItemNotRunning(data.toolbarId, data.itemId);
+    //             }
 
-                break;
-            }
-            default:
-                return;
-        }
-    }
+    //             break;
+    //         }
+    //         default:
+    //             return;
+    //     }
+    // }
 
-    onMessage(head, data)
-    {
-        try
-        {
-            if (head.type === "keep_alive")
-            {}
-            else if (head.type === "rejected_authentication")
-            {
-                console.log('control stream authentication rejected');
-            }
-            else if (head.type === "lua_rpc")
-            {
-                this.handleLuaRpc(head.functionName, JSON.parse(head.data))
-            }
-            else if (head.type === "debugger")
-            {
-                this.debugController.onMessage(head);
-            }
-            else if (head.type === "lua_process")
-            {
-                if (head.message === "\x1b[2J")
-                {
-                    this.props.dispatch(setLogType(head.processName, head.kind));
-                    this.props.dispatch(clearLog(head.processName));
-                    this.props.dispatch(focusLogByName(head.processName));
-                }
-                else
-                    this.props.dispatch(addToLog(head.processName, head.message));
-            }
-            else if (head.type === "lua_process_info")
-            {
-                const info = JSON.parse(head.data);
-                if (info.what === "processEnded")
-                {
-                    let message = head.processName + " " + this.dict.translate("$ProcessEnded", "lua") + " " + info.status + "\n";
-                    this.props.dispatch(addToLog(head.processName, message));
-                }
-                else if (info.what === "processStartFailure")
-                {
-                    let message = head.processName + " " + this.dict.translate("$ProcessStartFail", "lua") + " " + info.error + "\n";
-                    this.props.dispatch(addToLog(head.processName, message));
-                    if (info.error === 2)
-                        this.props.dispatch(addToLog(head.processName, this.dict.translate("$ProcessNotFound", "lua") + "\n"));
-                    if (info.command !== undefined)
-                        this.props.dispatch(addToLog(head.processName, info.command));
-                }
-            }
-            else if (head.type === "create_input_form")
-            {
-                console.log(head.specs);
-                const spec = JSON.parse(head.specs);
-                console.log(spec);
+    // onMessage(head, data)
+    // {
+    //     try
+    //     {
+    //         if (head.type === "keep_alive")
+    //         {}
+    //         else if (head.type === "rejected_authentication")
+    //         {
+    //             console.log('control stream authentication rejected');
+    //         }
+    //         else if (head.type === "lua_rpc")
+    //         {
+    //             this.handleLuaRpc(head.functionName, JSON.parse(head.data))
+    //         }
+    //         else if (head.type === "debugger")
+    //         {
+    //             this.debugController.onMessage(head);
+    //         }
+    //         else if (head.type === "lua_process")
+    //         {
+    //             if (head.message === "\x1b[2J")
+    //             {
+    //                 this.props.dispatch(setLogType(head.processName, head.kind));
+    //                 this.props.dispatch(clearLog(head.processName));
+    //                 this.props.dispatch(focusLogByName(head.processName));
+    //             }
+    //             else
+    //                 this.props.dispatch(addToLog(head.processName, head.message));
+    //         }
+    //         else if (head.type === "lua_process_info")
+    //         {
+    //             const info = JSON.parse(head.data);
+    //             if (info.what === "processEnded")
+    //             {
+    //                 let message = head.processName + " " + this.dict.translate("$ProcessEnded", "lua") + " " + info.status + "\n";
+    //                 this.props.dispatch(addToLog(head.processName, message));
+    //             }
+    //             else if (info.what === "processStartFailure")
+    //             {
+    //                 let message = head.processName + " " + this.dict.translate("$ProcessStartFail", "lua") + " " + info.error + "\n";
+    //                 this.props.dispatch(addToLog(head.processName, message));
+    //                 if (info.error === 2)
+    //                     this.props.dispatch(addToLog(head.processName, this.dict.translate("$ProcessNotFound", "lua") + "\n"));
+    //                 if (info.command !== undefined)
+    //                     this.props.dispatch(addToLog(head.processName, info.command));
+    //             }
+    //         }
+    //         else if (head.type === "create_input_form")
+    //         {
+    //             console.log(head.specs);
+    //             const spec = JSON.parse(head.specs);
+    //             console.log(spec);
 
-                let schema = {};
+    //             let schema = {};
 
-                schema.categories = spec.categories.map(category => {
-                    return {
-                        id: category.id,
-                        caption: this.dict.translate(category.label, spec.dictionary),
-                        borderColor: category.border_color
-                    }
-                })
-                schema.fields = spec.fields.map(field => {
-                    let type = field.type;
-                    if (type === "text")
-                        type = "input";
-                    return {
-                        key: field.id,
-                        label: this.dict.translate(field.label, spec.dictionary),
-                        type: type,
-                        category: field.category
-                    }
-                })
-                this.setState({inputForm: schema, inputFormEnvs: spec.environments ? spec.environments : []});
-            }
-            else if (head.type === "toggle_source_header")
-            {
-                const checkProjectSettings = (onSplitWasDecided, onLocalWasDecided) => 
-                {
-                    this.backend.workspace().loadProjectMetafile
-                    (
-                        options => 
-                        {
-                            if ((head.specialDirExists || head.specialDirFile !== "") && options.splitSourceAndInclude !== true && options.ignoreSeemingSplit !== true) 
-                            {
-                                this.showYesNoBox(this.dict.translate('$LooksLikeSourceSplitButNotConfigured', 'project'), 
-                                    () => // yes, want to split
-                                    {
-                                        this.backend.workspace().injectProjectSettings({
-                                            splitSourceAndInclude: true,
-                                            ignoreSeemingSplit: false
-                                        });
-                                        onSplitWasDecided();
-                                    },
-                                    () => // no, dont want split
-                                    {
-                                        this.backend.workspace().injectProjectSettings({
-                                            splitSourceAndInclude: false,
-                                            ignoreSeemingSplit: true
-                                        });
-                                        onLocalWasDecided();
-                                    }
-                                );
-                            }
-                            else if (options.splitSourceAndInclude !== true && options.ignoreSeemingSplit === true)
-                            {
-                                onLocalWasDecided();
-                            }
-                            else if (options.splitSourceAndInclude === true && head.specialDirFile !== "")
-                            {
-                                onSplitWasDecided();
-                            }
-                            else if (head.specialDirFile === "" || !head.fileInSpecialDir)
-                            {
-                                onLocalWasDecided();
-                            }
-                            else
-                            {
-                                this.showOkBox('implementation_error, uncaught variation in file split decision:\n' + JSON.stringify(options) + "\n" + JSON.stringify(head));
-                                console.error('implementation_error, uncaught variation in file split decision', options, head);
-                            }
-                        }, 
-                        error => 
-                        {
-                            console.error(JSON.stringify(error));
-                        }
-                    )
-                };
+    //             schema.categories = spec.categories.map(category => {
+    //                 return {
+    //                     id: category.id,
+    //                     caption: this.dict.translate(category.label, spec.dictionary),
+    //                     borderColor: category.border_color
+    //                 }
+    //             })
+    //             schema.fields = spec.fields.map(field => {
+    //                 let type = field.type;
+    //                 if (type === "text")
+    //                     type = "input";
+    //                 return {
+    //                     key: field.id,
+    //                     label: this.dict.translate(field.label, spec.dictionary),
+    //                     type: type,
+    //                     category: field.category
+    //                 }
+    //             })
+    //             this.setState({inputForm: schema, inputFormEnvs: spec.environments ? spec.environments : []});
+    //         }
+    //         else if (head.type === "toggle_source_header")
+    //         {
+    //             const checkProjectSettings = (onSplitWasDecided, onLocalWasDecided) => 
+    //             {
+    //                 this.backend.workspace().loadProjectMetafile
+    //                 (
+    //                     options => 
+    //                     {
+    //                         if ((head.specialDirExists || head.specialDirFile !== "") && options.splitSourceAndInclude !== true && options.ignoreSeemingSplit !== true) 
+    //                         {
+    //                             this.showYesNoBox(this.dict.translate('$LooksLikeSourceSplitButNotConfigured', 'project'), 
+    //                                 () => // yes, want to split
+    //                                 {
+    //                                     this.backend.workspace().injectProjectSettings({
+    //                                         splitSourceAndInclude: true,
+    //                                         ignoreSeemingSplit: false
+    //                                     });
+    //                                     onSplitWasDecided();
+    //                                 },
+    //                                 () => // no, dont want split
+    //                                 {
+    //                                     this.backend.workspace().injectProjectSettings({
+    //                                         splitSourceAndInclude: false,
+    //                                         ignoreSeemingSplit: true
+    //                                     });
+    //                                     onLocalWasDecided();
+    //                                 }
+    //                             );
+    //                         }
+    //                         else if (options.splitSourceAndInclude !== true && options.ignoreSeemingSplit === true)
+    //                         {
+    //                             onLocalWasDecided();
+    //                         }
+    //                         else if (options.splitSourceAndInclude === true && head.specialDirFile !== "")
+    //                         {
+    //                             onSplitWasDecided();
+    //                         }
+    //                         else if (head.specialDirFile === "" || !head.fileInSpecialDir)
+    //                         {
+    //                             onLocalWasDecided();
+    //                         }
+    //                         else
+    //                         {
+    //                             this.showOkBox('implementation_error, uncaught variation in file split decision:\n' + JSON.stringify(options) + "\n" + JSON.stringify(head));
+    //                             console.error('implementation_error, uncaught variation in file split decision', options, head);
+    //                         }
+    //                     }, 
+    //                     error => 
+    //                     {
+    //                         console.error(JSON.stringify(error));
+    //                     }
+    //                 )
+    //             };
 
-                const openFile = (correspondingFile) => 
-                {
-                    const fileIfOpen = this.props.openFiles.findIndex(file => file.path === correspondingFile)
-                    if (fileIfOpen !== -1)
-                        this.props.dispatch(setActiveFile(fileIfOpen));
-                    else
-                        this.backend.workspace().loadFile(correspondingFile, undefined, fail => 
-                        {
-                            if (fail.fileNotFound === true) 
-                            {
-                                this.showYesNoBox(this.dict.translate('$FileNotFoundShallCreate', 'project') + "\n" + fail.path, () => 
-                                {
-                                    this.backend.workspace().createFile(correspondingFile, createFail => 
-                                    {
-                                        this.showOkBox(this.dict.translate('$CouldNotCreateFile', 'project') + "\n" + createFail)
-                                    })
-                                });
-                            }
-                            else 
-                                this.showOkBox('Error: ' + fail);
-                        });
-                }
-                checkProjectSettings
-                (
-                    () => {/* split decided */
-                        openFile(head.specialDirFile);
-                    },
-                    () => {/* local decided */
-                        openFile(head.inplaceFile);
-                    }
-                );
-            }
-            if (head.type === undefined || head.type === null) 
-            {
-                console.error("backend didn't send a message type. notify this to the backend dev");
-                return;
-            }
-            else if (head.type === "rejected_authentication")
-            {
-                console.log('data stream authentication rejected');
-            }
-            else if (head.type === "authentication_accepted")
-            {
-                this.props.dispatch(setConnected(true));
-                this.backend.toolbar().loadAll(res => {
-                    res.json().then(json => {
-                        this.initToolbars(json);
-                    })
-                });
-                if (this.props.preferences.backend.autoLoadWorkspace === true)
-                {
-                    const wspace = this.persistence.getLastWorspace(this.currentHost())
-                    if (wspace !== undefined && wspace !== null && wspace !== '')
-                    {
-                        this.backend.workspace().openWorkspace(wspace);
-                    }
-                }
-            }
-            else if (head.type === "file_tree") 
-            {
-                this.handleTreeUpdates(head, data);
-            }
-            else if (head.type === "file_content") 
-            {
-                let data = '';
-                if (head.chunks !== undefined)
-                    data = head.chunks.join();
-                this.callOnEditor(monaco => {
-                    monaco.updateFileModel({
-                        uri: head.path, 
-                        isAbsolute: head.isAbsolutePath, 
-                        data: data,
-                        focusLineNumber: head.line,
-                        focusColumn: head.linePos
-                    });
-                })
-                this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
-            }
-            else
-            {
-                // Unhandled:
-                console.log(head);
-            }
-        }
-        catch(e)
-        {
-            console.error(e);
-        }
-    }
+    //             const openFile = (correspondingFile) => 
+    //             {
+    //                 const fileIfOpen = this.props.openFiles.findIndex(file => file.path === correspondingFile)
+    //                 if (fileIfOpen !== -1)
+    //                     this.props.dispatch(setActiveFile(fileIfOpen));
+    //                 else
+    //                     this.backend.workspace().loadFile(correspondingFile, undefined, fail => 
+    //                     {
+    //                         if (fail.fileNotFound === true) 
+    //                         {
+    //                             this.showYesNoBox(this.dict.translate('$FileNotFoundShallCreate', 'project') + "\n" + fail.path, () => 
+    //                             {
+    //                                 this.backend.workspace().createFile(correspondingFile, createFail => 
+    //                                 {
+    //                                     this.showOkBox(this.dict.translate('$CouldNotCreateFile', 'project') + "\n" + createFail)
+    //                                 })
+    //                             });
+    //                         }
+    //                         else 
+    //                             this.showOkBox('Error: ' + fail);
+    //                     });
+    //             }
+    //             checkProjectSettings
+    //             (
+    //                 () => {/* split decided */
+    //                     openFile(head.specialDirFile);
+    //                 },
+    //                 () => {/* local decided */
+    //                     openFile(head.inplaceFile);
+    //                 }
+    //             );
+    //         }
+    //         if (head.type === undefined || head.type === null) 
+    //         {
+    //             console.error("backend didn't send a message type. notify this to the backend dev");
+    //             return;
+    //         }
+    //         else if (head.type === "rejected_authentication")
+    //         {
+    //             console.log('data stream authentication rejected');
+    //         }
+    //         else if (head.type === "authentication_accepted")
+    //         {
+    //             this.props.dispatch(setConnected(true));
+    //             this.backend.toolbar().loadAll(res => {
+    //                 res.json().then(json => {
+    //                     this.initToolbars(json);
+    //                 })
+    //             });
+    //             if (this.props.preferences.backend.autoLoadWorkspace === true)
+    //             {
+    //                 const wspace = this.persistence.getLastWorspace(this.currentHost())
+    //                 if (wspace !== undefined && wspace !== null && wspace !== '')
+    //                 {
+    //                     this.backend.workspace().openWorkspace(wspace);
+    //                 }
+    //             }
+    //         }
+    //         else if (head.type === "file_tree") 
+    //         {
+    //             this.handleTreeUpdates(head, data);
+    //         }
+    //         else if (head.type === "file_content") 
+    //         {
+    //             let data = '';
+    //             if (head.chunks !== undefined)
+    //                 data = head.chunks.join();
+    //             this.callOnEditor(monaco => {
+    //                 monaco.updateFileModel({
+    //                     uri: head.path, 
+    //                     isAbsolute: head.isAbsolutePath, 
+    //                     data: data,
+    //                     focusLineNumber: head.line,
+    //                     focusColumn: head.linePos
+    //                 });
+    //             })
+    //             this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
+    //         }
+    //         else
+    //         {
+    //             // Unhandled:
+    //             console.log(head);
+    //         }
+    //     }
+    //     catch(e)
+    //     {
+    //         console.error(e);
+    //     }
+    // }
 
     callOnEditor = (fn) => 
     {
@@ -529,7 +561,7 @@ class MainWindow extends React.Component
     {
         return {
             host: this.props.backend.ip,
-            port: this.props.backend.port
+            port: this.props.backend.websocketPort
         };
     }
 
@@ -545,8 +577,9 @@ class MainWindow extends React.Component
         {
             if (arg.canceled)
                 return;
-            this.backend.workspace().openWorkspace(arg.filePaths[0]);
-            this.persistence.setLastWorkspace(this.currentHost(), arg.filePaths[0]);
+            this.backend.workspace().openWorkspace(arg.filePaths[0]).then(() => {
+                this.persistence.setLastWorkspace(this.currentHost(), arg.filePaths[0]);    
+            });            
         })
 
         ipcRenderer.on('setHome', (event, arg) => {

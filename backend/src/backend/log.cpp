@@ -1,6 +1,6 @@
 #include <backend/log.hpp>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <chrono>
 #include <sstream>
 #include <cstdio>
@@ -25,8 +25,12 @@ void shiftLog(std::string const& filename, int rotation)
         auto from = makeLogName(filename, fromEnd);
         auto to = makeLogName(filename, fromEnd + 1);
 
-        if (boost::filesystem::exists(from))
-            boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
+        if (std::filesystem::exists(from))
+        {
+            if (std::filesystem::exists(to))
+                std::filesystem::remove(to);
+            std::filesystem::copy_file(from, to);
+        }
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -35,6 +39,19 @@ void setLogTerminalEnabled(bool enabled)
     logger.setTerminalEnabled(enabled);
 }
 //#####################################################################################################################
+Logger::Logger()
+    : concise_{false}
+    , file_{}
+    , root_{}
+    , terminal_{true}
+{
+}
+//---------------------------------------------------------------------------------------------------------------------
+void Logger::setConcise(bool concise)
+{
+    concise_ = concise;
+}
+//---------------------------------------------------------------------------------------------------------------------
 void Logger::open(std::string const& filename, int rotation)
 {
     if (rotation < 0)
@@ -42,16 +59,16 @@ void Logger::open(std::string const& filename, int rotation)
 
     shiftLog(filename, rotation);
 
-    auto parentDir = boost::filesystem::path{filename}.parent_path();
-    if (!boost::filesystem::exists(parentDir))
-        boost::filesystem::create_directories(parentDir);
+    auto parentDir = std::filesystem::path{filename}.parent_path();
+    if (!std::filesystem::exists(parentDir))
+        std::filesystem::create_directories(parentDir);
 
     file_.open(makeLogName(filename, 0));
 }
 //---------------------------------------------------------------------------------------------------------------------
 void Logger::configureProjectMainFile(std::string const& directory)
 {
-    root_ = boost::filesystem::path{directory}.parent_path().string();
+    root_ = std::filesystem::path{directory}.parent_path().string();
 }
 //---------------------------------------------------------------------------------------------------------------------
 void Logger::stamp(char const* file, char const* func, int line)
@@ -64,11 +81,14 @@ void Logger::stamp(char const* file, char const* func, int line)
         fileStr = fileStr.substr(root_.size(), fileStr.size() - root_.size());
 
     std::stringstream prefixStream;
-    prefixStream
-        << "[" << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X") << "] "
-        << "(" << fileStr  << ":" << line << ") "
-        << "{" << func << "} "
-    ;
+    if (!concise_)
+        prefixStream
+            << "[" << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X") << "] "
+            << "(" << fileStr  << ":" << line << ") "
+            << "{" << func << "} "
+        ;
+    else
+        prefixStream << "[" << std::filesystem::path{fileStr}.filename().string() << ":" << line << "]: ";
 
     write(prefixStream.str());
 }

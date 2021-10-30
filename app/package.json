@@ -39,6 +39,7 @@
     "is-electron-renderer": "^2.0.1",
     "js-base64": "^3.7.2",
     "lodash": "^4.17.21",
+    "luxon": "^2.0.2",
     "monaco-editor": "^0.26.1",
     "monaco-editor-webpack-plugin": "^4.1.1",
     "rc-tree": "^5.0.1",

@@ -11,13 +11,18 @@
 class Logger
 {
 public:
-    Logger() = default;
+    Logger();
 
     /**
      *  @param filename The file name of the log(s) WITHOUT extension.
      *  @param rotation The amount of log files to keeep. Pass 0 to disable log.
      */
     void open(std::string const& filename, int rotation);
+
+    /**
+     *  Short logging for easier readability in debug scenarios?
+     */
+    void setConcise(bool concise);
 
     /**
      *  Enable / Disable outputing to terminal.
@@ -53,6 +58,7 @@ public:
     void manipulate(std::ios_base&(*manip)(std::ios_base&));
 
 private:
+    bool concise_;
     std::ofstream file_;
     std::string root_;
     bool terminal_ = true;

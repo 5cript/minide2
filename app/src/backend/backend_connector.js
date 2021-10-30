@@ -15,22 +15,22 @@ class Backend extends ApiBase
     {
         super(store);
 
-        this.workspaceRoutes = new WorkspaceApi(store, onError, this.writeMessage);
-        this.toolbarRoutes = new ToolbarApi(store, onError, this.writeMessage);
-        this.debuggerRoutes = new DebuggerRouter(store, onError, this.writeMessage);
+        this.impl = new WebSocketImplementation(store, onMessage, onConnectionLoss, onError);
+
+        this.workspaceRoutes = new WorkspaceApi(store, onError, this.impl.writeMessage);
+        this.toolbarRoutes = new ToolbarApi(store, onError, this.impl.writeMessage);
+        this.debuggerRoutes = new DebuggerRouter(store, onError, this.impl.writeMessage);
         
         this.routers = [
             this.workspaceRoutes,
             this.toolbarRoutes,
             this.debuggerRoutes
         ];
-
-        this.impl = new WebSocketImplementation(store, onMessage, onConnectionLoss, onError);
     }
 
-    writeMessage = async (type, payload) =>
+    authenticate = async () =>
     {
-        this.impl.writeMessage(type, payload);
+        return this.impl.authenticate();
     }
 
     workspace()
@@ -46,18 +46,6 @@ class Backend extends ApiBase
     debugger()
     {
         return this.debuggerRoutes;
-    }
-
-    authenticate = async () =>
-    {
-        return new Promise((y,_) => y());
-        // let url = this.url("/api/authenticate");
-        // this.authFetch(url).then(async (res) => {
-        //     const response = await res.json();
-        //     this.store.dispatch(setSessionId(response.aSID));
-        //     if (res.status < 300)
-        //         continuation();
-        // })
     }
 
     connect = async () => 

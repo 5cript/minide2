@@ -1,9 +1,8 @@
-#include "main.hpp"
+#include <backend/main.hpp>
 
-#include "filesystem/filesystem.hpp"
-#include "termination_handler.hpp"
-#include "server/backend_control.hpp"
-
+#include <backend/filesystem/filesystem.hpp>
+#include <backend/termination_handler.hpp>
+#include <backend/server/backend_control.hpp>
 #include <backend/config.hpp>
 #include <backend/log.hpp>
 #include <special-paths/special_paths.hpp>
@@ -59,13 +58,14 @@ void setupLog()
 
     // Logging
     auto& log = LOG().log();
+    log.setConcise(true);
     log.configureProjectMainFile(__FILE__);
     log.setTerminalEnabled(true);
     log.open(
         logPath(),
         10
     );
-    LOG() << "Build Time and Date: " << __DATE__ << " " << __TIME__ << '.\n';
+    LOG() << "Build Time and Date: " << __DATE__ << " " << __TIME__ << ".\n";
 }
 
 void setupSignalHandler()

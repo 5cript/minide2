@@ -4,11 +4,16 @@ import sha256 from 'crypto-js/sha256';
 import CryptoJS from 'crypto-js';
 import * as Base64 from 'js-base64';
 
+import {
+    setFileTreeBranch,
+    openWorkspace
+} from '../actions/workspace_actions';
+
 class Workspace extends ApiBase
 {
-    constructor(state, errorCallback, writeMessage)
+    constructor(store, errorCallback, writeMessage)
     {
-        super(state, writeMessage);
+        super(store, writeMessage);
         this.errorCallback = errorCallback;
     }
 
@@ -17,6 +22,13 @@ class Workspace extends ApiBase
         return this.writeMessage("/api/workspace/open", {
             "id": this.dataId,
             "path": path
+        }).then(async (response) => {
+            this.store.dispatch(setFileTreeBranch({
+                directory: response.directory.name,
+                directories: response.directory.directories,
+                files: response.directory.files
+            }))
+            return response;
         });
     }    
 
