@@ -14,9 +14,45 @@ namespace Api
 //#####################################################################################################################
     void Workspace::doSubscribe()
     {
+        /*
+        {
+            payload: {
+                path: string
+            }
+        }
+        */
         subscribe("/api/workspace/open", [this](json const& j) {
-            std::cout << j.dump() << "\n";
             open(j["ref"].get<int>(), j["payload"]["path"].get<std::string>());
+        });
+
+        /*
+        {
+            payload: {
+                path: string,
+                recursive?: boolean
+            }
+        }
+        */
+        subscribe("/api/workspace/enlist", [this](json const& j) {
+            enlist(
+                j["ref"].get<int>(), 
+                j["payload"]["path"].get<std::string>(), 
+                j["payload"].contains("recursive") ? j["payload"]["recursive"].get<bool>() : false
+            );
+        });
+
+        /*
+        {
+            payload: {
+                path: string,
+            }
+        }
+        */
+        subscribe("/api/workspace/loadFile", [this](json const&  j) {
+            loadFile(
+                j["ref"].get<int>(), 
+                j["payload"]["path"].get<std::string>()
+            );
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
@@ -30,13 +66,51 @@ namespace Api
             return sess->respondWithError(ref, "Directory does not exist '"s + root.string() + "'.");
 
         auto dir = Filesystem::DirectoryContent{root};
-        dir.scan(false, "");
+        dir.scan(false);
         dir.origin = "/"s + sfs::path{root}.filename().string();
         root_ = root;
         sess->writeJson({
             {"ref", ref},
             {"directory", dir}
         });
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void Workspace::enlist(int ref, sfs::path const& path, bool recursive)
+    {
+        auto sess = session();
+        if (!sess)
+            return;
+
+        if (root_.empty())
+            return sess->respondWithError(ref, "First open a workspace.");
+
+        auto veri = verifyPath(path.string(), root_);
+        if (!std::get<0>(veri).empty())
+            return sess->respondWithError(ref, std::get<0>(veri));
+
+        auto dir = Filesystem::DirectoryContent(std::get<1>(veri));
+        dir.scan(recursive);
+        dir.origin = path.string();
+        sess->writeJson({
+            {"ref", ref},
+            {"directory", dir}
+        });
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void Workspace::loadFile(int ref, sfs::path const& path)
+    {
+        auto sess = session();
+        if (!sess)
+            return;
+
+        if (root_.empty())
+            return sess->respondWithError(ref, "First open a workspace.");
+        auto veri = verifyPath(path.string(), root_);
+        if (!std::get<0>(veri).empty())
+            return sess->respondWithError(ref, std::get<0>(veri));
+
+        // TODO:
+        //sess->respondWithError(ref, "IMPLEMENT ME.");
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::tuple <
@@ -130,7 +204,7 @@ namespace Api
     )
     {
         if (path.empty())
-            return {"path cannot be empty"s, path, json::object()};
+            return {"Path cannot be empty."s, path, json::object()};
 
         if (path[0] == '/')
             path = path.substr(1, path.size() - 1);
@@ -146,7 +220,7 @@ namespace Api
             Filesystem::Jail jail(root.parent_path());
             auto relative = jail.relativeToRoot(path, false);
             if (!relative && enforceWorkspaceRelative)
-                return {"path is not within workspace, and thats forbidden"s, path, json::object(
+                return {"Path is not within workspace, and thats forbidden."s, path, json::object(
                     {"pathNotInWorkspace", true}
                 )};
 
@@ -157,13 +231,13 @@ namespace Api
         }
         else if (enforceWorkspaceRelative)
         {
-            return {"path is not within workspace, and thats forbidden"s, path, json::object(
+            return {"Path is not within workspace, and thats forbidden."s, path, json::object(
                 {"pathNotInWorkspace", true}
             )};
         }
 
         if (mustExist && !sfs::exists(resultPath))
-            return {"path does not exist", path, json{
+            return {"Path does not exist.", path, json{
                 {"fileNotFound", true},
                 {"path", path}
             }};

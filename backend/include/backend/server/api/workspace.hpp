@@ -30,7 +30,9 @@ namespace Api
     
     private:
         void doSubscribe();
-        void open(int ref, sfs::path const& path);
+        void open(int ref, sfs::path const& root);
+        void enlist(int ref, sfs::path const& path, bool recursive);
+        void loadFile(int ref, sfs::path const& path);
 
     private:
         sfs::path root_;

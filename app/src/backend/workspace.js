@@ -24,7 +24,7 @@ class Workspace extends ApiBase
             "path": path
         }).then(async (response) => {
             this.store.dispatch(setFileTreeBranch({
-                directory: response.directory.name,
+                directory: response.directory.origin,
                 directories: response.directory.directories,
                 files: response.directory.files
             }))
@@ -45,6 +45,14 @@ class Workspace extends ApiBase
     {
         return this.writeMessage("/api/workspace/enlist", {
             path: path
+        }).then(async (response) => {
+            console.log(response);
+            this.store.dispatch(setFileTreeBranch({
+                directory: response.directory.origin,
+                directories: response.directory.directories,
+                files: response.directory.files
+            }))            
+            return response;
         });
     }
 

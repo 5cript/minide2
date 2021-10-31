@@ -110,18 +110,18 @@ class FileView extends PureComponent
 
     onMouseEnter(v)
     {
-        // if (this.lockHoverChange || v.node.title === "")
-        //     return;
-        // this.hoveredNode = v.node;
-        // this.props.dispatch(setHoveredNode(v.node.key));
+        if (this.lockHoverChange || v.node.title === "")
+            return;
+        this.hoveredNode = v.node;
+        this.props.dispatch(setHoveredNode(v.node.key));
     }
 
     onMouseLeave(v)
     {
-        // if (this.lockHoverChange || this.hoveredNode === undefined)
-        //     return;
-        // this.hoveredNode = undefined;
-        // this.props.dispatch(setHoveredNode(undefined));
+        if (this.lockHoverChange || this.hoveredNode === undefined)
+            return;
+        this.hoveredNode = undefined;
+        this.props.dispatch(setHoveredNode(undefined));
     }
 
     onFileContextOpen(xOffset, yOffset, event)

@@ -27,7 +27,7 @@ namespace Filesystem
         /**
          *  Use this to actually scan the directory
          */
-        void scan(bool recursive, std::string const& rootReplace, int recursionLimit = 100);
+        void scan(bool recursive, int recursionLimit = 100);
     };
     
     /**
@@ -36,11 +36,13 @@ namespace Filesystem
     static void to_json(json& j, DirectoryContent const& dc)
     {
         j["name"] = dc.root.string();
+        if (dc.origin)
+            j["origin"] = *dc.origin;
         if (!dc.files.empty())
             j["files"] = dc.files;
         if (!dc.flatDirectory)
         {
-            //j["flat"] = false;
+            j["flat"] = false;
             if (!dc.directories.empty())
                 j["directories"] = dc.directories;
         }

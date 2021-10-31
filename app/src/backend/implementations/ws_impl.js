@@ -43,10 +43,10 @@ class WebSocketImplementation
     
     writeMessage = async (type, payload) =>
     {
-        if (this.wsClient.readyState !== WebSocket.OPEN)
-        {
+        if (this.wsClient === undefined)
             return;
-        }
+        if (this.wsClient.readyState !== WebSocket.OPEN)
+            return;
 
         const replyId = this.replyId++;
         if (replyId > 1000000)
