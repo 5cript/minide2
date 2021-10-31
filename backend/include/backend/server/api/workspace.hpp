@@ -7,6 +7,7 @@
 
 #include <tuple>
 #include <string>
+#include <mutex>
 
 namespace Api
 {
@@ -33,8 +34,12 @@ namespace Api
         void open(int ref, sfs::path const& root);
         void enlist(int ref, sfs::path const& path, bool recursive);
         void loadFile(int ref, sfs::path const& path);
+        void setActiveProject(int ref, sfs::path const& path);
+        void deleteFile(int ref, sfs::path const& path);
 
     private:
+        std::mutex guard_;
         sfs::path root_;
+        sfs::path activeProject_;
     };
 }

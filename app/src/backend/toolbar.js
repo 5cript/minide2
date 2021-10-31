@@ -2,9 +2,9 @@ import Router from './apibase';
 
 class ToolbarApi extends Router
 {
-    constructor(store, errorCallback, writeMessage)
+    constructor({store, persistence, errorCallback, writeMessage})
     {
-        super(store, writeMessage);
+        super(store, persistence, writeMessage);
         this.errorCallback = errorCallback;
     }
 

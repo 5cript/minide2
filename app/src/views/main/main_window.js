@@ -121,38 +121,6 @@ class MainWindow extends React.Component
         this.installShortcuts();
 
         this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectingToBackend", "main_window")));
-
-        this.backend = new Backend
-        (
-            props.store,
-            // Control Callback
-            (...args) => {this.onMessage(...args);}, 
-            // on Connection Loss
-            (...args) => {this.onConnectionLoss(...args);},
-            // Error Callback
-            (...args) => {this.onStreamError(...args);},
-        );
-        
-        this.debugController = new DebugController(this.backend, props.store);
-        
-        this.commonActions = new CommonActions
-        (
-            props.store,
-            this,
-            this.backend,
-            this.debugController
-        );
-        
-        this.connectToBackend = _.debounce(() => {
-            this.props.dispatch(setTryingToConnect(true));
-            this.backend.connect().then(() => {
-                this.backend.authenticate().then((authResponse) => {
-                    this.props.dispatch(setConnected(authResponse.authenticated));
-                    if (authResponse.authenticated)
-                        this.onAuthenticationSuccess();
-                });
-            });
-        }, 300)
     }
 
     onAuthenticationSuccess = () =>
@@ -571,6 +539,42 @@ class MainWindow extends React.Component
             this.keybindActor.loadKeybindsFromDrive(this.home);
     }
 
+    makeBackend = () =>
+    {
+        this.backend = new Backend
+        (
+            this.props.store,
+            this.persistence,
+            // Control Callback
+            (...args) => {this.onMessage(...args);}, 
+            // on Connection Loss
+            (...args) => {this.onConnectionLoss(...args);},
+            // Error Callback
+            (...args) => {this.onStreamError(...args);},
+        );        
+        
+        this.debugController = new DebugController(this.backend, this.props.store);
+        
+        this.commonActions = new CommonActions
+        (
+            this.props.store,
+            this,
+            this.backend,
+            this.debugController
+        );
+        
+        this.connectToBackend = _.debounce(() => {
+            this.props.dispatch(setTryingToConnect(true));
+            this.backend.connect().then(() => {
+                this.backend.authenticate().then((authResponse) => {
+                    this.props.dispatch(setConnected(authResponse.authenticated));
+                    if (authResponse.authenticated)
+                        this.onAuthenticationSuccess();
+                });
+            });
+        }, 300)
+    }
+
     registerIpcHandler = () => 
     {
         ipcRenderer.on('openWorkspace', (event, arg) => 
@@ -608,6 +612,7 @@ class MainWindow extends React.Component
                 catch(e)
                 {}
             }
+            this.makeBackend();
         })
 
         ipcRenderer.on('preferences', (event, arg) => {
@@ -805,6 +810,9 @@ class MainWindow extends React.Component
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={75}>
                         <div>
                             <Explorer 
+                                mainWindow={{
+                                    get: ()=>{return this;}
+                                }}
                                 onActiveProjectSet={this.onActiveProjectChange} 
                                 onDeleteFile={this.onDeleteFile}
                                 persistence={this.persistence} 

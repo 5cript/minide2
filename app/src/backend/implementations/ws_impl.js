@@ -14,7 +14,7 @@ class ResponsePromise
 
 class WebSocketImplementation
 {
-    constructor(store, onMessage, onConnectionLoss, onError)
+    constructor({store, onMessage, onConnectionLoss, onError})
     {
         const replyTimeoutSeconds = 30;
         const replyTimeoutRefreshMilliseconds = 3000;
@@ -26,14 +26,14 @@ class WebSocketImplementation
         this.replyId = 0;
         this.replyWaiter = {};
         
-        this.buffer = '';
+        this.textBuffer = '';
         setInterval(() => {
             for (const i in this.replyWaiter) 
             {
                 const diff = DateTime.now().diff(this.replyWaiter[i].date, ['seconds']).seconds;
                 if (diff > replyTimeoutSeconds)
                 {
-                    console.error("no reply recieved for " + this.replyWaiter[i].type);
+                    this.onError("no reply recieved for " + this.replyWaiter[i].type);
                     this.replyWaiter[i].responsePromise.reject();
                     delete this.replyWaiter[i];
                 }
@@ -41,7 +41,7 @@ class WebSocketImplementation
         }, replyTimeoutRefreshMilliseconds);
     }
     
-    writeMessage = async (type, payload) =>
+    writeMessage = async (type, payload, onBinary) =>
     {
         if (this.wsClient === undefined)
             return;
@@ -54,7 +54,8 @@ class WebSocketImplementation
         this.replyWaiter[replyId] = {
             type: type,
             responsePromise: new ResponsePromise(),
-            date: DateTime.now()
+            date: DateTime.now(),
+            onBinary: onBinary ? onBinary : ()=>{this.onError('receiving unexpected binary data')}
         };
         this.wsClient.send(JSON.stringify({
             type: type,
@@ -82,15 +83,15 @@ class WebSocketImplementation
 
     parseData = () =>
     {
-        let size = parseInt(this.buffer.substr(0, 10));
+        let size = parseInt(this.textBuffer.substr(0, 10));
         if (isNaN(size)) {
-            console.error('oh big no! expected number in stream');
+            this.onError('oh big no! expected number in stream');
             return;
         }
-        if (this.buffer.length >= size + 11) {
+        if (this.textBuffer.length >= size + 11) {
             try {
-                let json = JSON.parse(this.buffer.substr(11, size));
-                this.buffer = this.buffer.slice(11 + size);
+                let json = JSON.parse(this.textBuffer.substr(11, size));
+                this.textBuffer = this.textBuffer.slice(11 + size);
                 const reply = this.replyWaiter[json.ref];
                 if (reply !== undefined) {
                     if (json.error)
@@ -103,15 +104,24 @@ class WebSocketImplementation
                     this.onMessage(json);
             }
             catch(e) {
-                console.error("error in stream reader",e);
+                this.onError("error in stream reader",e);
             }
         }
+    }
+
+    handleBinaryCompletion = (ref) => 
+    {
+        console.log('file complete for ', ref);
+        let repl = this.replyWaiter[ref];
+        repl.responsePromise.resolve(repl.binaryBuffer);
+        delete this.replyWaiter[ref];
     }
     
     connect = async () =>
     {
         return new Promise((resolve, _) => {
             this.wsClient = new WebSocket(this.wsUrl("/api/wsstreamer/data", true));
+            this.wsClient.binaryType = "arraybuffer";
             this.wsClient.onopen = () => {
                 console.log("ws is open");
                 resolve();
@@ -125,9 +135,28 @@ class WebSocketImplementation
             }
             this.wsClient.onmessage = (event) => {
                 console.log("dataMessage", event);
+                if (event.data instanceof ArrayBuffer)
+                {
+                    var enc = new TextDecoder("utf-8");
+                    const ref = parseInt(enc.decode(event.data.slice(0, 10)));
+                    let repl = this.replyWaiter[ref];
+                    if (repl)
+                    {
+                        if (event.data.byteLength != 10)
+                        {
+                            repl.onBinary(event.data.slice(10, event.data.byteLength));
+                            repl.data = DateTime.now();
+                        }
+                        else
+                        {
+                            this.handleBinaryCompletion(ref);
+                        }
+                    }
+                    return;
+                }
                 if (event && event.data)
                 {
-                    this.buffer += event.data;
+                    this.textBuffer += event.data;
                     this.parseData();
                 }
             }

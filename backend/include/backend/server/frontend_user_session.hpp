@@ -2,6 +2,7 @@
 
 #include <backend/server/stream/stream_parser.hpp>
 #include <backend/server/stream/dispatcher.hpp>
+#include <backend/server/writer.hpp>
 
 #include <attender/websocket/server/flexible_session.hpp>
 
@@ -21,16 +22,19 @@ public:
     FrontendUserSession& operator=(FrontendUserSession&&);
     FrontendUserSession& operator=(FrontendUserSession const&) = delete;
 
+    void setWriter(std::shared_ptr <Writer> writer);
+
     void setup();
     void on_close() override;
     void on_text(std::string_view) override;
     void on_binary(char const*, std::size_t) override;
     void on_error(boost::system::error_code, char const*) override {};
-    void on_write_complete(std::size_t) override {};
+    void on_write_complete(std::size_t) override;
 
-    void writeJson(json const& j);
+    bool writeJson(json const& j, std::function<void(std::size_t)> const& on_complete = [](auto){});
     void onJson(json const& j);
     void respondWithError(int ref, std::string const& msg);
+    bool writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(std::size_t)> const& on_complete);
 
 private:
     struct Implementation;

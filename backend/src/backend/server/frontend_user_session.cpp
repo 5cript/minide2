@@ -2,11 +2,14 @@
 #include <backend/server/backend_control.hpp>
 #include <backend/server/api/user.hpp>
 #include <backend/server/api/workspace.hpp>
+#include <backend/server/writer.hpp>
 #include <backend/log.hpp>
 
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+
+using namespace std::chrono_literals;
 
 //#####################################################################################################################
 struct FrontendUserSession::Implementation
@@ -16,6 +19,7 @@ struct FrontendUserSession::Implementation
     StreamParser textParser;
     Dispatcher dispatcher;
     bool authenticated;
+    std::shared_ptr <Writer> activeWriter;
 
     // API
     Api::User user;
@@ -31,6 +35,8 @@ struct FrontendUserSession::Implementation
         , textParser{}
         , dispatcher{}
         , authenticated{false}
+        , activeWriter{}
+        // API
         , user{}
         , workspace{&dispatcher}
     {}
@@ -57,6 +63,12 @@ FrontendUserSession::~FrontendUserSession() = default;
 FrontendUserSession::FrontendUserSession(FrontendUserSession&&) = default;
 //---------------------------------------------------------------------------------------------------------------------
 FrontendUserSession& FrontendUserSession::operator=(FrontendUserSession&&) = default;
+//---------------------------------------------------------------------------------------------------------------------
+void FrontendUserSession::setWriter(std::shared_ptr <Writer> writer)
+{
+    impl_->activeWriter = std::move(writer);
+    impl_->activeWriter->write();
+}
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::on_close() 
 {
@@ -122,13 +134,31 @@ void FrontendUserSession::respondWithError(int ref, std::string const& msg)
     });
 }
 //---------------------------------------------------------------------------------------------------------------------
-void FrontendUserSession::writeJson(json const& j)
+bool FrontendUserSession::writeJson(json const& j, std::function<void(std::size_t)> const& on_complete)
 {
     // TODO: Improve me.
     std::string serialized = j.dump();
     std::stringstream sstr;
     sstr << "0x" << std::hex << std::setw(8) << std::setfill('0') << serialized.size() << "|" << serialized;
-    write_text(sstr.str());
+    return write_text(sstr.str(), on_complete);
+}
+//---------------------------------------------------------------------------------------------------------------------
+bool FrontendUserSession::writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(std::size_t)> const& on_complete)
+{
+    // TODO: Improve me.
+    const auto size = std::min(data.size(), amount);
+    std::string decorated(size + 10, '\0');
+    std::stringstream sstr;
+    sstr << "0x" << std::hex << std::setw(8) << std::setfill('0') << ref;
+    const auto refStr = sstr.str();
+    std::copy(std::begin(refStr), std::end(refStr), std::begin(decorated));
+    std::copy(std::begin(data), std::begin(data) + size, std::begin(decorated) + 10);
+    return write_binary(decorated.c_str(), decorated.size(), on_complete);
+}
+//---------------------------------------------------------------------------------------------------------------------
+void FrontendUserSession::on_write_complete(std::size_t bytesTransferred)
+{
+    session_base::on_write_complete(bytesTransferred);
 }
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::on_binary(char const*, std::size_t) 

@@ -1,8 +1,9 @@
 class ApiBase
 {
-    constructor(store, writeMessage)
+    constructor(store, persistence, writeMessage)
     {
         this.store = store;
+        this.persistence = persistence;
         this.writeMessage = writeMessage;
     }
 

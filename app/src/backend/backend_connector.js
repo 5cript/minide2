@@ -11,15 +11,15 @@ import {
 
 class Backend extends ApiBase
 {
-    constructor(store, onMessage, onConnectionLoss, onError)
+    constructor(store, persistence, onMessage, onConnectionLoss, onError)
     {
         super(store);
 
-        this.impl = new WebSocketImplementation(store, onMessage, onConnectionLoss, onError);
+        this.impl = new WebSocketImplementation({store, onMessage, onConnectionLoss, onError});
 
-        this.workspaceRoutes = new WorkspaceApi(store, onError, this.impl.writeMessage);
-        this.toolbarRoutes = new ToolbarApi(store, onError, this.impl.writeMessage);
-        this.debuggerRoutes = new DebuggerRouter(store, onError, this.impl.writeMessage);
+        this.workspaceRoutes = new WorkspaceApi({store, persistence, onError, writeMessage: this.impl.writeMessage});
+        this.toolbarRoutes = new ToolbarApi({store, persistence, onError, writeMessage: this.impl.writeMessage});
+        this.debuggerRoutes = new DebuggerRouter({store, persistence, onError, writeMessage: this.impl.writeMessage});
         
         this.routers = [
             this.workspaceRoutes,

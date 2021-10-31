@@ -2,6 +2,9 @@
 
 #include <backend/server/stream/subscription.hpp>
 #include <backend/server/stream/dispatcher.hpp>
+#include <backend/filesystem/filesystem.hpp>
+
+#include <fstream>
 
 class FrontendUserSession;
 
@@ -33,6 +36,11 @@ namespace Api
         std::shared_ptr<FrontendUserSession> session()
         {
             return session_.lock();
+        }
+
+        std::weak_ptr<FrontendUserSession> weakSession()
+        {
+            return session_;
         }
 
     private:

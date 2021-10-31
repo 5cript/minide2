@@ -3,17 +3,22 @@ import ApiBase from './apibase'
 import sha256 from 'crypto-js/sha256';
 import CryptoJS from 'crypto-js';
 import * as Base64 from 'js-base64';
+import {arrayBufferToString} from './array_buffer_to_string';
 
 import {
     setFileTreeBranch,
-    openWorkspace
+    setActiveProject,
+    removeFileTreeElement
 } from '../actions/workspace_actions';
+import {
+    addOpenFileWithContent,
+} from '../actions/open_file_actions';
 
 class Workspace extends ApiBase
 {
-    constructor(store, errorCallback, writeMessage)
+    constructor({store, persistence, errorCallback, writeMessage})
     {
-        super(store, writeMessage);
+        super(store, persistence, writeMessage);
         this.errorCallback = errorCallback;
     }
 
@@ -69,9 +74,30 @@ class Workspace extends ApiBase
             ? optionalFlag
             : undefined
         ;
+        let buf = "";
         return this.writeMessage("/api/workspace/loadFile", {
             path: path,
             flag: flag
+        }, (binaryData) => {
+            buf += arrayBufferToString(binaryData);
+        }).then(async () => {
+            this.store.dispatch(addOpenFileWithContent(path, false, buf));
+            return buf;
+        });
+    }
+
+    setActiveProject = async (path) =>
+    {
+        return this.writeMessage("/api/workspace/setActiveProject", {
+            path: path
+        }).then(async (response) => {
+            const backend = this.store.getState().backend;
+            this.persistence.setLastActive({
+                host: backend.ip,
+                port: backend.websocketPort
+            }, response.activeProject);
+            this.store.dispatch(setActiveProject(response.activeProject));
+            return response.activeProject;
         });
     }
 
@@ -79,6 +105,8 @@ class Workspace extends ApiBase
     {
         return this.writeMessage("/api/workspace/deleteFile", {
             path: path
+        }).then(async (response) => {
+            this.store.dispatch(removeFileTreeElement(response.deleted));
         });
     }
 
@@ -103,13 +131,6 @@ class Workspace extends ApiBase
         return this.writeMessage("/api/workspace/toggleSourceHeader", {
             path: path,
             flag: flag
-        });
-    }
-
-    setActiveProject = async (path) =>
-    {
-        return this.writeMessage("/api/workspace/setActiveProject", {
-            path: path
         });
     }
 

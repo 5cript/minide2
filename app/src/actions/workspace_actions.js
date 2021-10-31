@@ -42,3 +42,13 @@ export function openWorkspace({path})
         }
     }
 }
+
+export function removeFileTreeElement(path)
+{
+    return {
+        type: 'DELETE_WORKSPACE_ELEMENT',
+        payload: {
+            path: path
+        }
+    }
+}

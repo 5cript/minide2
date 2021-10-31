@@ -14,6 +14,7 @@ add_executable(
     "backend/filesystem/directory_contents.cpp"
     "backend/server/backend_control.cpp"
     "backend/server/frontend_user_session.cpp"
+    "backend/server/writer.cpp"
     "backend/server/stream/stream_parser.cpp"
     "backend/server/stream/subscription.cpp"
     "backend/server/stream/dispatcher.cpp"

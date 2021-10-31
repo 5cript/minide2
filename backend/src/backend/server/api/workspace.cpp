@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <deque>
+#include <fstream>
 
 using namespace std::string_literals;
 
@@ -54,10 +55,40 @@ namespace Api
                 j["payload"]["path"].get<std::string>()
             );
         });
+
+        /*
+        {
+            payload: {
+                path: string,
+            }
+        }
+        */
+        subscribe("/api/workspace/setActiveProject", [this](json const&  j) {
+            setActiveProject(
+                j["ref"].get<int>(), 
+                j["payload"]["path"].get<std::string>()
+            );
+        });
+
+        /*
+        {
+            payload: {
+                path: string,
+            }
+        }
+        */
+        subscribe("/api/workspace/deleteFile", [this](json const&  j) {
+            deleteFile(
+                j["ref"].get<int>(), 
+                j["payload"]["path"].get<std::string>()
+            );
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
     void Workspace::open(int ref, sfs::path const& root)
     {
+        std::scoped_lock lock{guard_};
+
         auto sess = session();
         if (!sess)
             return;
@@ -77,6 +108,8 @@ namespace Api
 //---------------------------------------------------------------------------------------------------------------------
     void Workspace::enlist(int ref, sfs::path const& path, bool recursive)
     {
+        std::scoped_lock lock{guard_};
+
         auto sess = session();
         if (!sess)
             return;
@@ -99,6 +132,8 @@ namespace Api
 //---------------------------------------------------------------------------------------------------------------------
     void Workspace::loadFile(int ref, sfs::path const& path)
     {
+        std::scoped_lock lock{guard_};
+
         auto sess = session();
         if (!sess)
             return;
@@ -109,8 +144,53 @@ namespace Api
         if (!std::get<0>(veri).empty())
             return sess->respondWithError(ref, std::get<0>(veri));
 
-        // TODO:
-        //sess->respondWithError(ref, "IMPLEMENT ME.");
+        auto fileWriter = std::make_shared<FileWriter>(ref, std::get<1>(veri), weakSession());
+        if (!fileWriter->good())
+            return sess->respondWithError(ref, "Cannot open file for reading.");
+
+        sess->setWriter(fileWriter);
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void Workspace::setActiveProject(int ref, sfs::path const& path)
+    {
+        std::scoped_lock lock{guard_};
+
+        auto sess = session();
+        if (!sess)
+            return;
+
+        if (root_.empty())
+            return sess->respondWithError(ref, "First open a workspace.");
+        auto veri = verifyPath(path.string(), root_);
+        if (!std::get<0>(veri).empty())
+            return sess->respondWithError(ref, std::get<0>(veri));
+
+        activeProject_ = path;
+        sess->writeJson({
+            {"ref", ref},
+            {"activeProject", path}
+        });
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    void Workspace::deleteFile(int ref, sfs::path const& path)
+    {
+        std::scoped_lock lock{guard_};
+
+        auto sess = session();
+        if (!sess)
+            return;
+
+        if (root_.empty())
+            return sess->respondWithError(ref, "First open a workspace.");
+        auto veri = verifyPath(path.string(), root_);
+        if (!std::get<0>(veri).empty())
+            return sess->respondWithError(ref, std::get<0>(veri));
+
+        sfs::remove(std::get<1>(veri));
+        sess->writeJson({
+            {"ref", ref},
+            {"deleted", path}
+        });
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::tuple <
