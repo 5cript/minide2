@@ -8,12 +8,13 @@
 #include <special-paths/special_paths.hpp>
 #include <attender/io_context/managed_io_context.hpp>
 #include <attender/io_context/thread_pooler.hpp>
+#include <backend/plugin_system/global.hpp>
 
 #include <iostream>
 
 using namespace std::string_literals;
 
-int main()
+int main(int argc, char* argv[])
 {
     setupLog();
     setupCrashHandler();
@@ -22,6 +23,10 @@ int main()
     // Load Config
     Config config;
 
+    // Plugins
+    PluginSystem::GlobalInit v8Init(argv[0]);
+
+    // io_context
     attender::managed_io_context <attender::thread_pooler> context
     {
         static_cast <std::size_t> (config.httpThreadCount),
@@ -38,9 +43,12 @@ int main()
         }
     };
 
+    // Websocket Server
     std::shared_ptr<BackendControl> wsServer = std::make_shared<BackendControl>(context.get_io_service());
     wsServer->start(std::to_string(config.websocketPort));
     LOG() << "Running ws server on " << config.websocketPort << ".\n";
+
+    // Wait for Enter
     std::cin.get();
 }
 

@@ -5,6 +5,9 @@
 #include <backend/server/writer.hpp>
 #include <backend/log.hpp>
 
+#include <backend/plugin_system/isolate.hpp>
+#include <backend/plugin_system/script.hpp>
+
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -20,6 +23,7 @@ struct FrontendUserSession::Implementation
     Dispatcher dispatcher;
     bool authenticated;
     std::shared_ptr <Writer> activeWriter;
+    PluginSystem::Isolate javascriptIsolate;
 
     // API
     Api::User user;
@@ -83,6 +87,8 @@ void FrontendUserSession::on_close()
 void FrontendUserSession::setup()
 {
     impl_->imbueOwner(weak_from_this());
+    PluginSystem::Script script{impl_->javascriptIsolate, "console.log('hi');"};
+    script.run();
 }
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::on_text(std::string_view txt) 

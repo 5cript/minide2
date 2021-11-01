@@ -7,11 +7,18 @@ project(minideback)
 add_executable(
     minideback
     "backend/main.cpp"
+    "backend/log.cpp"
+    "backend/public_settings.cpp"
+    "backend/termination_handler.cpp"
+
+    # Filesystem
     "backend/filesystem/directory_cache.cpp"
     "backend/filesystem/filesystem.cpp"
     "backend/filesystem/home_directory.cpp"
     "backend/filesystem/jail.cpp"
     "backend/filesystem/directory_contents.cpp"
+
+    # Server
     "backend/server/backend_control.cpp"
     "backend/server/frontend_user_session.cpp"
     "backend/server/writer.cpp"
@@ -20,10 +27,14 @@ add_executable(
     "backend/server/stream/dispatcher.cpp"
     "backend/server/api/user.cpp"
     "backend/server/api/workspace.cpp"
+
+    # Persistence And Settings
     "backend/settings/environment.cpp"
-    "backend/log.cpp"
-    "backend/public_settings.cpp"
-    "backend/termination_handler.cpp"
+
+    # Plugin System
+    "backend/plugin_system/isolate.cpp"
+    "backend/plugin_system/global.cpp"
+    "backend/plugin_system/script.cpp"
 )
 
 target_link_libraries(minideback 
@@ -32,6 +43,7 @@ target_link_libraries(minideback
     PRIVATE
         special_paths
         attender
+        v8
         ${Boost_LIBRARIES}
         -lbacktrace
 )

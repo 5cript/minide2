@@ -130,6 +130,7 @@ lldb-mi
 mplex
 twisted-spirit
 hash-library
+node
 
 tcp-server/bin/
 tcp-server/obj/
