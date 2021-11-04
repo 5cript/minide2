@@ -5,6 +5,7 @@
 #include <backend/server/writer.hpp>
 #include <backend/log.hpp>
 
+#include <backend/plugin_system/toolbar.hpp>
 #include <backend/plugin_system/isolate.hpp>
 #include <backend/plugin_system/script.hpp>
 
@@ -27,7 +28,10 @@ struct FrontendUserSession::Implementation
 
     // API
     Api::User user;
-    Api::Workspace workspace; 
+    Api::Workspace workspace;
+
+    // Toolbars
+    std::vector<Toolbar> toolbars;
 
     Implementation
     (
@@ -43,6 +47,7 @@ struct FrontendUserSession::Implementation
         // API
         , user{}
         , workspace{&dispatcher}
+        , toolbars{}
     {}
 
     void imbueOwner(std::weak_ptr<FrontendUserSession> session)

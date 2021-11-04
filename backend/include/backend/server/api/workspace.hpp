@@ -28,6 +28,9 @@ namespace Api
             bool // file is in include/source directory
         >
         toggleSourceHeader(sfs::path const& original, bool isSource, std::string const& targetExtension);
+
+        sfs::path getRoot() const;
+        sfs::path getActiveProject() const;
     
     private:
         void doSubscribe();
