@@ -3,9 +3,10 @@
 #include <backend/server/api/user.hpp>
 #include <backend/server/api/workspace.hpp>
 #include <backend/server/writer.hpp>
+#include <backend/filesystem/home_directory.hpp>
 #include <backend/log.hpp>
 
-#include <backend/plugin_system/toolbar.hpp>
+#include <backend/plugin_system/plugin.hpp>
 #include <backend/plugin_system/isolate.hpp>
 #include <backend/plugin_system/script.hpp>
 
@@ -31,30 +32,54 @@ struct FrontendUserSession::Implementation
     Api::Workspace workspace;
 
     // Toolbars
-    std::vector<Toolbar> toolbars;
-
+    std::vector<PluginSystem::Plugin> plugins;
+    
     Implementation
     (
         std::weak_ptr<BackendControl> server, 
         std::string sessionId
-    )
-        : server{server}
-        , sessionId{std::move(sessionId)}
-        , textParser{}
-        , dispatcher{}
-        , authenticated{false}
-        , activeWriter{}
-        // API
-        , user{}
-        , workspace{&dispatcher}
-        , toolbars{}
-    {}
+    );
 
-    void imbueOwner(std::weak_ptr<FrontendUserSession> session)
-    {
-        workspace.setSession(session);
-    }
+    void imbueOwner(std::weak_ptr<FrontendUserSession> session);
+
+    // may throw
+    void loadPlugins();
 };
+//---------------------------------------------------------------------------------------------------------------------
+FrontendUserSession::Implementation::Implementation
+(
+    std::weak_ptr<BackendControl> server, 
+    std::string sessionId
+)
+    : server{server}
+    , sessionId{std::move(sessionId)}
+    , textParser{}
+    , dispatcher{}
+    , authenticated{false}
+    , activeWriter{}
+    // API
+    , user{}
+    , workspace{&dispatcher}
+    , plugins{}
+{}
+//---------------------------------------------------------------------------------------------------------------------
+void FrontendUserSession::Implementation::imbueOwner(std::weak_ptr<FrontendUserSession> session)
+{
+    workspace.setSession(session);
+}
+//---------------------------------------------------------------------------------------------------------------------
+void FrontendUserSession::Implementation::loadPlugins()
+{
+    auto pluginDir = inHomeDirectory() / PluginSystem::Plugin::pluginsDir;
+    for (sfs::directory_iterator iter{pluginDir}, end; iter != end; ++iter)
+    {
+        if (sfs::is_directory(iter->status()))
+            plugins.emplace_back(iter->path().filename().string(), Api::AllApis{
+                .workspace = &workspace,
+                .user = &user
+            }).run();
+    }
+}
 //#####################################################################################################################
 FrontendUserSession::FrontendUserSession
 (
@@ -91,9 +116,7 @@ void FrontendUserSession::on_close()
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::setup()
 {
-    impl_->imbueOwner(weak_from_this());
-    PluginSystem::Script script{impl_->javascriptIsolate, "console.log('hi');"};
-    script.run();
+    impl_->imbueOwner(weak_from_this());    
 }
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::on_text(std::string_view txt) 
@@ -132,6 +155,31 @@ void FrontendUserSession::onJson(json const& j)
         writeJson(json{
             {"ref", j["ref"]},
             {"authenticated", true}
+        }, [this](auto){
+            onAfterAuthentication();
+        });
+    }
+}
+//---------------------------------------------------------------------------------------------------------------------
+void FrontendUserSession::onAfterAuthentication()
+{
+    try 
+    {
+        impl_->loadPlugins();
+        std::vector <std::string> pluginNames;
+        for (auto const& plugin : impl_->plugins)
+            pluginNames.push_back(plugin.name());
+
+        writeJson(json{
+            {"ref", -1},
+            {"plugins_loaded", pluginNames}
+        });
+    }
+    catch(std::exception const& exc)
+    {
+        writeJson(json{
+            {"ref", -1},
+            {"error", exc.what()}
         });
     }
 }

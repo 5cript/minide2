@@ -129,11 +129,6 @@ LogProxy operator<<(LogProxy&& proxy, std::ios_base&(*manip)(std::ios_base&))
     return proxy;
 }
 //---------------------------------------------------------------------------------------------------------------------
-LogProxy operator<<(LogProxy&& proxy, std::_Setw)
-{
-    return proxy;
-}
-//---------------------------------------------------------------------------------------------------------------------
 LogProxy operator<<(LogProxy&& proxy, std::string const& value)
 {
     logger.write(value);

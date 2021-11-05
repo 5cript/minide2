@@ -131,6 +131,7 @@ mplex
 twisted-spirit
 hash-library
 node
+v8pp
 
 tcp-server/bin/
 tcp-server/obj/

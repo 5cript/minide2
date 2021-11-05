@@ -19,6 +19,10 @@ namespace PluginSystem
 
         v8::Isolate* handle();
         operator v8::Isolate*();
+        v8::Isolate* operator->()
+        {
+            return handle();
+        }
 
     private:
         struct Implementation;

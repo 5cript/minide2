@@ -7,19 +7,20 @@ include(cmake/project_settings.cmake)
 include(cmake/packages.cmake)
 include(cmake/v8.cmake)
 
-add_subdirectory(attender)
-add_subdirectory(automata)
-add_subdirectory(debugger-interface)
-#broken, replace or contribute:
-#add_subdirectory(filewatch)
+#set(V8PP_HEADER_ONLY ON)
+
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_subdirectory(lldb-mi)
 endif()
-#dont use anylonger, use simdjson or nlohmann
-#add_subdirectory(SimpleJSON)
+add_subdirectory(v8pp)
+add_subdirectory(attender)
+add_subdirectory(automata)
+add_subdirectory(debugger-interface)
 add_subdirectory(special-paths)
-add_subdirectory(tiny-process-library)
-#use openssh instead
-#include(hash-library)
-
 add_subdirectory(backend/src)
+
+# use boost process
+#add_subdirectory(tiny-process-library)
+
+#broken, replace or contribute:
+#add_subdirectory(filewatch)

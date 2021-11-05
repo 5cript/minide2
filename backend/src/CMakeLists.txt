@@ -35,7 +35,11 @@ add_executable(
     "backend/plugin_system/isolate.cpp"
     "backend/plugin_system/global.cpp"
     "backend/plugin_system/script.cpp"
+    "backend/plugin_system/plugin.cpp"
+    "backend/plugin_system/api/console.cpp"
 )
+
+find_package(Threads REQUIRED)
 
 target_link_libraries(minideback 
     PUBLIC 
@@ -43,9 +47,11 @@ target_link_libraries(minideback
     PRIVATE
         special_paths
         attender
+        v8pp
         v8
         ${Boost_LIBRARIES}
         -lbacktrace
+        Threads::Threads
 )
 target_include_directories(minideback 
     PUBLIC 

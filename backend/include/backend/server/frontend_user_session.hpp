@@ -37,6 +37,9 @@ public:
     bool writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(std::size_t)> const& on_complete);
 
 private:
+    void onAfterAuthentication();
+
+private:
     struct Implementation;
     std::unique_ptr <Implementation> impl_;
 };

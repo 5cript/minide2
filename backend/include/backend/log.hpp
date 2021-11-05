@@ -84,7 +84,6 @@ LogProxy operator<<(LogProxy&& proxy, std::string_view const& value);
 LogProxy operator<<(LogProxy&& proxy, char value);
 LogProxy operator<<(LogProxy&& proxy, char const* value);
 LogProxy operator<<(LogProxy&& proxy, std::ios_base&(*manip)(std::ios_base&));
-LogProxy operator<<(LogProxy&& proxy, std::_Setw);
 
 template <
     typename T,
