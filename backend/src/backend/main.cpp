@@ -8,7 +8,7 @@
 #include <special-paths/special_paths.hpp>
 #include <attender/io_context/managed_io_context.hpp>
 #include <attender/io_context/thread_pooler.hpp>
-#include <backend/plugin_system/global.hpp>
+#include <backend/plugin_system/init.hpp>
 
 #include <iostream>
 

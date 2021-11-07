@@ -1,8 +1,10 @@
+import * as plugin from 'minide_plugin'
+
 class CMakeToolbar
 {
     constructor()
     {
-        console.log('plugin data directory: ', global.dataDirectory);
+        console.log('plugin data directory: ', plugin);
     }
 }
 

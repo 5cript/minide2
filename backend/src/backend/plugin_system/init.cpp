@@ -1,4 +1,4 @@
-#include <backend/plugin_system/global.hpp>
+#include <backend/plugin_system/init.hpp>
 
 #include <libplatform/libplatform.h>
 #include <v8.h>

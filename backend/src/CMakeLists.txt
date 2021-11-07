@@ -32,14 +32,19 @@ add_executable(
     "backend/settings/environment.cpp"
 
     # Plugin System
+    "backend/plugin_system/core.cpp"
     "backend/plugin_system/isolate.cpp"
-    "backend/plugin_system/global.cpp"
+    "backend/plugin_system/init.cpp"
     "backend/plugin_system/script.cpp"
+    "backend/plugin_system/module.cpp"
+    "backend/plugin_system/module_loader.cpp"
     "backend/plugin_system/plugin.cpp"
+    "backend/plugin_system/exception.cpp"
     "backend/plugin_system/api/console.cpp"
 )
 
 find_package(Threads REQUIRED)
+find_package(fmt REQUIRED)
 
 target_link_libraries(minideback 
     PUBLIC 
@@ -49,6 +54,7 @@ target_link_libraries(minideback
         attender
         v8pp
         v8
+        fmt::fmt
         ${Boost_LIBRARIES}
         -lbacktrace
         Threads::Threads

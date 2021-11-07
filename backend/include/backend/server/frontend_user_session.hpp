@@ -38,6 +38,7 @@ public:
 
 private:
     void onAfterAuthentication();
+    void endSession();
 
 private:
     struct Implementation;

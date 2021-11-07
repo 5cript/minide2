@@ -8,7 +8,7 @@
 
 #include <backend/plugin_system/plugin.hpp>
 #include <backend/plugin_system/isolate.hpp>
-#include <backend/plugin_system/script.hpp>
+#include <backend/plugin_system/module.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -161,6 +161,11 @@ void FrontendUserSession::onJson(json const& j)
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
+void FrontendUserSession::endSession()
+{
+    close_connection();
+}
+//---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::onAfterAuthentication()
 {
     try 
@@ -180,7 +185,10 @@ void FrontendUserSession::onAfterAuthentication()
         writeJson(json{
             {"ref", -1},
             {"error", exc.what()}
+        }, [this](auto){
+            endSession();
         });
+        
     }
 }
 //---------------------------------------------------------------------------------------------------------------------

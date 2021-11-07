@@ -22,7 +22,7 @@ public:
     Plugin& operator=(Plugin&&);
 
 private:
-    void exposeScriptApi();
+    void exposeGlobals();
 
 private:
     struct Implementation;
