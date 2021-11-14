@@ -7,8 +7,8 @@
 #include <backend/log.hpp>
 
 #include <backend/plugin_system/plugin.hpp>
-#include <backend/plugin_system/isolate.hpp>
-#include <backend/plugin_system/module.hpp>
+#include <v8wrap/isolate.hpp>
+#include <v8wrap/module.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -25,7 +25,7 @@ struct FrontendUserSession::Implementation
     Dispatcher dispatcher;
     bool authenticated;
     std::shared_ptr <Writer> activeWriter;
-    PluginSystem::Isolate javascriptIsolate;
+    v8wrap::Isolate javascriptIsolate;
 
     // API
     Api::User user;
@@ -74,10 +74,14 @@ void FrontendUserSession::Implementation::loadPlugins()
     for (sfs::directory_iterator iter{pluginDir}, end; iter != end; ++iter)
     {
         if (sfs::is_directory(iter->status()))
-            plugins.emplace_back(iter->path().filename().string(), Api::AllApis{
+        {
+            auto& plugin = plugins.emplace_back(iter->path().filename().string(), Api::AllApis{
                 .workspace = &workspace,
                 .user = &user
-            }).run();
+            });
+            plugin.run();
+            plugin.callOnLoad();
+        }
     }
 }
 //#####################################################################################################################
@@ -188,7 +192,6 @@ void FrontendUserSession::onAfterAuthentication()
         }, [this](auto){
             endSession();
         });
-        
     }
 }
 //---------------------------------------------------------------------------------------------------------------------

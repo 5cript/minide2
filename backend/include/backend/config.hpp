@@ -15,7 +15,7 @@ struct Config
     unsigned short port = 43255;
     unsigned short streamingPort = 43256;
 
-    unsigned short httpThreadCount = 4;
+    unsigned short httpThreadCount = 2;
 
     // regex to verify Origin
     std::string corsOption = ".*";

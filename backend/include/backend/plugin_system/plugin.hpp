@@ -20,9 +20,12 @@ public:
     ~Plugin();
     Plugin(Plugin&&);
     Plugin& operator=(Plugin&&);
+    
+    void callOnLoad() const;
 
 private:
-    void exposeGlobals();
+    void exposeGlobals() const;
+    void extractExports() const;
 
 private:
     struct Implementation;

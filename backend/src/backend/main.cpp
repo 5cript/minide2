@@ -8,13 +8,13 @@
 #include <special-paths/special_paths.hpp>
 #include <attender/io_context/managed_io_context.hpp>
 #include <attender/io_context/thread_pooler.hpp>
-#include <backend/plugin_system/init.hpp>
+#include <v8wrap/init.hpp>
 
 #include <iostream>
 
 using namespace std::string_literals;
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
     setupLog();
     setupCrashHandler();
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     Config config;
 
     // Plugins
-    PluginSystem::GlobalInit v8Init(argv[0]);
+    v8wrap::GlobalInit v8Init(argv[0]);
 
     // io_context
     attender::managed_io_context <attender::thread_pooler> context

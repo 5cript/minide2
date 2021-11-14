@@ -510,9 +510,9 @@ class MainWindow extends React.Component
         }
     }
 
-    onStreamError(err)
+    onStreamError(...args)
     {
-        console.error(err);
+        console.error(...args);
     }
 
     onConnectionLoss(which)
@@ -546,7 +546,7 @@ class MainWindow extends React.Component
             this.props.store,
             this.persistence,
             // Control Callback
-            (...args) => {this.onMessage(...args);}, 
+            (...args) => {/*...*/}, 
             // on Connection Loss
             (...args) => {this.onConnectionLoss(...args);},
             // Error Callback

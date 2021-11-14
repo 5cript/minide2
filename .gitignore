@@ -132,6 +132,7 @@ twisted-spirit
 hash-library
 node
 v8pp
+v8wrap
 
 tcp-server/bin/
 tcp-server/obj/

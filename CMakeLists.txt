@@ -17,6 +17,8 @@ add_subdirectory(attender)
 add_subdirectory(automata)
 add_subdirectory(debugger-interface)
 add_subdirectory(special-paths)
+
+add_subdirectory(v8wrap/src)
 add_subdirectory(backend/src)
 
 # use boost process
