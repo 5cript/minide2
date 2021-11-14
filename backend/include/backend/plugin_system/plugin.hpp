@@ -21,7 +21,7 @@ public:
     Plugin(Plugin&&);
     Plugin& operator=(Plugin&&);
     
-    void callOnLoad() const;
+    void initialize() const;
 
 private:
     void exposeGlobals() const;

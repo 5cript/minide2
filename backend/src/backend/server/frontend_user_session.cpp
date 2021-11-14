@@ -80,7 +80,7 @@ void FrontendUserSession::Implementation::loadPlugins()
                 .user = &user
             });
             plugin.run();
-            plugin.callOnLoad();
+            plugin.initialize();
         }
     }
 }
@@ -186,9 +186,19 @@ void FrontendUserSession::onAfterAuthentication()
     }
     catch(std::exception const& exc)
     {
+        std::cout << exc.what() << "\n";
         writeJson(json{
             {"ref", -1},
             {"error", exc.what()}
+        }, [this](auto){
+            endSession();
+        });
+    }
+    catch(...)
+    {
+        writeJson(json{
+            {"ref", -1},
+            {"error", "Non standard exception caught."}
         }, [this](auto){
             endSession();
         });

@@ -17,9 +17,9 @@
 
 #include <v8pp/class.hpp>
 #include <v8pp/module.hpp>
-#include <v8pp/class.hpp>
 
 #include <filesystem>
+#include <iostream>
 
 namespace PluginSystem
 {
@@ -67,15 +67,20 @@ namespace PluginSystem
     void Plugin::Implementation::runModule(v8::Local<v8::Value> defaultExport)
     {
         auto& ctx = mainScript->context();
-        pluginClass = v8wrap::Object::instantiateClass(ctx, defaultExport, 2, 7);
-        (void)ctx->Global()->Set(ctx, v8pp::to_v8(isolate, "PluginClass"), *pluginClass);
+        pluginClass = v8wrap::Object::instantiateClass(ctx, defaultExport);
+        (void)ctx->Global()->Set(ctx, v8wrap::v8cast<std::string>(ctx, "PluginClass"), *pluginClass);
     }
 //#####################################################################################################################
     Plugin::Plugin(std::string const& pluginName, Api::AllApis const& allApis)
         : impl_{std::make_unique<Implementation>(pluginName, allApis)}
     {
-        impl_->moduleLoader.addSynthetic("minide/plugin", v8pp::to_v8<std::string>(impl_->mainScript->isolate(), "PLUGIN"));
-        impl_->moduleLoader.addSynthetic("minide/toolbar", v8pp::to_v8<std::string>(impl_->mainScript->isolate(), "TOOLBAR"));
+        using namespace v8wrap;        
+        v8pp::jsmodule minideModule(impl_->mainScript->isolate());
+        PluginApi::makeToolbarClass(impl_->mainScript->context(), minideModule);
+
+        impl_->moduleLoader.addSynthetic("minide", {
+            {"default", ExportType{minideModule.new_instance()}}   
+        });
         exposeGlobals();
     }
 //---------------------------------------------------------------------------------------------------------------------
@@ -104,9 +109,10 @@ namespace PluginSystem
         impl_->runModule(defaultExport);
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::callOnLoad() const
+    void Plugin::initialize() const
     {
-        impl_->pluginClass->call("onLoad");
+        auto result = impl_->pluginClass->call("initialize");
+        PluginApi::Console::print(impl_->mainScript->context(), result);
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::string Plugin::name() const
