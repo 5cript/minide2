@@ -28,8 +28,10 @@ namespace Filesystem
     std::optional <sfs::path> Jail::relativeToRoot(sfs::path const& other, bool fakeJailAsRoot) const
     {
         std::error_code ec;
-        auto proxi = sfs::proximate(other, jailRoot_, ec);
+        auto proxi = sfs::relative(jailRoot_ / other, jailRoot_, ec);
         if (ec)
+            return std::nullopt;
+        if (proxi.empty())
             return std::nullopt;
         for (auto const& part : proxi)
         {
@@ -39,7 +41,7 @@ namespace Filesystem
         if (fakeJailAsRoot)
             return this->fakeJailAsRoot(proxi);
         else
-            return {proxi};
+            return {jailRoot_ / proxi.generic_string()};
     }
 //---------------------------------------------------------------------------------------------------------------------
     sfs::path Jail::fakeJailAsRoot(sfs::path const& other) const

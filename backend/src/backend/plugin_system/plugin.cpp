@@ -11,15 +11,20 @@
 #include <v8wrap/object.hpp>
 #include <v8wrap/module_loader.hpp>
 
+#include <backend/plugin_system/toolbar_plugin.hpp>
 #include <backend/plugin_system/api/console.hpp>
 #include <backend/plugin_system/api/plugin_self.hpp>
 #include <backend/plugin_system/api/toolbar.hpp>
+#include <backend/plugin_system/api/editor_control.hpp>
+#include <backend/plugin_system/api/resource_accessor.hpp>
 
 #include <v8pp/class.hpp>
 #include <v8pp/module.hpp>
 
 #include <filesystem>
 #include <iostream>
+
+using namespace std::string_literals;
 
 namespace PluginSystem
 {
@@ -36,7 +41,7 @@ namespace PluginSystem
         std::shared_ptr<v8wrap::Script> mainScript;
         std::shared_ptr<v8wrap::Module> mainModule;
         v8wrap::ModuleLoader moduleLoader;
-        std::unique_ptr<v8wrap::Object> pluginClass;
+        std::unique_ptr<PluginImplementation> pluginClass;
 
         void runModule(v8::Local<v8::Value> defaultExport);
     };
@@ -67,8 +72,14 @@ namespace PluginSystem
     void Plugin::Implementation::runModule(v8::Local<v8::Value> defaultExport)
     {
         auto& ctx = mainScript->context();
-        pluginClass = v8wrap::Object::instantiateClass(ctx, defaultExport);
-        (void)ctx->Global()->Set(ctx, v8wrap::v8cast<std::string>(ctx, "PluginClass"), *pluginClass);
+        auto object = v8wrap::Object::instantiateClass(ctx, defaultExport);
+        if (!object->has("pluginType"))
+            throw std::runtime_error("Plugin class needs member called 'pluginType' to identify its type.");
+        const auto type = object->get<std::string>("pluginType");
+        if (type == "Toolbar")
+            pluginClass = std::make_unique<ToolbarPlugin>(std::move(object));
+        else
+            throw std::runtime_error("Unknown plugin type called: "s + type);
     }
 //#####################################################################################################################
     Plugin::Plugin(std::string const& pluginName, Api::AllApis const& allApis)
@@ -77,6 +88,8 @@ namespace PluginSystem
         using namespace v8wrap;        
         v8pp::jsmodule minideModule(impl_->mainScript->isolate());
         PluginApi::makeToolbarClass(impl_->mainScript->context(), minideModule);
+        PluginApi::makeEditorControlClass(impl_->mainScript->context(), minideModule);
+        PluginApi::makeResourceAccessorClass(impl_->mainScript->context(), minideModule, impl_->pluginDataDirectory);
 
         impl_->moduleLoader.addSynthetic("minide", {
             {"default", ExportType{minideModule.new_instance()}}   
@@ -111,8 +124,7 @@ namespace PluginSystem
 //---------------------------------------------------------------------------------------------------------------------
     void Plugin::initialize() const
     {
-        auto result = impl_->pluginClass->call("initialize");
-        PluginApi::Console::print(impl_->mainScript->context(), result);
+        impl_->pluginClass->initialize();
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::string Plugin::name() const

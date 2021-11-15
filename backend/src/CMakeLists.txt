@@ -33,11 +33,14 @@ add_executable(
 
     # Plugin System
     "backend/plugin_system/api/console.cpp"
+    "backend/plugin_system/api/resource_accessor.cpp"
     "backend/plugin_system/plugin.cpp"
+    "backend/plugin_system/toolbar_plugin.cpp"
 )
 
 find_package(Threads REQUIRED)
 find_package(fmt REQUIRED)
+find_package(png REQUIRED)
 
 target_link_libraries(minideback 
     PUBLIC 
@@ -52,6 +55,7 @@ target_link_libraries(minideback
         ${Boost_LIBRARIES}
         -lbacktrace
         Threads::Threads
+        png
 )
 target_include_directories(minideback 
     PUBLIC 

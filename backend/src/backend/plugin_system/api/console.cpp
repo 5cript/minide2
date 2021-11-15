@@ -23,7 +23,7 @@ void log(v8::FunctionCallbackInfo<v8::Value> const& args)
     std::cout << std::endl;
 }
 //---------------------------------------------------------------------------------------------------------------------
-std::ostream& print(v8::Local<v8::Context> context, v8::Local<v8::Value>& value)
+std::ostream& print(v8::Local<v8::Context> context, v8::Local<v8::Value> value)
 {
      v8::HandleScope handle_scope(context->GetIsolate());
      v8::Local<v8::Object> JSON = context->Global()->Get(
