@@ -3,6 +3,7 @@
 #include <backend/server/frontend_user_session.hpp>
 
 #include <v8wrap/array.hpp>
+#include <v8wrap/json.hpp>
 
 namespace PluginSystem
 {
@@ -19,12 +20,21 @@ namespace PluginSystem
         if (auto sess = session_.lock(); sess)
         {
             v8::HandleScope scope{pluginClass_->isolate()};
-            v8wrap::Array array{pluginClass_->context(), pluginClass_->call("initialize")};
-            PluginApi::Console::print(pluginClass_->context(), array);
+            v8wrap::Array elements{pluginClass_->context(), pluginClass_->call("initialize")};
+            v8wrap::Object toolbarDefinition{pluginClass_->context()};
+            toolbarDefinition.set("pluginType", "toolbar");
+            toolbarDefinition.set("elements", elements.asValue());
 
-            sess->enque_write([](attender::websocket::session_base*, std::size_t){
-                
-            });
+            sess->enqueue_write(
+                [result{
+                    v8wrap::JSON::stringify(pluginClass_->context(), 
+                    toolbarDefinition.asValue())
+                }]
+                (attender::websocket::session_base* sess, std::size_t)
+                {
+                    static_cast <FrontendUserSession*>(sess)->writeText(result);
+                }
+            );
         }
     }
 //#####################################################################################################################

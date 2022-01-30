@@ -1,0 +1,4 @@
+{
+    "editor.formatOnSave": true,
+    "clang-format.executable": "D:/msys2/home/Tim/clang/bin/clang-format.exe",
+}

@@ -118,7 +118,6 @@ namespace PluginSystem
             else
                 throw std::runtime_error("There needs to be a default export.");
         }
-        PluginApi::Console::print(ctx, defaultExport);
         LOG() << "Got default export.\n";
         impl_->runModule(defaultExport);
     }

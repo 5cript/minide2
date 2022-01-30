@@ -32,6 +32,7 @@ public:
     void on_write_complete(std::size_t) override;
 
     bool writeJson(json const& j, std::function<void(session_base*, std::size_t)> const& on_complete = {});
+    bool writeText(std::string const& txt, std::function<void(session_base*, std::size_t)> const& on_complete = {});
     void onJson(json const& j);
     void respondWithError(int ref, std::string const& msg);
     bool writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(session_base*, std::size_t)> const& on_complete);

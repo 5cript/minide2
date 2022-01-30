@@ -212,13 +212,17 @@ void FrontendUserSession::respondWithError(int ref, std::string const& msg)
     });
 }
 //---------------------------------------------------------------------------------------------------------------------
+bool FrontendUserSession::writeText(std::string const& txt, std::function<void(session_base*, std::size_t)> const& on_complete)
+{
+    std::stringstream sstr;
+    sstr << "0x" << std::hex << std::setw(8) << std::setfill('0') << txt.size() << "|" << txt;
+    return write_text(sstr.str(), on_complete);
+}
+//---------------------------------------------------------------------------------------------------------------------
 bool FrontendUserSession::writeJson(json const& j, std::function<void(session_base*, std::size_t)> const& on_complete)
 {
-    // TODO: Improve me.
     std::string serialized = j.dump();
-    std::stringstream sstr;
-    sstr << "0x" << std::hex << std::setw(8) << std::setfill('0') << serialized.size() << "|" << serialized;
-    return write_text(sstr.str(), on_complete);
+    writeText(serialized, on_complete);
 }
 //---------------------------------------------------------------------------------------------------------------------
 bool FrontendUserSession::writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(session_base*, std::size_t)> const& on_complete)

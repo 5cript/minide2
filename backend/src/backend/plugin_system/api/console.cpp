@@ -25,8 +25,8 @@ void log(v8::FunctionCallbackInfo<v8::Value> const& args)
 //---------------------------------------------------------------------------------------------------------------------
 std::ostream& print(v8::Local<v8::Context> context, v8::Local<v8::Value> value)
 {
-     v8::HandleScope handle_scope(context->GetIsolate());
-     v8::Local<v8::Object> JSON = context->Global()->Get(
+    v8::HandleScope handle_scope(context->GetIsolate());
+    v8::Local<v8::Object> JSON = context->Global()->Get(
         context, 
         v8::String::NewFromUtf8(context->GetIsolate(), "JSON").ToLocalChecked()
     ).ToLocalChecked()->ToObject(context).ToLocalChecked();
