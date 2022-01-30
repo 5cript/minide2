@@ -14,13 +14,13 @@ void FileWriter::write()
     if (auto sess = session_.lock(); sess)
     {
         reader_.read(buffer_.data(), buffer_.size());
-        const auto readCount = static_cast <std::size_t>(reader_.gcount());
-        sess->writeBinary(ref_, buffer_, readCount, [self = shared_from_this(), readCount](auto, auto){
+        const auto readCount = static_cast<std::size_t>(reader_.gcount());
+        sess->writeBinary(ref_, buffer_, readCount, [self = shared_from_this(), readCount](auto, auto) {
             if (readCount == bufferSize)
                 self->write();
             else if (auto sess = self->session_.lock(); sess)
             {
-                sess->writeBinary(self->ref_, "", 0, [](auto, auto){});
+                sess->writeBinary(self->ref_, "", 0, [](auto, auto) {});
             }
         });
     }

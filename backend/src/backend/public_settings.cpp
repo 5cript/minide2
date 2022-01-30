@@ -34,7 +34,7 @@ void PublicSettings::save()
 //---------------------------------------------------------------------------------------------------------------------
 sfs::path PublicSettings::getFileName() const
 {
-    std::lock_guard <std::mutex> memoGuardian{memoSaver_};
+    std::lock_guard<std::mutex> memoGuardian{memoSaver_};
 
     if (homeMemo_.empty())
     {
@@ -48,21 +48,21 @@ sfs::path PublicSettings::getFileName() const
     return homeMemo_;
 }
 //---------------------------------------------------------------------------------------------------------------------
-std::unordered_map <std::string, SettingParts::Environment> PublicSettings::environments() const
+std::unordered_map<std::string, SettingParts::Environment> PublicSettings::environments() const
 {
     return environments_;
 }
 //---------------------------------------------------------------------------------------------------------------------
-void PublicSettings::setEnvironments(std::unordered_map <std::string, SettingParts::Environment> const& envs)
+void PublicSettings::setEnvironments(std::unordered_map<std::string, SettingParts::Environment> const& envs)
 {
     environments_ = envs;
     save();
 }
 //---------------------------------------------------------------------------------------------------------------------
-std::optional <std::unordered_map <std::string, std::string>> PublicSettings::compileEnvironment(std::string const& name) const
+std::optional<std::unordered_map<std::string, std::string>> PublicSettings::compileEnvironment(std::string const& name
+) const
 {
-    auto findEnv = [this](std::string const& name) -> std::optional <SettingParts::Environment>
-    {
+    auto findEnv = [this](std::string const& name) -> std::optional<SettingParts::Environment> {
         auto iter = environments_.find(name);
         if (iter == std::end(environments_))
             return std::nullopt;
@@ -81,10 +81,8 @@ std::optional <std::unordered_map <std::string, std::string>> PublicSettings::co
         auto inheritedEnv = findEnv(inherits);
         if (!inheritedEnv)
         {
-            throw std::runtime_error
-            (
-                "environment inherits other environment that wasn't found"s +
-                "{\"inherited\":\""s + inherits + "\"}"
+            throw std::runtime_error(
+                "environment inherits other environment that wasn't found"s + "{\"inherited\":\""s + inherits + "\"}"
             );
         }
 
@@ -108,13 +106,11 @@ PublicSettings::~PublicSettings() = default;
 //---------------------------------------------------------------------------------------------------------------------
 PublicSettings::PublicSettings(PublicSettings const& other)
     : environments_{other.environments_}
-{
-}
+{}
 //---------------------------------------------------------------------------------------------------------------------
 PublicSettings::PublicSettings(PublicSettings&& other)
     : environments_{std::move(other.environments_)}
-{
-}
+{}
 //---------------------------------------------------------------------------------------------------------------------
 PublicSettings& PublicSettings::operator=(PublicSettings other)
 {
@@ -137,10 +133,7 @@ void swap(PublicSettings& lhs, PublicSettings& rhs)
 //#####################################################################################################################
 void to_json(json& j, PublicSettings const& settings)
 {
-    j = json
-    {
-        {"environments", settings.environments_}
-    };
+    j = json{{"environments", settings.environments_}};
 }
 //---------------------------------------------------------------------------------------------------------------------
 void from_json(json const& j, PublicSettings& settings)

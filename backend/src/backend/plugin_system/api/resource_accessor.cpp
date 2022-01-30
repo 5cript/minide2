@@ -16,11 +16,11 @@ using namespace std::string_literals;
 
 namespace PluginSystem::PluginApi
 {
-//#####################################################################################################################
-    ResourceAccessor::ResourceAccessor(std::filesystem::path const& resourceDirectory) 
+    //#####################################################################################################################
+    ResourceAccessor::ResourceAccessor(std::filesystem::path const& resourceDirectory)
         : resourceDirectory_{resourceDirectory}
     {}
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     std::string ResourceAccessor::loadPng(std::string const& fileName)
     {
         Filesystem::Jail jail{resourceDirectory_};
@@ -29,12 +29,12 @@ namespace PluginSystem::PluginApi
             auto path = *maybePath;
             std::ifstream reader{path, std::ios_base::binary};
             if (!reader.good())
-                throw std::runtime_error("Could not open file at '"s +  path.string() + "'.");
-            
+                throw std::runtime_error("Could not open file at '"s + path.string() + "'.");
+
             // verify image only:
             namespace bg = boost::gil;
             bg::rgba8_image_t image;
-            bg::read_and_convert_image(reader, image, bg::image_read_settings<bg::png_tag>{});  
+            bg::read_and_convert_image(reader, image, bg::image_read_settings<bg::png_tag>{});
 
             reader.seekg(0);
             auto content = Filesystem::loadFile(reader);
@@ -45,5 +45,5 @@ namespace PluginSystem::PluginApi
         else
             throw std::runtime_error("Path was rejected. Its probably not within the resource directory.");
     }
-//#####################################################################################################################
+    //#####################################################################################################################
 }

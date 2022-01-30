@@ -28,7 +28,7 @@ using namespace std::string_literals;
 
 namespace PluginSystem
 {
-//#####################################################################################################################
+    //#####################################################################################################################
     struct Plugin::Implementation
     {
         Implementation(std::string const& pluginName, Api::AllApis const& allApis);
@@ -45,7 +45,7 @@ namespace PluginSystem
 
         void runModule(v8::Local<v8::Value> defaultExport);
     };
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     Plugin::Implementation::Implementation(std::string const& pluginName, Api::AllApis const& allApis)
         : name{pluginName}
         , pluginDirectory{inHomeDirectory() / Plugin::pluginsDir / pluginName}
@@ -53,22 +53,21 @@ namespace PluginSystem
         , apis{allApis}
         , isolate{}
         , mainScript{std::make_shared<v8wrap::Script>(v8wrap::Script::CreationParameters{
-            .isolate = isolate,
-            .fileName = pluginName + "/main.js",
-            .script = "",
-        })}
+              .isolate = isolate,
+              .fileName = pluginName + "/main.js",
+              .script = "",
+          })}
         , mainModule{std::make_shared<v8wrap::Module>(v8wrap::Module::CreationParameters{
-            .context = mainScript->context(), 
-            .fileName = pluginName + "/main.js",
-            .script = Filesystem::loadFile(pluginDirectory / pluginMainFile),
-            .onModuleLoad = [this](v8::Local<v8::Context> ctx, std::string const& path){
-                return moduleLoader.load(ctx, path);
-            }
-        })}
+              .context = mainScript->context(),
+              .fileName = pluginName + "/main.js",
+              .script = Filesystem::loadFile(pluginDirectory / pluginMainFile),
+              .onModuleLoad =
+                  [this](v8::Local<v8::Context> ctx, std::string const& path) {
+                      return moduleLoader.load(ctx, path);
+                  }})}
         , moduleLoader{}
-    {
-    }
-//---------------------------------------------------------------------------------------------------------------------
+    {}
+    //---------------------------------------------------------------------------------------------------------------------
     void Plugin::Implementation::runModule(v8::Local<v8::Value> defaultExport)
     {
         auto& ctx = mainScript->context();
@@ -81,28 +80,26 @@ namespace PluginSystem
         else
             throw std::runtime_error("Unknown plugin type called: "s + type);
     }
-//#####################################################################################################################
+    //#####################################################################################################################
     Plugin::Plugin(std::string const& pluginName, Api::AllApis const& allApis)
         : impl_{std::make_unique<Implementation>(pluginName, allApis)}
     {
-        using namespace v8wrap;        
+        using namespace v8wrap;
         v8pp::jsmodule minideModule(impl_->mainScript->isolate());
         PluginApi::makeToolbarClass(impl_->mainScript->context(), minideModule);
         PluginApi::makeEditorControlClass(impl_->mainScript->context(), minideModule);
         PluginApi::makeResourceAccessorClass(impl_->mainScript->context(), minideModule, impl_->pluginDataDirectory);
 
-        impl_->moduleLoader.addSynthetic("minide", {
-            {"default", ExportType{minideModule.new_instance()}}   
-        });
+        impl_->moduleLoader.addSynthetic("minide", {{"default", ExportType{minideModule.new_instance()}}});
         exposeGlobals();
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     void Plugin::run() const
     {
         (void)impl_->mainModule->evaluate();
         extractExports();
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     void Plugin::extractExports() const
     {
         v8::HandleScope handle_scope(impl_->isolate);
@@ -121,17 +118,17 @@ namespace PluginSystem
         LOG() << "Got default export.\n";
         impl_->runModule(defaultExport);
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     void Plugin::initialize(std::weak_ptr<FrontendUserSession> session) const
     {
         impl_->pluginClass->initialize(std::move(session));
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     std::string Plugin::name() const
     {
         return impl_->name;
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     void Plugin::exposeGlobals() const
     {
         auto context = impl_->isolate->GetCurrentContext();
@@ -142,11 +139,11 @@ namespace PluginSystem
         v8::Local<v8::Object> global = context->Global()->GetPrototype().As<v8::Object>();
         (void)global->Set(context, v8pp::to_v8(impl_->isolate, "console"), console.new_instance());
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     Plugin::~Plugin() = default;
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     Plugin::Plugin(Plugin&&) = default;
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     Plugin& Plugin::operator=(Plugin&&) = default;
-//#####################################################################################################################
+    //#####################################################################################################################
 }

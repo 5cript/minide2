@@ -7,15 +7,15 @@
 
 class StreamParser
 {
-public:
+  public:
     void feed(std::string_view txt);
     std::optional<json> popMessage();
 
-private:
+  private:
     std::string::const_iterator findCompleteObjectEnd();
     std::string consumeObject(std::string::const_iterator end);
 
-private:
+  private:
     std::string m_buffer;
     struct FindMemoizer
     {

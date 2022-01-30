@@ -7,10 +7,11 @@ AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: All
+AllowShortLambdasOnASingleLine: Empty
 AllowShortLoopsOnASingleLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
 BasedOnStyle: LLVM
@@ -41,7 +42,7 @@ ColumnLimit: 120
 ContinuationIndentWidth: 4
 ConstructorInitializerIndentWidth: 4
 Cpp11BracedListStyle: true
-FixNamespaceComments: true
+FixNamespaceComments: false
 IncludeBlocks: Preserve
 IndentCaseLabels: true
 IndentPPDirectives: AfterHash
@@ -50,7 +51,7 @@ Language: Cpp
 NamespaceIndentation: All 
 PointerAlignment: Left
 ReflowComments: true
-SortIncludes: true
+SortIncludes: false
 SortUsingDeclarations: false
 SpaceAfterTemplateKeyword: true
 SpaceBeforeAssignmentOperators: true
@@ -63,3 +64,7 @@ SpacesInSquareBrackets: false
 Standard: c++20
 TabWidth: 4
 UseTab: Never
+EmptyLineBeforeAccessModifier: Always
+IndentExternBlock: Indent
+IndentRequires: false
+AlignOperands: DontAlign

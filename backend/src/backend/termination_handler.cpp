@@ -9,7 +9,7 @@
 #include <sstream>
 
 #ifndef WINDOWS
-#   include <signal.h>
+#    include <signal.h>
 #endif
 
 #define BOOST_STACKTRACE_USE_BACKTRACE
@@ -39,8 +39,10 @@
         }
         catch (...)
         {
-            LOGEX(false) << "WARNING! This is not a derivative of std::exception" << "\n";
-            LOGEX(false) << "This is a severe error" << "\n";
+            LOGEX(false) << "WARNING! This is not a derivative of std::exception"
+                         << "\n";
+            LOGEX(false) << "This is a severe error"
+                         << "\n";
             // additional action
         }
         std::_Exit(EXIT_FAILURE);

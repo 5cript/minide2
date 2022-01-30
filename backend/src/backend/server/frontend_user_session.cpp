@@ -24,7 +24,7 @@ struct FrontendUserSession::Implementation
     StreamParser textParser;
     Dispatcher dispatcher;
     bool authenticated;
-    std::shared_ptr <Writer> activeWriter;
+    std::shared_ptr<Writer> activeWriter;
     v8wrap::Isolate javascriptIsolate;
     std::weak_ptr<FrontendUserSession> session;
 
@@ -34,12 +34,8 @@ struct FrontendUserSession::Implementation
 
     // Toolbars
     std::vector<PluginSystem::Plugin> plugins;
-    
-    Implementation
-    (
-        std::weak_ptr<BackendControl> server, 
-        std::string sessionId
-    );
+
+    Implementation(std::weak_ptr<BackendControl> server, std::string sessionId);
 
     void imbueOwner(std::weak_ptr<FrontendUserSession> session);
 
@@ -47,18 +43,13 @@ struct FrontendUserSession::Implementation
     void loadPlugins();
 };
 //---------------------------------------------------------------------------------------------------------------------
-FrontendUserSession::Implementation::Implementation
-(
-    std::weak_ptr<BackendControl> server, 
-    std::string sessionId
-)
+FrontendUserSession::Implementation::Implementation(std::weak_ptr<BackendControl> server, std::string sessionId)
     : server{server}
     , sessionId{std::move(sessionId)}
     , textParser{}
     , dispatcher{}
     , authenticated{false}
     , activeWriter{}
-    // API
     , user{}
     , workspace{&dispatcher}
     , plugins{}
@@ -77,36 +68,37 @@ void FrontendUserSession::Implementation::loadPlugins()
     {
         if (sfs::is_directory(iter->status()))
         {
-            auto& plugin = plugins.emplace_back(iter->path().filename().string(), Api::AllApis{
-                .workspace = &workspace,
-                .user = &user
-            });
+            auto& plugin = plugins.emplace_back(
+                iter->path().filename().string(),
+                Api::AllApis{
+                    .workspace = &workspace,
+                    .user = &user,
+                }
+            );
             plugin.run();
             plugin.initialize(session);
         }
     }
 }
 //#####################################################################################################################
-FrontendUserSession::FrontendUserSession
-(
-    attender::websocket::connection* owner, 
-    std::weak_ptr<BackendControl> server, 
+FrontendUserSession::FrontendUserSession(
+    attender::websocket::connection* owner,
+    std::weak_ptr<BackendControl> server,
     std::string sessionId
 )
     : attender::websocket::session_base{owner}
     , impl_{std::make_unique<Implementation>(server, sessionId)}
-{
-}
+{}
 //---------------------------------------------------------------------------------------------------------------------
 FrontendUserSession::~FrontendUserSession() = default;
 //---------------------------------------------------------------------------------------------------------------------
-void FrontendUserSession::setWriter(std::shared_ptr <Writer> writer)
+void FrontendUserSession::setWriter(std::shared_ptr<Writer> writer)
 {
     impl_->activeWriter = std::move(writer);
     impl_->activeWriter->write();
 }
 //---------------------------------------------------------------------------------------------------------------------
-void FrontendUserSession::on_close() 
+void FrontendUserSession::on_close()
 {
     LOG() << "Session closed\n";
     auto shared = impl_->server.lock();
@@ -118,10 +110,10 @@ void FrontendUserSession::on_close()
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::setup()
 {
-    impl_->imbueOwner(weak_from_this());    
+    impl_->imbueOwner(weak_from_this());
 }
 //---------------------------------------------------------------------------------------------------------------------
-void FrontendUserSession::on_text(std::string_view txt) 
+void FrontendUserSession::on_text(std::string_view txt)
 {
     impl_->textParser.feed(txt);
     const auto popped = impl_->textParser.popMessage();
@@ -136,11 +128,11 @@ void FrontendUserSession::on_text(std::string_view txt)
 
     LOG() << (*popped)["type"].get<std::string>() << " called\n";
 
-    try 
+    try
     {
         onJson(*popped);
     }
-    catch(std::exception const& exc)
+    catch (std::exception const& exc)
     {
         LOG() << "Connection was ended by exception: " << exc.what() << "\n";
     }
@@ -154,12 +146,15 @@ void FrontendUserSession::onJson(json const& j)
     if (impl_->user.authenticate(j["payload"]))
     {
         impl_->authenticated = true;
-        writeJson(json{
-            {"ref", j["ref"]},
-            {"authenticated", true}
-        }, [this](auto, auto){
-            onAfterAuthentication();
-        });
+        writeJson(
+            json{
+                {"ref", j["ref"]},
+                {"authenticated", true},
+            },
+            [this](auto, auto) {
+                onAfterAuthentication();
+            }
+        );
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -170,36 +165,42 @@ void FrontendUserSession::endSession()
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::onAfterAuthentication()
 {
-    try 
+    try
     {
         impl_->loadPlugins();
-        std::vector <std::string> pluginNames;
+        std::vector<std::string> pluginNames;
         for (auto const& plugin : impl_->plugins)
             pluginNames.push_back(plugin.name());
 
         writeJson(json{
             {"ref", -1},
-            {"plugins_loaded", pluginNames}
+            {"plugins_loaded", pluginNames},
         });
     }
-    catch(std::exception const& exc)
+    catch (std::exception const& exc)
     {
         std::cout << exc.what() << "\n";
-        writeJson(json{
-            {"ref", -1},
-            {"error", exc.what()}
-        }, [this](auto, auto){
-            endSession();
-        });
+        writeJson(
+            json{
+                {"ref", -1},
+                {"error", exc.what()},
+            },
+            [this](auto, auto) {
+                endSession();
+            }
+        );
     }
-    catch(...)
+    catch (...)
     {
-        writeJson(json{
-            {"ref", -1},
-            {"error", "Non standard exception caught."}
-        }, [this](auto, auto){
-            endSession();
-        });
+        writeJson(
+            json{
+                {"ref", -1},
+                {"error", "Non standard exception caught."},
+            },
+            [this](auto, auto) {
+                endSession();
+            }
+        );
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -208,11 +209,14 @@ void FrontendUserSession::respondWithError(int ref, std::string const& msg)
     LOG() << "Responding with error: " << msg << "\n";
     writeJson(json{
         {"ref", ref},
-        {"error", msg}
+        {"error", msg},
     });
 }
 //---------------------------------------------------------------------------------------------------------------------
-bool FrontendUserSession::writeText(std::string const& txt, std::function<void(session_base*, std::size_t)> const& on_complete)
+bool FrontendUserSession::writeText(
+    std::string const& txt,
+    std::function<void(session_base*, std::size_t)> const& on_complete
+)
 {
     std::stringstream sstr;
     sstr << "0x" << std::hex << std::setw(8) << std::setfill('0') << txt.size() << "|" << txt;
@@ -225,7 +229,12 @@ bool FrontendUserSession::writeJson(json const& j, std::function<void(session_ba
     writeText(serialized, on_complete);
 }
 //---------------------------------------------------------------------------------------------------------------------
-bool FrontendUserSession::writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(session_base*, std::size_t)> const& on_complete)
+bool FrontendUserSession::writeBinary(
+    int ref,
+    std::string const& data,
+    std::size_t amount,
+    std::function<void(session_base*, std::size_t)> const& on_complete
+)
 {
     // TODO: Improve me.
     const auto size = std::min(data.size(), amount);
@@ -243,7 +252,7 @@ void FrontendUserSession::on_write_complete(std::size_t bytesTransferred)
     session_base::on_write_complete(bytesTransferred);
 }
 //---------------------------------------------------------------------------------------------------------------------
-void FrontendUserSession::on_binary(char const*, std::size_t) 
+void FrontendUserSession::on_binary(char const*, std::size_t)
 {
     LOG() << "on_binary\n";
 }

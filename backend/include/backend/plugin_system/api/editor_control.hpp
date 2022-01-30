@@ -11,7 +11,8 @@ namespace PluginSystem::PluginApi
 {
     struct EditorControl
     {
-        EditorControl() {}
+        EditorControl()
+        {}
         void save()
         {
             std::cout << "save!\n";
@@ -25,11 +26,7 @@ namespace PluginSystem::PluginApi
     inline void makeEditorControlClass(v8::Local<v8::Context> context, v8pp::jsmodule& mod)
     {
         v8pp::class_<EditorControl> EditorControl(context->GetIsolate());
-        EditorControl
-            .ctor<>()
-            .set("save", &EditorControl::save)
-            .set("saveAll", &EditorControl::saveAll)
-        ;
+        EditorControl.ctor<>().set("save", &EditorControl::save).set("saveAll", &EditorControl::saveAll);
         mod.set("EditorControl", EditorControl);
     }
 }

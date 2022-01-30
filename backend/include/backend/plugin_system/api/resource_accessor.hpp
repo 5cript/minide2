@@ -13,23 +13,26 @@ namespace PluginSystem::PluginApi
 {
     class ResourceAccessor
     {
-    public:
+      public:
         ResourceAccessor(sfs::path const& resourceDirectory);
         std::string loadPng(std::string const& fileName);
 
-    private:
+      private:
         sfs::path resourceDirectory_;
     };
 
-    inline void makeResourceAccessorClass(v8::Local<v8::Context> context, v8pp::jsmodule& mod, std::filesystem::path const& resourceDirectory)
+    inline void makeResourceAccessorClass(
+        v8::Local<v8::Context> context,
+        v8pp::jsmodule& mod,
+        std::filesystem::path const& resourceDirectory
+    )
     {
         v8pp::class_<ResourceAccessor> resourceAccessor(context->GetIsolate());
         resourceAccessor
-            .ctor<>([&](v8::FunctionCallbackInfo<v8::Value> const&){
+            .ctor<>([&](v8::FunctionCallbackInfo<v8::Value> const&) {
                 return new ResourceAccessor(resourceDirectory);
             })
-            .set("loadPng", &ResourceAccessor::loadPng)
-        ;
+            .set("loadPng", &ResourceAccessor::loadPng);
         mod.set("ResourceAccessor", resourceAccessor);
     }
 }

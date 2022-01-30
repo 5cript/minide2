@@ -6,7 +6,7 @@ namespace Api
 {
     class User
     {
-    public:
+      public:
         bool authenticate(json const& payload);
     };
 }

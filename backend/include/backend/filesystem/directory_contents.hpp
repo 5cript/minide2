@@ -12,11 +12,11 @@ namespace Filesystem
      */
     class DirectoryContent
     {
-    public:
+      public:
         sfs::path root;
-        std::vector <std::string> files;
-        std::vector <DirectoryContent> directories;
-        std::optional <std::string> origin;
+        std::vector<std::string> files;
+        std::vector<DirectoryContent> directories;
+        std::optional<std::string> origin;
         bool flatDirectory;
 
         /**
@@ -29,9 +29,9 @@ namespace Filesystem
          */
         void scan(bool recursive, int recursionLimit = 100);
     };
-    
+
     /**
-     * 
+     *
      */
     static void to_json(json& j, DirectoryContent const& dc)
     {
@@ -49,11 +49,11 @@ namespace Filesystem
         else
         {
             j["flat"] = true;
-            std::vector <std::string> flat;
-            for (auto const& d: dc.directories)
+            std::vector<std::string> flat;
+            for (auto const& d : dc.directories)
                 flat.push_back(d.root.string());
             j["directories"] = flat;
         }
     }
-//#####################################################################################################################
+    //#####################################################################################################################
 }

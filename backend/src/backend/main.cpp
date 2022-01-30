@@ -27,21 +27,17 @@ int main(int, char* argv[])
     v8wrap::GlobalInit v8Init(argv[0]);
 
     // io_context
-    attender::managed_io_context <attender::thread_pooler> context
-    {
-        static_cast <std::size_t> (config.httpThreadCount),
-        []()
-        {
+    attender::managed_io_context<attender::thread_pooler> context{
+        static_cast<std::size_t>(config.httpThreadCount),
+        []() {
             setupSignalHandler();
         },
-        [](std::exception const& exc)
-        {
+        [](std::exception const& exc) {
             std::stringstream sstr;
             sstr << std::this_thread::get_id();
             LOG() << "Uncaught exception in thread " << sstr.str() << ": " << exc.what() << ".\n";
             std::exit(1);
-        }
-    };
+        }};
 
     // Websocket Server
     std::shared_ptr<BackendControl> wsServer = std::make_shared<BackendControl>(context.get_io_service());
@@ -54,8 +50,7 @@ int main(int, char* argv[])
 
 void setupLog()
 {
-    auto logPath = []()
-    {
+    auto logPath = []() {
         auto home = sfs::path{SpecialPaths::getHome()};
         if (!sfs::exists(home / ".minIDE"))
             sfs::create_directory(home / ".minIDE");
@@ -69,10 +64,7 @@ void setupLog()
     log.setConcise(true);
     log.configureProjectMainFile(__FILE__);
     log.setTerminalEnabled(true);
-    log.open(
-        logPath(),
-        10
-    );
+    log.open(logPath(), 10);
     LOG() << "Build Time and Date: " << __DATE__ << " " << __TIME__ << ".\n";
 }
 
@@ -92,8 +84,7 @@ void setupCrashHandler()
 
 void buildDirectoryStructure()
 {
-    auto createAndRecheck = [](sfs::path const& where)
-    {
+    auto createAndRecheck = [](sfs::path const& where) {
         if (!sfs::exists(where))
             sfs::create_directory(where);
 

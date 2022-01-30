@@ -19,7 +19,8 @@ namespace PluginSystem::PluginApi
     {
         std::string pluginType = "Toolbar";
 
-        Toolbar() {}
+        Toolbar()
+        {}
         v8::Local<v8::Value> makeMenu(v8::FunctionCallbackInfo<v8::Value> const& args);
         v8::Local<v8::Value> makeSplitter(v8::FunctionCallbackInfo<v8::Value> const& args);
         v8::Local<v8::Value> makeIconButton(v8::FunctionCallbackInfo<v8::Value> const& args);
@@ -28,13 +29,11 @@ namespace PluginSystem::PluginApi
     inline void makeToolbarClass(v8::Local<v8::Context> context, v8pp::jsmodule& mod)
     {
         v8pp::class_<Toolbar> toolbar(context->GetIsolate());
-        toolbar
-            .ctor<>()
+        toolbar.ctor<>()
             .set("pluginType", &Toolbar::pluginType)
             .set("makeMenu", &Toolbar::makeMenu)
             .set("makeSplitter", &Toolbar::makeSplitter)
-            .set("makeIconButton", &Toolbar::makeIconButton)
-        ;
+            .set("makeIconButton", &Toolbar::makeIconButton);
         mod.set("Toolbar", toolbar);
     }
 }

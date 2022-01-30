@@ -7,7 +7,7 @@
 
 namespace Filesystem
 {
-    inline std::string loadFile(sfs::path const& file) 
+    inline std::string loadFile(sfs::path const& file)
     {
         using namespace std::string_literals;
         std::ifstream reader{file, std::ios_base::binary};
@@ -20,8 +20,8 @@ namespace Filesystem
         reader.read(content.data(), content.size());
         return content;
     }
-    
-    inline std::string loadFile(std::ifstream& reader) 
+
+    inline std::string loadFile(std::ifstream& reader)
     {
         reader.seekg(0, std::ios_base::end);
         std::string content(reader.tellg(), '\0');

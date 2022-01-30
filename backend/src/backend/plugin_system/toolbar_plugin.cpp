@@ -7,12 +7,11 @@
 
 namespace PluginSystem
 {
-//#####################################################################################################################
+    //#####################################################################################################################
     ToolbarPlugin::ToolbarPlugin(std::unique_ptr<v8wrap::Object>&& pluginClass)
         : PluginImplementation{std::move(pluginClass)}
-    {
-    }
-//---------------------------------------------------------------------------------------------------------------------
+    {}
+    //---------------------------------------------------------------------------------------------------------------------
     void ToolbarPlugin::initialize(std::weak_ptr<FrontendUserSession>&& session)
     {
         PluginImplementation::initialize(std::move(session));
@@ -25,17 +24,12 @@ namespace PluginSystem
             toolbarDefinition.set("pluginType", "toolbar");
             toolbarDefinition.set("elements", elements.asValue());
 
-            sess->enqueue_write(
-                [result{
-                    v8wrap::JSON::stringify(pluginClass_->context(), 
-                    toolbarDefinition.asValue())
-                }]
-                (attender::websocket::session_base* sess, std::size_t)
-                {
-                    static_cast <FrontendUserSession*>(sess)->writeText(result);
-                }
-            );
+            sess->enqueue_write([result{v8wrap::JSON::stringify(pluginClass_->context(), toolbarDefinition.asValue())}](
+                                    attender::websocket::session_base* sess, std::size_t
+                                ) {
+                static_cast<FrontendUserSession*>(sess)->writeText(result);
+            });
         }
     }
-//#####################################################################################################################
+    //#####################################################################################################################
 }

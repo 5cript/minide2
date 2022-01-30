@@ -12,13 +12,13 @@ namespace Api
 {
     class ApiBase
     {
-    public:
+      public:
         void setSession(std::weak_ptr<FrontendUserSession> session)
         {
             session_ = std::move(session);
         }
-        
-    protected:
+
+      protected:
         ApiBase(Dispatcher* dispatcher)
             : dispatcher_{dispatcher}
             , session_{}
@@ -43,7 +43,7 @@ namespace Api
             return session_;
         }
 
-    private:
+      private:
         Dispatcher* dispatcher_;
         std::weak_ptr<FrontendUserSession> session_;
         std::vector<std::shared_ptr<Subscription>> subscriptions_;

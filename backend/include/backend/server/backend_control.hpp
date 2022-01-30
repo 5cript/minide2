@@ -9,16 +9,16 @@
 
 class BackendControl : public std::enable_shared_from_this<BackendControl>
 {
-public:
+  public:
     BackendControl(boost::asio::io_context* service);
 
     void start(std::string const& port);
 
     bool removeSession(std::string const& id);
 
-private:
+  private:
     attender::websocket::server server_;
     std::mutex guard_;
-    std::unordered_map <std::string, std::shared_ptr<attender::websocket::connection>> connections_;
+    std::unordered_map<std::string, std::shared_ptr<attender::websocket::connection>> connections_;
     attender::uuid_generator generator_;
 };

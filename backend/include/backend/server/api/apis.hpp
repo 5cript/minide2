@@ -6,10 +6,10 @@
 namespace Api
 {
 
-struct AllApis
-{
-    Workspace* workspace;
-    User* user;
-};
+    struct AllApis
+    {
+        Workspace* workspace;
+        User* user;
+    };
 
 }

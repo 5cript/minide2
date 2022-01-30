@@ -44,8 +44,7 @@ Logger::Logger()
     , file_{}
     , root_{}
     , terminal_{true}
-{
-}
+{}
 //---------------------------------------------------------------------------------------------------------------------
 void Logger::setConcise(bool concise)
 {
@@ -82,18 +81,16 @@ void Logger::stamp(char const* file, char const* func, int line)
 
     std::stringstream prefixStream;
     if (!concise_)
-        prefixStream
-            << "[" << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X") << "] "
-            << "(" << fileStr  << ":" << line << ") "
-            << "{" << func << "} "
-        ;
+        prefixStream << "[" << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X") << "] "
+                     << "(" << fileStr << ":" << line << ") "
+                     << "{" << func << "} ";
     else
         prefixStream << "[" << std::filesystem::path{fileStr}.filename().string() << ":" << line << "]: ";
 
     write(prefixStream.str());
 }
 //---------------------------------------------------------------------------------------------------------------------
-void Logger::manipulate(std::ios_base&(*manip)(std::ios_base&))
+void Logger::manipulate(std::ios_base& (*manip)(std::ios_base&))
 {
     if (file_.is_open())
         file_ << manip;
@@ -123,7 +120,7 @@ LogProxy logImpl(char const* file, char const* func, int line, bool stamp)
     return {};
 }
 //---------------------------------------------------------------------------------------------------------------------
-LogProxy operator<<(LogProxy&& proxy, std::ios_base&(*manip)(std::ios_base&))
+LogProxy operator<<(LogProxy&& proxy, std::ios_base& (*manip)(std::ios_base&))
 {
     logger.manipulate(manip);
     return proxy;

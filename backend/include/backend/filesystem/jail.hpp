@@ -11,7 +11,7 @@ namespace Filesystem
      */
     class Jail
     {
-    public:
+      public:
         Jail(sfs::path const& jailRoot);
 
         /**
@@ -22,11 +22,11 @@ namespace Filesystem
         /**
          *  Will return a path, that is relative to the jail, if the path is within the jail.
          */
-        std::optional <sfs::path> relativeToRoot(sfs::path const& other, bool fakeJailAsRoot = false) const;
+        std::optional<sfs::path> relativeToRoot(sfs::path const& other, bool fakeJailAsRoot = false) const;
 
         sfs::path fakeJailAsRoot(sfs::path const& other) const;
 
-    private:
+      private:
         sfs::path jailRoot_;
     };
 }

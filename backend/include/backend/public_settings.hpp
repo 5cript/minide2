@@ -11,7 +11,7 @@
 
 class PublicSettings
 {
-public:
+  public:
     /**
      *  Loads them from $home/.minIDE/public_settings.json
      */
@@ -51,17 +51,17 @@ public:
     /**
      *  Get all saved environments
      */
-    std::unordered_map <std::string, SettingParts::Environment> environments() const;
+    std::unordered_map<std::string, SettingParts::Environment> environments() const;
 
     /**
      *  Set (all) environments
      */
-    void setEnvironments(std::unordered_map <std::string, SettingParts::Environment> const& envs);
+    void setEnvironments(std::unordered_map<std::string, SettingParts::Environment> const& envs);
 
     /**
      *  Get an environment by name and resolve inheritance.
      */
-    std::optional <std::unordered_map <std::string, std::string>> compileEnvironment(std::string const& name) const;
+    std::optional<std::unordered_map<std::string, std::string>> compileEnvironment(std::string const& name) const;
 
     /**
      *  nlohnmann::json convertible
@@ -73,10 +73,10 @@ public:
      */
     friend void from_json(json const& j, PublicSettings& settings);
 
-private:
+  private:
     mutable std::mutex memoSaver_;
     mutable sfs::path homeMemo_;
 
-private:
-    std::unordered_map <std::string, SettingParts::Environment> environments_;
+  private:
+    std::unordered_map<std::string, SettingParts::Environment> environments_;
 };

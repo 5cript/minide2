@@ -10,15 +10,16 @@ class FrontendUserSession;
 
 class Writer
 {
-public:
+  public:
     virtual ~Writer() = default;
     virtual void write() = 0;
 };
 
-class FileWriter : public Writer
-                 , public std::enable_shared_from_this<FileWriter>
+class FileWriter
+    : public Writer
+    , public std::enable_shared_from_this<FileWriter>
 {
-public:
+  public:
     constexpr static unsigned bufferSize = 4096;
 
     FileWriter(int ref, sfs::path const& file, std::weak_ptr<FrontendUserSession> session);
@@ -26,7 +27,7 @@ public:
     void write() override;
     bool good() const;
 
-private:
+  private:
     int ref_;
     std::ifstream reader_;
     std::string buffer_;

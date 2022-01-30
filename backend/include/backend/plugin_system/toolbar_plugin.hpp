@@ -7,7 +7,7 @@ namespace PluginSystem
 {
     class ToolbarPlugin : public PluginImplementation
     {
-    public:
+      public:
         ToolbarPlugin(std::unique_ptr<v8wrap::Object>&& pluginClass);
         void initialize(std::weak_ptr<FrontendUserSession>&& session);
     };

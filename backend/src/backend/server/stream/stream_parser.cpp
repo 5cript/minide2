@@ -1,6 +1,5 @@
 #include <backend/server/stream/stream_parser.hpp>
 
-
 //#####################################################################################################################
 std::optional<json> StreamParser::popMessage()
 {
@@ -38,7 +37,8 @@ std::string::const_iterator StreamParser::findCompleteObjectEnd()
 std::string StreamParser::consumeObject(std::string::const_iterator end)
 {
     auto begin = std::cbegin(m_buffer);
-    for (; begin != end && static_cast<bool>(std::isspace(*begin)); ++begin) {}
+    for (; begin != end && static_cast<bool>(std::isspace(*begin)); ++begin)
+    {}
 
     std::string result{begin, end};
     m_buffer = std::string{end, std::cend(m_buffer)};

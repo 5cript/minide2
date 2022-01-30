@@ -12,7 +12,7 @@
 
 class Dispatcher final
 {
-public:
+  public:
     [[nodiscard]] std::shared_ptr<Subscription>
     subscribe(std::string const& type, std::function<bool(Subscription::ParameterType const&)> const& callback);
 
@@ -21,7 +21,7 @@ public:
 
     void dispatch(json const& msg);
 
-private:
-  std::unordered_multimap<std::string, std::weak_ptr<Subscription>> m_subscribers;
-  std::mutex m_subscriberGuard;
+  private:
+    std::unordered_multimap<std::string, std::weak_ptr<Subscription>> m_subscribers;
+    std::mutex m_subscriberGuard;
 };

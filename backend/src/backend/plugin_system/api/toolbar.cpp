@@ -2,8 +2,8 @@
 
 namespace PluginSystem::PluginApi
 {
-//#####################################################################################################################
-    v8::Local<v8::Value> Toolbar::makeMenu(v8::FunctionCallbackInfo<v8::Value> const& args) 
+    //#####################################################################################################################
+    v8::Local<v8::Value> Toolbar::makeMenu(v8::FunctionCallbackInfo<v8::Value> const& args)
     {
         v8::EscapableHandleScope scope{args.GetIsolate()};
         auto ctx = args.GetIsolate()->GetCurrentContext();
@@ -23,14 +23,14 @@ namespace PluginSystem::PluginApi
                 else
                     entry.set("type", "button");
             }
-            return scope.Escape(static_cast <v8::Local<v8::Value>>(entry));
+            return scope.Escape(static_cast<v8::Local<v8::Value>>(entry));
         });
         v8wrap::Object decorated{ctx, v8::Object::New(args.GetIsolate())};
         decorated.set("type", "menu");
-        decorated.set("entries", static_cast <v8::Local<v8::Value>>(transformed));
+        decorated.set("entries", static_cast<v8::Local<v8::Value>>(transformed));
         return decorated;
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     v8::Local<v8::Value> Toolbar::makeSplitter(v8::FunctionCallbackInfo<v8::Value> const& args)
     {
         auto ctx = args.GetIsolate()->GetCurrentContext();
@@ -38,7 +38,7 @@ namespace PluginSystem::PluginApi
         decorated.set("type", "splitter");
         return decorated;
     }
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
     v8::Local<v8::Value> Toolbar::makeIconButton(v8::FunctionCallbackInfo<v8::Value> const& args)
     {
         if (args.Length() != 1)
@@ -52,5 +52,5 @@ namespace PluginSystem::PluginApi
             decorated.set("type", "button");
         return decorated;
     }
-//#####################################################################################################################
+    //#####################################################################################################################
 }

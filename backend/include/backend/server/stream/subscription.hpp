@@ -6,7 +6,7 @@
 
 class Subscription
 {
-public:
+  public:
     using ParameterType = json;
     using FunctionType = std::function<bool(ParameterType const&)>;
 
@@ -16,6 +16,6 @@ public:
         return m_callback(param);
     }
 
-private:
+  private:
     FunctionType m_callback;
 };

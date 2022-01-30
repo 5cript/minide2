@@ -25,8 +25,10 @@ void Dispatcher::dispatch(json const& msg)
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
-std::shared_ptr<Subscription>
-Dispatcher::subscribe(std::string const& messageType, std::function<bool(Subscription::ParameterType const&)> const& callback)
+std::shared_ptr<Subscription> Dispatcher::subscribe(
+    std::string const& messageType,
+    std::function<bool(Subscription::ParameterType const&)> const& callback
+)
 {
     std::scoped_lock lock{m_subscriberGuard};
     std::shared_ptr<Subscription> subscriber = std::make_shared<Subscription>(callback);
@@ -37,11 +39,13 @@ Dispatcher::subscribe(std::string const& messageType, std::function<bool(Subscri
 std::shared_ptr<Subscription>
 Dispatcher::subscribe(std::string const& type, std::function<void(Subscription::ParameterType const&)> const& callback)
 {
-    return subscribe(type, std::function<bool(Subscription::ParameterType const&)>{
-        [callback](Subscription::ParameterType const& p) -> bool{
-            callback(p);
-            return true;
-        }
-    });
+    return subscribe(
+        type,
+        std::function<bool(Subscription::ParameterType const&)>{
+            [callback](Subscription::ParameterType const& p) -> bool {
+                callback(p);
+                return true;
+            }}
+    );
 }
 //#####################################################################################################################

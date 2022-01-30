@@ -10,14 +10,14 @@ namespace PluginSystem
 {
     class PluginImplementation
     {
-    public:
+      public:
         PluginImplementation(std::unique_ptr<v8wrap::Object>&& pluginClass)
             : pluginClass_{std::move(pluginClass)}
         {}
         virtual ~PluginImplementation() = default;
         PluginImplementation(PluginImplementation const&) = delete;
         PluginImplementation(PluginImplementation&&) = default;
-        
+
         PluginImplementation& operator=(PluginImplementation const&) = delete;
         PluginImplementation& operator=(PluginImplementation&&) = default;
 
@@ -26,7 +26,7 @@ namespace PluginSystem
             session_ = std::move(session);
         }
 
-    protected:
+      protected:
         std::unique_ptr<v8wrap::Object> pluginClass_;
         std::weak_ptr<FrontendUserSession> session_;
     };

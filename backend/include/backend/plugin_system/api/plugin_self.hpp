@@ -3,6 +3,5 @@
 namespace PluginSystem::PluginApi
 {
     class PluginSelf
-    {
-    };
+    {};
 }

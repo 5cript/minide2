@@ -6,25 +6,22 @@
 
 namespace Filesystem
 {
-//#####################################################################################################################
+    //#####################################################################################################################
     DirectoryContent::DirectoryContent(sfs::path const& createFrom)
         : root{createFrom}
         , files{}
         , directories{}
         , origin{}
         , flatDirectory{false}
-    {
-
-    }
-//---------------------------------------------------------------------------------------------------------------------
+    {}
+    //---------------------------------------------------------------------------------------------------------------------
     void DirectoryContent::scan(bool recursive, int)
     {
         constexpr int dirStackShortening = 4096;
         namespace fs = sfs;
-        boost::container::stable_vector <DirectoryContent*> dirStack;
+        boost::container::stable_vector<DirectoryContent*> dirStack;
 
-        auto traverse = [&dirStack, this](DirectoryContent* recepticle)
-        {
+        auto traverse = [&dirStack, this](DirectoryContent* recepticle) {
             for (auto const& i : fs::directory_iterator(recepticle->root))
             {
                 if (fs::is_directory(i.status()))
@@ -67,5 +64,5 @@ namespace Filesystem
             root = ".";
         }
     }
-//#####################################################################################################################
+    //#####################################################################################################################
 }
