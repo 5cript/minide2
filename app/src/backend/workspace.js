@@ -1,162 +1,143 @@
-import Router from './router'
+import ApiBase from './apibase'
 
 import sha256 from 'crypto-js/sha256';
 import CryptoJS from 'crypto-js';
+import * as Base64 from 'js-base64';
+import {arrayBufferToString} from './array_buffer_to_string';
 
-class Workspace extends Router
+import {
+    setFileTreeBranch,
+    setActiveProject,
+    removeFileTreeElement
+} from '../actions/workspace_actions';
+import {
+    addOpenFileWithContent,
+} from '../actions/open_file_actions';
+
+class Workspace extends ApiBase
 {
-    constructor(state, errorCallback)
+    constructor({store, persistence, errorCallback, impl})
     {
-        super(state);
+        super(store, persistence, impl);
         this.errorCallback = errorCallback;
     }
 
-    openWorkspace(path, onSuccess)
+    openWorkspace = async (path) =>
     {
-        let url = this.url("/api/workspace/open");
-        this.authFetch(
-            url, 
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    "id": this.dataId,
-                    "path": path
-                })
-            }
-        ).then(res => {
-            if (res.status >= 300) {
-                res.text().then((value) => {
-                    this.errorCallback(value);
-                });
-                return;
-            }
-            if (onSuccess)
-                onSuccess(path);
+        return this.writeMessage("/api/workspace/open", {
+            "id": this.dataId,
+            "path": path
+        }).then(async (response) => {
+            this.store.dispatch(setFileTreeBranch({
+                directory: response.directory.origin,
+                directories: response.directory.directories,
+                files: response.directory.files
+            }))
+            return response;
         });
     }    
 
-    saveFile(path, content, onSuccess)
+    saveFile = async (path, content) =>
     {
-        let hash = sha256(content);
-        let json = JSON.stringify({path: path, sha256: hash.toString(CryptoJS.enc.Hex)});
-        let jsonLen = json.length.toString(16).toUpperCase();
-        jsonLen = "0x" + ("0000000" + jsonLen).slice(-8);
-        let payload = jsonLen + '|' + json + content;
-        
-        let url = this.url("/api/workspace/saveFile");
-        this.authFetch(
-            url,
-            {
-                method: 'PUT',
-                body: payload
-            }
-        ).then(res => {
-            if (res.status >= 300) {
-                res.text().then((value) => {
-                    this.errorCallback(value);
-                });
-                return;
-            }
-            if (res.status === 200 || res.status === 204)
-                onSuccess();
+        return this.writeMessage("/api/workspace/saveFile", {
+            path: path,
+            sha256: sha256(content).toString(CryptoJS.enc.Hex),
+            data: Base64.encode(content)
         });
     }
 
-    enumDirectory(path)
+    enumDirectory = async (path) =>
     {
-        this.postJson(this.url("/api/workspace/enlist"), {
+        return this.writeMessage("/api/workspace/enlist", {
             path: path
+        }).then(async (response) => {
+            console.log(response);
+            this.store.dispatch(setFileTreeBranch({
+                directory: response.directory.origin,
+                directories: response.directory.directories,
+                files: response.directory.files
+            }))            
+            return response;
         });
     }
 
-    createFile(path, onFailure)
+    createFile = async (path, onFailure) =>
     {
-        this.saveFile(path, '', () => {
-            this.loadFile(path, undefined, fail => {
-                if (onFailure)
-                    onFailure(this.tryParseJson(fail));
-            });
+        return this.saveFile(path, '').then(() => {
+            return this.loadFile(path, undefined);
         })
     }
 
-    loadFile(path, optionalFlag, onFailure)
+    loadFile = async (path, optionalFlag) =>
     {
         const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
             ? optionalFlag
             : undefined
         ;
-        this.postJson(
-            this.url("/api/workspace/loadFile"), 
-            {
-                path: path,
-                flag: flag
-            }, 
-            ()=>{}, 
-            fail => {
-                // assuming json, if it looks like json
-                if (onFailure)
-                    onFailure(this.tryParseJson(fail));
-            }
-        );
-    }
-
-    deleteFile(path)
-    {
-        this.postJson(this.url("/api/workspace/deleteFile"), {
-            path: path
+        let buf = "";
+        return this.writeMessage("/api/workspace/loadFile", {
+            path: path,
+            flag: flag
+        }, (binaryData) => {
+            buf += arrayBufferToString(binaryData);
+        }).then(async () => {
+            this.store.dispatch(addOpenFileWithContent(path, false, buf));
+            return buf;
         });
     }
 
-    loadProjectMetafile(onSuccess, onFailure)
+    setActiveProject = async (path) =>
     {
-        this.get
-        (
-            this.url("/api/workspace/loadProjectMeta"), 
-            (res) => 
-            {
-                if (onSuccess)
-                    res.json().then(json => {
-                        onSuccess(json);
-                    }).catch(fail => {
-                        onFailure(fail);
-                    });
-            },
-            (failInfo) => 
-            {
-                if (onFailure)
-                    onFailure(failInfo);
-            }
-        )
+        return this.writeMessage("/api/workspace/setActiveProject", {
+            path: path
+        }).then(async (response) => {
+            const backend = this.store.getState().backend;
+            this.persistence.setLastActive({
+                host: backend.ip,
+                port: backend.websocketPort
+            }, response.activeProject);
+            this.store.dispatch(setActiveProject(response.activeProject));
+            return response.activeProject;
+        });
     }
 
-    injectProjectSettings(settings)
+    deleteFile = async (path) =>
     {
-        this.postJson(this.url("/api/workspace/changeProjectMeta"), settings);
+        return this.writeMessage("/api/workspace/deleteFile", {
+            path: path
+        }).then(async (response) => {
+            this.store.dispatch(removeFileTreeElement(response.deleted));
+        });
     }
 
-    toggleSourceHeader(path, optionalFlag)
+    loadProjectMetafile = async () =>
+    {
+        return this.writeMessage("/api/workspace/loadProjectMeta");
+    }
+
+    injectProjectSettings = async (settings) =>
+    {
+        return this.writeMessage("/api/workspace/changeProjectMeta", {
+            settings: settings
+        })
+    }
+
+    toggleSourceHeader = async (path, optionalFlag) =>
     {
         const flag = (optionalFlag !== undefined && optionalFlag !== null && optionalFlag !== '')
             ? optionalFlag
             : undefined
         ;
-        this.postJson(this.url("/api/workspace/toggleSourceHeader"), {
+        return this.writeMessage("/api/workspace/toggleSourceHeader", {
             path: path,
             flag: flag
         });
     }
 
-    setActiveProject(path, onSuccess)
+    loadRunConfig = async () =>
     {
-        this.postJson(this.url("/api/workspace/setActiveProject"), {
-            path: path
-        }, onSuccess);
+        return this.writeMessage("/api/workspace/getRunConfigs");
     }
-
 }
 
 export default Workspace;

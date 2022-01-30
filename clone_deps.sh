@@ -35,3 +35,5 @@ git clone https://github.com/ThomasMonkman/filewatch.git
 git clone https://github.com/ThePhD/sol2.git
 git clone https://github.com/lldb-tools/lldb-mi.git
 git clone https://gitlab.com/eidheim/tiny-process-library.git
+git clone https://github.com/5cript/hash-library.git
+git clone https://github.com/nodejs/node.git

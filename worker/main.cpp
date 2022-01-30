@@ -9,7 +9,7 @@
 // routers
 #include "routers/workspace.hpp"
 #include "routers/toolbar.hpp"
-#include "routers.hpp"
+#include "communication_center.hpp"
 
 #include "session/session.hpp"
 #include "config.hpp"
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     };
 
     // create a server
-    tcp_server server(
+    http_server server(
         context.get_io_service(),
         [](auto* connection, auto const& ec, auto const& exc) {
             // some error occured. (this is not thread safe)
@@ -86,7 +86,9 @@ int main(int argc, char** argv)
 
     // Routings
     using namespace Routers;
-    RouterCollection routers{&server, config};
+    CommunicationCenter communicationCenter{&server, config};
+    communicationCenter.streamer().setSessionManager(server.get_installed_session_manager());
+    communicationCenter.streamer().start();
 
     //Filesystem::DirectoryCache cache{"D:/Development/IDE2/test-project"};
     std::cout << "Waiting for enter\n";
@@ -97,7 +99,7 @@ int main(int argc, char** argv)
         exit.store(true);
     }};
 
-    for (int i = 0;!exit.load();++i)
+    for (int i = 0; !exit.load(); ++i)
     {
         std::this_thread::sleep_for(100ms);
         if (i == 10)
@@ -107,7 +109,7 @@ int main(int argc, char** argv)
         }
     }
 
-    routers.streamer().shutdownAll();
+    communicationCenter.streamer().shutdownAll();
     std::this_thread::sleep_for(100ms);
     if (enterWait.joinable())
         enterWait.join();

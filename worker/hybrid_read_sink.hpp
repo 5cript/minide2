@@ -2,12 +2,12 @@
 
 #include "json.hpp"
 
-#include <attender/attender/tcp_read_sink.hpp>
+#include <attender/http/http_read_sink.hpp>
 #include <automata/automata.hpp>
 
 #include <functional>
 
-class JsonDataHybridSink : public attender::tcp_read_sink
+class JsonDataHybridSink : public attender::http_read_sink
 {
 public:
     using size_type = attender::size_type;

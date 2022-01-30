@@ -1,31 +1,35 @@
-import Router from './router'
+import ApiBase from './apibase'
 
-class DebuggerRouter extends Router
+class DebuggerRouter extends ApiBase
 {
-    constructor(state, errorCallback)
+    constructor({store, persistence, errorCallback, impl})
     {
-        super(state);
+        super(store, persistence, impl);
         this.errorCallback = errorCallback;
     }
 
-    startDebugger(runProfileName)
+    startDebugger = async (runProfile) =>
     {
-        this.postJson(
-            this.url("/api/debugger/createInstance"), 
-            {
-                runProfileName: runProfileName
-            },
-            response => {
-                response.json().then(json => {
-                    console.log(json);
-                }).catch(err => {
-                    console.error('createInstance result should have been json', err);
-                })
-            },
-            err => {
-                console.error(err);
+        return this.writeMessage("/api/debugger/createInstance", {
+            runProfile: runProfile
+        });
+    }
+
+    sendCommand = async ({instanceId, command, params, token, options}) =>
+    {
+        return this.writeMessage("/api/debugger/command", {
+            instanceId, command: {
+                operation: command,
+                token: token,
+                params: params,
+                options: options
             }
-        );
+        });
+    }
+
+    sendRawCommand = async ({instanceId, command}) =>
+    {
+        return this.writeMessage("/api/debugger/rawCommand", {instanceId, command});
     }
 }
 

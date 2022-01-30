@@ -1,10 +1,9 @@
-export function initializeToolbars(toolbars, lookup) 
+export function toolbarInitialized({...members})
 {
     return {
-        type: 'INITIALIZE_TOOLBARS',
+        type: 'TOOLBAR_INITIALIZED',
         payload: {
-            toolbars: toolbars,
-            lookup: lookup
+            ...members
         }
     }
 }

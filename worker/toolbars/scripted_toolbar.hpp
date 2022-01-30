@@ -5,7 +5,7 @@
 
 #include "../public_settings.hpp"
 #include "../workspace/workspace.hpp"
-#include "../routers/streamer_fwd.hpp"
+#include "../streaming/streamer_base.hpp"
 #include "../routers/settings_provider_fwd.hpp"
 
 #include "../json.hpp"
@@ -60,7 +60,7 @@ namespace Toolbars
         (
             sfs::path const& root,
             SessionObtainer const& obtainer,
-            Routers::DataStreamer* streamer,
+            Streaming::StreamerBase* streamer,
             Routers::SettingsProvider* settingsProv,
             Config const& config
         );
@@ -80,7 +80,7 @@ namespace Toolbars
         void initialize
         (
             SessionObtainer const& obtainer,
-            Routers::DataStreamer* streamer,
+            Streaming::StreamerBase* streamer,
             Routers::SettingsProvider* settingsProv
         );
 

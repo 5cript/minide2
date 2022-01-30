@@ -66,7 +66,8 @@ class Dictionary
                     "$MayNotBeEmpty": "May not be empty",
                     "$Save": "Save",
                     "$NoActiveProject": "No active project",
-					"$FileOutsideWorkspace": "File is outside of the workspace. Do you really want to save?"
+					"$FileOutsideWorkspace": "File is outside of the workspace. Do you really want to save?",
+                    "$DebugProfileNotFound": "Debug profile not found"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Set as Active Project",
@@ -123,6 +124,35 @@ class Dictionary
                     "$editorTabNext": "Next Open File Tab",
                     "$closeActiveFile": "Close Current File",
                     "$PressKey": "Press a combination"
+                },
+                "debugger_settings": {
+                    "$General": "General",
+                    "$Profiles": "Debugger Profiles",
+                    "$BuildBeforeDebug": "Automatically build before debugger starts",
+                    "$ImmediatelyRunBinary": "Immediatley run binary (no continue press at start required)",
+                    "$WatchLocalVariables": "Automatically watch local variables",
+                    "$WatchFunctionArguments": "Automatically watch function arguments",
+                    "$Profile": "Profile",
+                    "$Add": "Add",
+                    "$Delete": "Delete",
+                    "$Debugger": "Debugger",
+                    "$Path": "Path",
+                    "$FullyReadSymbols": "Fully Read Symbols",
+                    "$NeverReadSymbols": "Never Read Symbols",
+                    "$OutputChildResult": "Return Child Result",
+                    "$InitCommandFile": "Init Command File",
+                    "$CommandFile": "Command File",
+                    "$Ignore": "Ignore",
+                    "$IgnoreAll": "Ignore All",
+                    "$AdditionalCommandline": "Additional Commandline Arguments",
+                    "$ProfileAlreadyExists": "Profile with that name already exists",
+                    "$ProfileName": "Profile Name",
+                    "$ConfirmProfileRemove": "Do you really want to delete this profile?",
+                    "$SettingsSaveImmediately": "All changes save immediately"
+                },
+                "debugger_terminal": {
+                    "$InstanceId": "Instance ID",
+                    "$DebuggerDied": "Debugger Terminated"
                 }
             },
             "de_DE": {
@@ -183,7 +213,8 @@ class Dictionary
                     "$MayNotBeEmpty": "Darf nicht leer sein",
                     "$Save": "Speichern",
                     "$NoActiveProject": "Kein aktives Projekt",
-					"$FileOutsideWorkspace": "Die Datei ist außerhalb des Arbeitsrausm. Wollen sie sie wirklich speichern?"
+                    "$FileOutsideWorkspace": "Die Datei ist außerhalb des Arbeitsrausm. Wollen sie sie wirklich speichern?",
+                    "$DebugProfileNotFound": "Debug Profil nicht gefunden"
                 },
                 "file_tree": {
                     "$SetAsActiveProject": "Als aktives Projekt wählen",
@@ -240,6 +271,35 @@ class Dictionary
                     "$editorTabNext": "Nächster Editor Tab",
                     "$closeActiveFile": "Aktuelle Datei Schließen",
                     "$PressKey": "Kombination drücken"
+                },
+                "debugger_settings": {
+                    "$General": "Grundlegendes",
+                    "$Profiles": "Debugger Profile",
+                    "$BuildBeforeDebug": "Automatisch übersetzen vor dem Debuggen",
+                    "$ImmediatelyRunBinary": "Binary sofort starten",
+                    "$WatchLocalVariables": "Automatisch lokale Variablen beobachten",
+                    "$WatchFunctionArguments": "Automatisch Funktionsargumente beobachten",
+                    "$Profile": "Profil",
+                    "$Add": "Hinzufügen",
+                    "$Delete": "Löschen",
+                    "$Debugger": "Debugger",
+                    "$Path": "Pfad",
+                    "$FullyReadSymbols": "Symbole komplett einlesen",
+                    "$NeverReadSymbols": "Symbole nie einlesen",
+                    "$OutputChildResult": "Kindprozess Rückgabe Ausgeben",
+                    "$InitCommandFile": "Initiale Kommandodatei",
+                    "$CommandFile": "Kommandodatei",
+                    "$Ignore": "Ingoriere",
+                    "$IgnoreAll": "Ignoriere Alle",
+                    "$ProfileName": "Profilname",
+                    "$AdditionalCommandline": "Zusätzliche Kommandozeilenargumente",
+                    "$ProfileAlreadyExists": "Profil mit diesem Namen existiert bereits",
+                    "$ConfirmProfileRemove": "Wollen sie dieses Profil wirklich löschen?",
+                    "$SettingsSaveImmediately": "Alle Änderungen speichern direkt"
+                },
+                "debugger_terminal": {
+                    "$InstanceId": "Instanz ID",
+                    "$DebuggerDied": "Debugger beendet"
                 }
             }    
         }

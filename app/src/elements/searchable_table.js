@@ -4,8 +4,7 @@ import React from 'react';
 import Input from '@material-ui/core/Input';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import SearchIcon from '@material-ui/icons/Search';
-import InputLabel from '@material-ui/core/InputLabel';
-import { useTable, useBlockLayout, useResizeColumns } from 'react-table';
+import { useTable } from 'react-table';
 
 // Other
 import { withStyles } from '@material-ui/core/styles';
@@ -15,18 +14,13 @@ import styled from 'styled-components';
 const SearchInput = withStyles({
     root: {
         height: '25px',
+        width: '100%',
         minHeight: 0,
         margin: 0,
+        border: '1px solid var(--background-disabled)',
         color: 'var(--foreground-color)'
     }
 })(Input);
-
-const SearchLabel = withStyles({
-    root: {
-        margin: 0,
-        color: 'var(--foreground-color)'
-    }
-})(InputLabel);
 
 const Styles = styled.div`
   table {

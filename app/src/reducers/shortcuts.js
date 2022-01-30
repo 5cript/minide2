@@ -3,8 +3,10 @@ const _ = require('lodash');
 const initialState = 
 {
     bindings: {
+        /*
         save: {key: 's', ctrl: true, shift: false, alt: false},
         saveAll: {key: 's', ctrl: true, shift: true, alt: false}
+        */
     }
 };
 

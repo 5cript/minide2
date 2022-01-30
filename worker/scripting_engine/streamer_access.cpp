@@ -1,7 +1,7 @@
 #include "streamer_access.hpp"
 
 #include "../streaming/common_messages/messages_from_lua.hpp"
-#include "../routers/streamer.hpp"
+#include "../streaming/streamer_base.hpp"
 
 namespace MinIDE::Scripting
 {
@@ -12,13 +12,13 @@ namespace MinIDE::Scripting
     {
         std::weak_ptr <StateCollection> weakStateRef;
         SessionObtainer sessionAccess;
-        Routers::DataStreamer* streamer;
+        Streaming::StreamerBase* streamer;
 
         Implementation
         (
             std::weak_ptr <StateCollection>&& stateRef,
             SessionObtainer&& sessionAccess,
-            Routers::DataStreamer* streamer
+            Streaming::StreamerBase* streamer
         )
             : weakStateRef{std::move(stateRef)}
             , sessionAccess{std::move(sessionAccess)}
@@ -31,7 +31,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> weakStateRef,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer
+        Streaming::StreamerBase* streamer
     )
         : impl_{new LuaStreamer::Implementation(std::move(weakStateRef), std::move(sessionAccess), streamer)}
     {
@@ -46,7 +46,7 @@ namespace MinIDE::Scripting
             return false;
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::LuaErrorMessage>
@@ -66,7 +66,7 @@ namespace MinIDE::Scripting
             return false;
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::LuaWarningMessage>
@@ -85,7 +85,7 @@ namespace MinIDE::Scripting
             return false;
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::LuaInfoMessage>
@@ -104,7 +104,7 @@ namespace MinIDE::Scripting
             return false;
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::LuaProcessOutputMessage>
@@ -125,7 +125,7 @@ namespace MinIDE::Scripting
             return false;
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::LuaProcessOutputMessage>
@@ -146,7 +146,7 @@ namespace MinIDE::Scripting
             return false;
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::LuaRemoteProcedureCall>
@@ -165,7 +165,7 @@ namespace MinIDE::Scripting
             return false;
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::LuaProcessInfo>
@@ -185,7 +185,7 @@ namespace MinIDE::Scripting
 
         impl_->streamer->send
         (
-            StreamChannel::Control,
+            Streaming::StreamChannel::Control,
             s.value().remoteAddress,
             s.value().controlId,
             Streaming::makeMessage<Streaming::Messages::CreateInputForm>
@@ -201,7 +201,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> state,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer
+        Streaming::StreamerBase* streamer
     )
     {
         auto strongRef = state.lock();

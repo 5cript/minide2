@@ -8,17 +8,18 @@ import {Droppable, Draggable} from 'react-beautiful-dnd';
 import { withStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 import generateId from '../util/random_id';
+import classNames from 'classnames';
 
 // styles
 import './styles/tabs.css';
 
 const LeanTabs = withStyles({
     root: {
-        height: '25px',
+        /*height: '25px',*/
         width: '100%',
         minHeight: 0,
         margin: 0,
-        backgroundColor: 'var(--background-color)'
+        backgroundColor: undefined
     },
     indicator: {
         backgroundColor: 'var(--theme-color-brighter)',
@@ -38,7 +39,7 @@ const getListStyle = isDraggingOver => ({
 const getItemStyle = (isDragging, isSelected, draggableStyle) => ({
     // some basic styles to make the items look a bit nicer
     // change background colour if dragging
-    backgroundColor: isDragging ? 'transparent' : (isSelected ? 'var(--background-color-very-dark)' : undefined),
+    backgroundColor: isDragging ? 'transparent' : (isSelected ? 'var(--background-color-very-dark)' : 'var(--background-color'),
     color: isSelected ? 'var(--theme-color)' : undefined,
     height: '25px',
   
@@ -72,8 +73,8 @@ class MuiTabs extends React.Component
         const value = this.props.value;
 
         return (
-            <div className="sleekTabs">
-                <div className="tabHeader">
+            <div className={classNames("sleekTabs", this.props.boxClass)}>
+                <div className={classNames("tabHeader", this.props.headerClass)}>
                     <Droppable
                         droppableId={"dropzone_" + this.id}
                         direction='horizontal'
@@ -88,6 +89,7 @@ class MuiTabs extends React.Component
                                     <LeanTabs
                                         value={this.props.value}
                                         onChange={(e, tabIndex) => {this.props.onChange(tabIndex)}} 
+                                        className={this.props.leanTabsClass}
                                         TabIndicatorProps={{
                                             style: {
                                                 display: snapshot.isDraggingOver ? 'none' : undefined
@@ -102,7 +104,9 @@ class MuiTabs extends React.Component
                                                         className="tabHead"
                                                         {...prov.draggableProps}
                                                         {...prov.dragHandleProps}
-                                                        style={getItemStyle(snap.isDragging, value === i, prov.draggableProps.style)}
+                                                        style={
+                                                            this.props.itemStyler ? this.props.itemStyler(snap.isDragging, value === i, prov.draggableProps.style) :
+                                                            getItemStyle(snap.isDragging, value === i, prov.draggableProps.style)}
                                                         onClick={() => {this.props.onChange(i)}}
                                                     >
                                                     {(() => {

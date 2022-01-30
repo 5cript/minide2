@@ -1,0 +1,121 @@
+#debuggerSettingsProfileLabel {
+    padding-top: 3px;
+    padding-right: 8px; 
+    padding-left: 4px;
+}
+
+#debuggerSettingsDebuggerLabel {
+    padding-top: 3px;
+    padding-right: 8px; 
+    padding-left: 4px;
+}
+
+#debuggerSettingsProfileSelectBox {
+    display: grid;
+    grid-template-columns: max-content 1fr auto;
+    background-color: var(--background-color-brighter);
+    margin: 4px;
+    padding: 4px;
+    border: 1px solid var(--background-color-darker);
+    box-shadow: 1px 1px 0px black;
+}
+
+#debuggerProfileSelectButtons {
+    min-width: 200px;
+}
+
+.debuggerProfileSelectButton {
+    height: 29px;
+    width: minmax(100px, max-content);
+}
+
+#generalSettings {
+    border: 1px solid var(--background-color-darker);
+    background-color: var(--background-color-brighter);
+    padding: 4px;
+    padding-left: 12px;
+    margin: 4px;
+    box-shadow: 1px 1px 0px black;
+}
+
+#debuggerSelect {
+    display: grid;
+    grid-template-columns: minmax(83px, max-content) auto;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--background-color-darker);
+    padding: 4px;
+}
+
+#debuggerProfiles {
+    border: 1px solid var(--background-color-darker);
+    background-color: var(--background-color-brighter);
+    margin-left: 4px;
+    margin-right: 4px;
+    box-shadow: 1px 1px 0px black;
+}
+
+.debuggerAutoSaveBanner {
+    background-color: var(--background-color-darker);
+    height: 24px;
+    padding-left: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-top: 1px solid var(--background-disabled);
+    width: 100%;
+}
+
+.debuggerSettingsTabBox {
+    background-color: var(--background-color-darker);
+    box-shadow: 'inset 1px 1px 1px black';
+}
+
+.debuggerSwitchLabel {
+    position: relative;
+    top: 1px;
+}
+
+.debuggerSettingsWithInput {
+    display: grid;
+    width: calc(100% - 10px);
+    grid-template-columns: 0.6fr 0.8fr;
+}
+
+.debuggerSettingsTabs {
+    height: 35px;
+}
+
+.debuggerPathInputFrame {
+    width: calc(100% - 20px);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    padding-left: 10px;
+}
+
+.debuggerDisabledInput {
+    background-color: var(--background-color-disabled);
+}
+
+.debuggerFormInput {
+    margin-left: 8px;
+    height: 20px;
+    font-size: 12px;
+}
+
+.debuggerAdditionalInput {
+    margin-top: 6px;
+}
+
+.debuggerAdditionalArgs {
+    padding-left: 8px;
+    padding-right: 2px;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    padding-bottom: 4px;
+}
+
+#debuggerAdditionalArgBox {
+    margin-top: 4px;
+    margin-left: 8px;
+    margin-right: 8px;
+}

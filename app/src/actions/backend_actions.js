@@ -18,10 +18,20 @@ export function setBackendIp(ip)
     }
 }
 
-export function setBackendPort(port) 
+export function setBackendHttpPort(port) 
 {
     return {
-        type: 'SET_PORT',
+        type: 'SET_HTTP_PORT',
+        payload: {
+            port: port
+        }
+    }
+}
+
+export function setBackendWebsocketPort(port) 
+{
+    return {
+        type: 'SET_WEBSOCKET_PORT',
         payload: {
             port: port
         }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <attender/attender/session/session_storage_interface.hpp>
+#include <attender/session/session_storage_interface.hpp>
 
 #include <unordered_map>
 #include <chrono>

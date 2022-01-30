@@ -1,8 +1,16 @@
-export default function generateId(length)
-{
+import { v4 as uuidv4 } from 'uuid';
+
+const generateId = (length) => {
     let id = '';
     const lookup = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     for (let i = 0; i !== length; ++i) 
         id += lookup[Math.floor(Math.random() * lookup.length)];
     return id;
 }
+
+const generateUuid = () => {
+    return uuidv4();
+}
+
+export default generateId;
+export {generateId, generateUuid};

@@ -92,25 +92,33 @@ class FileView extends PureComponent
         if (this.hoveredNode === undefined)
             return;
 
-        const nodeKey = _.clone(this.hoveredNode.key);
+        const node = _.cloneDeep(this.hoveredNode);
 
-        let fileIndex = this.props.openFiles.findIndex(file => file.path === this.hoveredNode.key);
+        // Directory
+        if (this.hoveredNode.isLeaf === false)
+            return this.props.backend.workspace().setActiveProject(node.key);
+
+        // File
+        let fileIndex = this.props.openFiles.findIndex(file => file.path === node.key);
         if (this.props.openFiles[fileIndex] === undefined)
-            this.props.backend.workspace().loadFile(this.hoveredNode.key);
-        else
-        {
-            /*
-            this.showYesNoBox(this.props.dict.translate("$ReloadFileFromServer", "dialog"), () => {
-                this.props.backend.workspace().loadFile(nodeKey);
+            this.props.backend.workspace().loadFile(node.key).then((content) => {
+                this.props.mainWindow.get().callOnEditor(monaco => {
+                    monaco.updateFileModel({
+                        uri: node.key, 
+                        isAbsolute: false, // FIXME: <- figure out if it is
+                        data: content,
+                        focusLineNumber: 0,
+                        focusColumn: 0
+                    });
+                })
             });
-            */
+        else
             this.props.dispatch(setActiveFile(fileIndex));
-        }
     }
 
     onMouseEnter(v)
     {
-        if (this.lockHoverChange)
+        if (this.lockHoverChange || v.node.title === "")
             return;
         this.hoveredNode = v.node;
         this.props.dispatch(setHoveredNode(v.node.key));
@@ -118,7 +126,7 @@ class FileView extends PureComponent
 
     onMouseLeave(v)
     {
-        if (this.lockHoverChange)
+        if (this.lockHoverChange || this.hoveredNode === undefined)
             return;
         this.hoveredNode = undefined;
         this.props.dispatch(setHoveredNode(undefined));
@@ -158,11 +166,7 @@ class FileView extends PureComponent
             console.error('context item undefined when setting active project')
         let contextItem = _.clone(this.contextItem);
 
-        this.props.backend.workspace().setActiveProject(contextItem.key, () => {
-            this.props.persistence.setLastActive(this.currentHost(), contextItem.key);
-            this.props.onActiveProjectSet(contextItem.key);
-            this.props.dispatch(setActiveProject(contextItem.key))
-        });
+        this.props.backend.workspace().setActiveProject(contextItem.key);
     }
 
     currentHost = () => 

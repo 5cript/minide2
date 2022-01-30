@@ -4,7 +4,7 @@
 #include "session.hpp"
 #include "session_storage.hpp"
 
-#include <attender/attender/session/session_manager.hpp>
+#include <attender/session/session_manager.hpp>
 
 #include <memory>
 

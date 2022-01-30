@@ -65,6 +65,7 @@ class Explorer extends React.Component {
                         <AccordionItemPanel style={{height: "100%", width: "100%", position: "absolute"}}>
                             <PerfectScrollbar className="scrollbox">
                                 <FileTree 
+                                    mainWindow={this.props.mainWindow}
                                     persistence={this.props.persistence} 
                                     dict={this.props.dict} 
                                     backend={this.props.backend} 

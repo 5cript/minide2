@@ -7,6 +7,7 @@ import {FlatForm} from './forms';
 
 // Styles
 import './styles/input_box.css';
+import './styles/rodal.css';
 
 /**
  * Props:

@@ -13,7 +13,7 @@ namespace Routers
         }
     };
 //#####################################################################################################################
-    Terminal::Terminal(RouterCollection* collection, attender::tcp_server& server, Config const& config)
+    Terminal::Terminal(CommunicationCenter* collection, attender::http_server& server, Config const& config)
         : BasicRouter{collection, &server}
         , impl_{new Terminal::Implementation(config)}
     {
@@ -22,7 +22,7 @@ namespace Routers
 //---------------------------------------------------------------------------------------------------------------------
     Terminal::~Terminal() = default;
 //---------------------------------------------------------------------------------------------------------------------
-    void Terminal::registerRoutes(attender::tcp_server& server)
+    void Terminal::registerRoutes(attender::http_server& server)
     {
         cors_options(server, "/api/terminal/submit", "POST", impl_->config.corsOption);
         server.post("/api/terminal/submit", [this](auto req, auto res)

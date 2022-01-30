@@ -2,10 +2,7 @@
 
 #include "../filesystem/filesystem.hpp"
 
-#include <cryptopp/sha.h>
-#include <cryptopp/filters.h>
-#include <cryptopp/files.h>
-#include <cryptopp/hex.h>
+#include <hash-library/sha256.h>
 
 #include <algorithm>
 #include <cctype>
@@ -61,17 +58,19 @@ bool HashedFile::testAndMove()
 {
     writer_.close();
 
-    using namespace CryptoPP;
-
-    SHA256 hash;
-    std::string digest;
-
+    std::string file = originalName_ + "_minide2_temp";
+    SHA256 shaStream;
     {
-        FileSource f((originalName_ + "_minide2_temp").c_str(), true, new HashFilter(hash, new HexEncoder(new StringSink(digest))));
+        std::ifstream reader{file, std::ios_base::binary};
+        std::vector <char> buffer(1024);
+        do {
+            reader.read(&buffer[0], buffer.size());
+            if (reader.gcount() > 0)
+                shaStream.add(&buffer[0], reader.gcount());
+        } while (reader.gcount() > 0);
     }
 
-    std::transform(std::begin(digest), std::end(digest), std::begin(digest), [](char c){return std::tolower(c);});
-    if (hash_ != digest)
+    if (hash_ != shaStream.getHash())
     {
         return false;
     }

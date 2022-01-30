@@ -24,6 +24,7 @@ module.exports = function createEnvironmentWindow(path, parentCenter, server)
 			webPreferences: {
 				webSecurity: true,
 				nodeIntegration: true,
+				contextIsolation: false,
 				allowEval: false,
 				enableRemoteModule: true
 			}
@@ -40,6 +41,7 @@ module.exports = function createEnvironmentWindow(path, parentCenter, server)
 
 		envWindow.on('close', (e) => 
 		{
+			console.log('onClose');
 			try
 			{
 				if (!forceQuit) 
@@ -48,11 +50,12 @@ module.exports = function createEnvironmentWindow(path, parentCenter, server)
 					e.preventDefault();
 				}
 				else
+				{
 					isVisible = false;	
+				}
 			}
 			catch(e)
 			{
-
 			}
 		});
 

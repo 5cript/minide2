@@ -2,7 +2,7 @@
 
 #include "state.hpp"
 #include "../session/session_obtainer.hpp"
-#include "../routers/streamer_fwd.hpp"
+#include "../streaming/streamer_base.hpp"
 #include "../routers/settings_provider_fwd.hpp"
 
 #include <string>
@@ -25,7 +25,7 @@ namespace MinIDE::Scripting
         (
             std::weak_ptr <StateCollection> weakStateRef,
             SessionObtainer sessionAccess,
-            Routers::DataStreamer* streamer,
+            Streaming::StreamerBase* streamer,
             Routers::SettingsProvider* settingsProv
         );
         ~LuaSettingsProvider();
@@ -42,7 +42,7 @@ namespace MinIDE::Scripting
     (
         std::weak_ptr <StateCollection> state,
         SessionObtainer sessionAccess,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Routers::SettingsProvider* settingsProv
     );
 }

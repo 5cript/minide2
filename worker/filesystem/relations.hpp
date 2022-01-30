@@ -2,6 +2,8 @@
 
 #include "filesystem.hpp"
 
+#include <optional>
+
 namespace Filesystem
 {
     /**

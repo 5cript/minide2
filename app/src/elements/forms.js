@@ -3,34 +3,16 @@ import React from 'react';
 // Other
 import classNames from 'classnames';
 import _ from 'lodash';
-import { withStyles } from '@material-ui/core/styles';
 
 // Components
 import Tooltip from '@material-ui/core/Tooltip';
 import Jello from 'react-reveal/Jello';
 import WarningSharpIcon from '@material-ui/icons/WarningSharp';
-import Switch from '@material-ui/core/Switch';
-import { DropdownList } from 'react-widgets'
+import { DropdownList } from 'react-widgets';
+import ThemedSwitch from './switch';
 
 // Styles
 import './styles/forms.css';
-
-const ThemedSwitch = withStyles({
-    switchBase: {
-        color: 'var(--foreground-color)',
-        '&$checked': {
-            color: 'var(--theme-color-extreme)',
-        },
-        '&$checked + $track': {
-            backgroundColor: 'var(--theme-darker)',
-        },
-        '& + $track': {
-            backgroundColor: 'var(--foreground-disabled)',
-        },
-    },
-    checked: {},
-    track: {},
-})(Switch);
 
 export class FlatForm extends React.Component
 {
@@ -90,6 +72,7 @@ export class FlatForm extends React.Component
                                         return ''
                                 })())
                             }
+                            autoFocus={scheme.autofocus}
                         ></input>
                         {(() => {
                             if (!this.satisfiesRequirements(scheme))

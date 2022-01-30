@@ -6,10 +6,12 @@ import {connect} from 'react-redux';
 
 import TerminalInstance from './terminal';
 import LogPanel from './log';
+import DebuggerTerminal from './debugger_terminal';
 import {TabPanel, MuiTabs} from '../../../elements/tabs';
 
 // Actions
 import {focusLogByName} from '../../../actions/log_actions';
+import {debuggerSetFocussedInstance} from '../../../actions/debugging_actions';
 
 // Other
 //import _ from 'lodash'
@@ -44,7 +46,17 @@ class LogsAndOthers extends React.Component
         return (
             <div className='tabContainer'>
                 <MuiTabs
-                    onChange={(viewIndex) => this.props.dispatch(focusLogByName(tabLabels[viewIndex]))}
+                    onChange={(viewIndex) => {
+                        const log = this.props.logs.logs.find(log => {
+                            return log.logName === tabLabels[viewIndex];
+                        })
+                        if (log && log.logType === '_debug_terminal')
+                        {
+                            this.props.dispatch(debuggerSetFocussedInstance(log.instanceId));
+                        }
+                        this.props.dispatch(focusLogByName(tabLabels[viewIndex]))
+                        
+                    }}
                     value={activeLabel}
                     tabLabels={tabLabels}
                     id={this.props.tabsId}
@@ -55,7 +67,7 @@ class LogsAndOthers extends React.Component
                             if (elem.logType === '_terminal')
                                 return (
                                     <TabPanel 
-                                        key="__terminalPanel" 
+                                        key={"__terminalPanel_" + elem.logName}
                                         className='terminalPanel'
                                         value={this.props.activeLog}
                                         index={i}
@@ -68,6 +80,24 @@ class LogsAndOthers extends React.Component
                                         ></TerminalInstance>
                                     </TabPanel>
                                 )
+
+                            else if (elem.logType === '_debug_terminal')
+                            {
+                                return (
+                                    <TabPanel
+                                        key={"_debug_terminal_" + elem.logName + elem.instanceId}
+                                        className='debugTerminalPanel'
+                                        value={this.props.activeLog}
+                                        index={i}
+                                    >
+                                        <DebuggerTerminal
+                                            instanceId={elem.instanceId}
+                                            dict={this.props.dict}
+                                            debugController={this.props.debugController}
+                                        ></DebuggerTerminal>
+                                    </TabPanel>
+                                )
+                            }
 
                             return (
                                 <TabPanel 

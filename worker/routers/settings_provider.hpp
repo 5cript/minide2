@@ -15,13 +15,13 @@ namespace Routers
     class SettingsProvider : public BasicRouter
     {
     public:
-        SettingsProvider(RouterCollection* collection, attender::tcp_server& server, Config const& config);
+        SettingsProvider(CommunicationCenter* collection, attender::http_server& server, Config const& config);
         ~SettingsProvider();
 
         PublicSettings settings() const;
 
     private:
-        void registerRoutes(attender::tcp_server& server);
+        void registerRoutes(attender::http_server& server);
 
     private:
         struct Implementation;

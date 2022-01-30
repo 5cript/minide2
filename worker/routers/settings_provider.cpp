@@ -15,7 +15,7 @@ namespace Routers
         }
     };
 //#####################################################################################################################
-    SettingsProvider::SettingsProvider(RouterCollection* collection, attender::tcp_server& server, Config const& config)
+    SettingsProvider::SettingsProvider(CommunicationCenter* collection, attender::http_server& server, Config const& config)
         : BasicRouter(collection, &server)
         , impl_{new SettingsProvider::Implementation(config)}
     {
@@ -29,7 +29,7 @@ namespace Routers
         return impl_->settings;
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void SettingsProvider::registerRoutes(attender::tcp_server& server)
+    void SettingsProvider::registerRoutes(attender::http_server& server)
     {
         cors_options(server, "/api/settings/environment/names", "GET", impl_->config.corsOption);
         server.get("/api/settings/environment/names", [this](auto req, auto res)
@@ -71,7 +71,7 @@ namespace Routers
                 try
                 {
                     if (!body.contains("environments"))
-                        return res->status(400).send("need environments in json body");
+                        return respondWithError(res, "need environments in json body");
 
                     std::unordered_map <std::string, SettingParts::Environment> envs;
                     envs = body["environments"].get<decltype(envs)>();

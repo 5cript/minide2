@@ -6,9 +6,9 @@
 #include "../scripting_engine/streamer_access.hpp"
 #include "../scripting_engine/settings_provider.hpp"
 #include "../session/session_obtainer.hpp"
-#include "../routers/streamer.hpp"
+#include "../streaming/streamer_base.hpp"
 
-#include <attender/attender/session/uuid_session_cookie_generator.hpp>
+#include <attender/session/uuid_session_cookie_generator.hpp>
 
 #include <sol/sol.hpp>
 
@@ -90,7 +90,7 @@ namespace Toolbars
     (
         sfs::path const& root,
         SessionObtainer const& obtainer,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Routers::SettingsProvider* settingsProv,
         Config const& config
     )
@@ -115,7 +115,7 @@ namespace Toolbars
     void ScriptedToolbar::initialize
     (
         SessionObtainer const& obtainer,
-        Routers::DataStreamer* streamer,
+        Streaming::StreamerBase* streamer,
         Routers::SettingsProvider* settingsProv
     )
     {

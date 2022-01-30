@@ -26,8 +26,11 @@ let port = '3000';
 let server = {
 	ip: '[::1]',
 	port: 43255,
+	controlPort: 43256,
+	dataPort: 43256,
 	authCookie: ''
 };
+let fastClickExitTimes = [];
 
 const createSideWindow = ({factory, uriPart, args}) => 
 {
@@ -149,8 +152,8 @@ function createWindow()
 
 	electron.Menu.setApplicationMenu(menu);
 
-	const screen = 0;
-	//const screen = 1;
+	//const screen = 0;
+	const screen = 1;
 
 	let windowWidth = 1500;
 	let windowHeight = 900;
@@ -173,6 +176,7 @@ function createWindow()
 			webSecurity: true,
 			nodeIntegration: true,
 			allowEval: false,
+			contextIsolation: false,
 			enableRemoteModule: true
 		},
 	})
@@ -193,6 +197,20 @@ function createWindow()
 
 	mainWindow.on('close', (e) => 
 	{
+		fastClickExitTimes.push(new Date());
+		if (fastClickExitTimes.length == 3)
+		{
+			diff = 
+				((fastClickExitTimes[2] - fastClickExitTimes[1]) +
+				(fastClickExitTimes[1] - fastClickExitTimes[0])) / 2
+			;
+			if (Math.abs(diff) < 250)
+			{
+				// close anyway on fast clicks.
+				return;
+			}
+			fastClickExitTimes.shift();
+		}
 		if (!forceQuit) 
 		{
 			mainWindow.webContents.send('closeIssued');
@@ -207,13 +225,16 @@ function createWindow()
 		if (fs.existsSync(home + "/preferences.json"))
 			preferences = JSON.parse(fs.readFileSync(home + "/preferences.json", 'utf8')).preferences;
 
+		console.log('preferences loaded', preferences);
+
 		mainWindow.home = home;
 
 		mainWindow.webContents.send('setHome', home);
 		mainWindow.webContents.send('preferences', preferences);
 		mainWindow.webContents.send('setBackend', {
 			ip: preferences.backend.host,
-			port: preferences.backend.port,
+			httpPort: preferences.backend.httpPort,
+			websocketPort: preferences.backend.websocketPort,
 			autoConnect: preferences.backend.autoConnect
 		});
 	});
@@ -223,6 +244,9 @@ function createWindow()
 		forceQuit = true;
 		mainWindow.close();
 	});
+
+	/*
+	REMOVE ME AT SOME POINT, if truely not needed anymore. cookie trick.
 
 	ipcMain.on('haveCookieUpdate', (event, arg) => 
 	{
@@ -247,6 +271,7 @@ function createWindow()
 
 		event.returnValue = 0;
 	});
+	*/
 
 	registerShortcuts(mainWindow);
 }

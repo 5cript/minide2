@@ -1,4 +1,5 @@
 import React from 'react';
+import {connect} from 'react-redux';
 
 // Components
 import JsonOptions from '../../elements/json_options';
@@ -20,7 +21,8 @@ import Environment from '../../backend/environment';
 
 // Styles
 import './styles/environments.css';
-import '../../styles/react-widgets.css';
+import '../../styles/constants.css';
+import '../../styles/react-widgets.scss';
 
 // Requires
 const {ipcRenderer} = window.require('electron');
@@ -68,7 +70,7 @@ class Environments extends React.Component
             getState: () =>
             {
                 return {
-                    backend: this.backend
+                    backend: this.props.backend
                 }
             }
         }
@@ -93,16 +95,6 @@ class Environments extends React.Component
                 })
             }
         });
-
-        /*
-        ipcRenderer.on('loadEnvironment', (event, arg) => 
-        {
-            this.backend = arg;
-            console.log(arg);
-            console.log('load', this.backend);
-            this.load();
-        });
-        */
     }
 
     environmentList = () =>
@@ -484,21 +476,24 @@ class Environments extends React.Component
                     this.showOkBox(this.dict.translate("$FetchFailed", "environments") + ': ' + msg, () => {});
             }
         )
+        // TODO: update redux state
     }
 
     cancel = () => 
     {
-        ipcRenderer.sendSync('closeEnvWindow', '');
+        ipcRenderer.send('closeEnvWindow', '');
     }
 
     load = () => 
     {
         this.backendWorker.loadAll((json) => {
+            console.log('loaded');
             this.setState({
                 loading: false
             });
             this.fromJson(json.environments, true);
         }, msg => {
+            console.log('load failed');
             this.setState({
                 loading: false
             });
@@ -510,7 +505,7 @@ class Environments extends React.Component
 
     componentDidMount = () => 
     {
-        //this.load();
+        this.load();
     }
 
     render()
@@ -521,7 +516,7 @@ class Environments extends React.Component
                     dict={this.dict} 
                     json={this.toJson()}
                     onJsonUpdate={j => this.fromJson(j)}
-                    onSave={() => {this.save()}}
+                    onSave={() => {this.save(() => this.cancel())}}
                     onCancel={() => {this.cancel()}}
                 >
                     {this.uiComponents()}
@@ -554,4 +549,8 @@ class Environments extends React.Component
     }
 };
 
-export default Environments;
+export default connect(state => {
+    return {
+        backend: state.backend,
+    }
+})(Environments);

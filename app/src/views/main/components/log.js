@@ -88,10 +88,8 @@ class LogPanel extends React.Component
 
     init = () =>
     {
-        console.log('tryinit');
         if (this.mounted !== true || this.term !== undefined)
             return;
-        console.log('actuallyinit');
 
         this.term = new Terminal({
             fontSize: 12,

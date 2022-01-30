@@ -24,8 +24,9 @@ module.exports = function createPreferencesWindow(path, parentCenter)
 			width: w,
 			height: h,
 			webPreferences: {
-				webSecurity: true,
+				webSecurity: false,
 				nodeIntegration: true,
+				contextIsolation: false,
 				allowEval: false,
 				enableRemoteModule: true
 			}

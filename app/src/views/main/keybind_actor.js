@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 // Components
 
 // Actions
-import {activeFileWasSynchronized, fileWasSynchronized, setActiveFile, removeOpenFile} from '../../actions/open_file_actions';
+import {setActiveFile, removeOpenFile} from '../../actions/open_file_actions';
 import {setAllKeybinds} from '../../actions/shortcut_actions';
 
 // Other

@@ -18,22 +18,33 @@ import CommonActions from './common_actions';
 // Actions
 import {setFileTreeBranch, setActiveProject} from '../../actions/workspace_actions';
 import {addOpenFileWithContent, setActiveFile, moveOpenFile} from '../../actions/open_file_actions';
-import {setConnected, setConnectMessage, setTryingToConnect, setSessionId, setBackendPort, setBackendIp} from '../../actions/backend_actions';
+import {
+    setConnected, 
+    setConnectMessage, 
+    setTryingToConnect, 
+    setBackendIp, 
+    setBackendHttpPort, 
+    setBackendWebsocketPort
+} from '../../actions/backend_actions';
 import {initializeToolbars} from '../../actions/toolbar_actions';
 import {addToLog, clearLog, focusLogByName, setLogType, moveLogs} from '../../actions/log_actions.js';
 import {setPreferences} from '../../actions/preferences_actions.js';
+import {setDebuggingProfiles, setGlobalDebuggerSettigns, setDebugInitialLoadDone} from '../../actions/debugging_actions';
 
 // Other
-import Backend from '../../backend_connector';
+import Backend from '../../backend/backend_connector';
 import _ from 'lodash';
 import Dictionary from '../../util/localization';
 import LocalPersistence from '../../util/persistence';
-import DebugController from '../../debug_controller';
+import DebugController from '../../debugger/debug_controller';
+import ReduxPersistanceHelper from '../../util/redux_persist';
+import GutterControl from './gutter_control';
 
 // Style
 import './styles/main.css'
 import ReactResizeDetector from 'react-resize-detector';
 import InputBox from '../../elements/input_box';
+import { setConfigHome } from '../../actions/misc_actions';
 
 // requires
 const {ipcRenderer} = window.require('electron');
@@ -110,29 +121,26 @@ class MainWindow extends React.Component
         this.installShortcuts();
 
         this.props.dispatch(setConnectMessage(this.dict.translate("$ConnectingToBackend", "main_window")));
+    }
 
-        this.backend = new Backend
-        (
-            props.store,
-            // Control Callback
-            (...args) => {this.onControlStream(...args);}, 
-            // Data Callback
-            (...args) => {this.onDataStream(...args);}, 
-            // Error Callback
-            (...args) => {this.onStreamError(...args);},
-            // on Connection Loss
-            (...args) => {this.onConnectionLoss(...args);}
-        );
-        
-        this.debugController = new DebugController(this.backend, props.store);
-        
-        this.commonActions = new CommonActions
-        (
-            props.store,
-            this,
-            this.backend,
-            this.debugController
-        );
+    onAuthenticationSuccess = () =>
+    {
+        if (this.props.preferences.backend.autoLoadLastProject)
+        {
+            const lastWorkspace = this.persistence.getLastWorspace(this.currentHost());
+            if (lastWorkspace)
+            {
+                this.backend.workspace().openWorkspace(lastWorkspace).then((response) => {
+                    console.log(response);
+                });
+                /*
+                this.backend.workspace().setActiveProject(lastActive).then(() => {
+                    this.props.dispatch(setActiveProject(lastActive))
+                    this.onActiveProjectChange(lastActive);
+                });
+                */
+            }
+        }
     }
 
     isShortcut(event, shortcutDefinition)
@@ -177,6 +185,7 @@ class MainWindow extends React.Component
 
     handleTreeUpdates(head, data)
     {
+        /*
         let firstLoad = false
         if (_.isEmpty(this.props.workspaceRoot))
         {
@@ -187,7 +196,9 @@ class MainWindow extends React.Component
         {
             this.props.dispatch(setFileTreeBranch(head.origin, head.tree.files, head.tree.directories));
         }
+        */
 
+        /*
         if (firstLoad && this.props.preferences.backend.autoLoadLastProject)
         {
             const lastActive = this.persistence.getLastActive(this.currentHost());
@@ -201,241 +212,297 @@ class MainWindow extends React.Component
                 });
             }
         }
+        */
     }
 
-    initToolbars = (json) =>
-    {
-        let toolbars = {}
-        let lookup = []
-        let ot = json.toolbars;
-        let preselect = undefined;
-        for (const i in ot)
-        {
-            const toolbar = ot[i];
-            if (preselect === undefined)
-                preselect = toolbar.id;
-            lookup.push(toolbar.id);
-            toolbars[toolbar.id] = {
-                items: toolbar.items,
-                name: toolbar.name,
-                id: toolbar.id
-            }
-        }
+    // initToolbars = (json) =>
+    // {
+    //     let toolbars = {}
+    //     let lookup = []
+    //     let ot = json.toolbars;
+    //     let preselect = undefined;
+    //     for (const i in ot)
+    //     {
+    //         const toolbar = ot[i];
+    //         if (preselect === undefined)
+    //             preselect = toolbar.id;
+    //         lookup.push(toolbar.id);
+    //         toolbars[toolbar.id] = {
+    //             items: toolbar.items,
+    //             name: toolbar.name,
+    //             id: toolbar.id
+    //         }
+    //     }
         
-        this.props.dispatch(initializeToolbars(toolbars, lookup));
-        if (this.toolbar)
-            this.toolbar.preselectToolbar(preselect);
-    }
+    //     this.props.dispatch(initializeToolbars(toolbars, lookup));
+    //     if (this.toolbar)
+    //         this.toolbar.preselectToolbar(preselect);
+    // }
 
     showProjectSettigns({settingsFile})
     {
+        /*
         if (this.props.activeProject === undefined || this.props.activeProject === null || this.props.activeProject === '')
             return this.showOkBox(this.dict.translate("$NoActiveProject", "dialog"));
         if (this.props.workspaceRoot === undefined || this.props.workspaceRoot === null || this.props.workspaceRoot === '')
             return;
 
         this.backend.workspace().loadFile(this.props.activeProject + "/.minIDE/" + settingsFile, "projectSettings");
+        */
     }
 
-    handleLuaRpc(func, data)
-    {
-        switch (func)
-        {
-            case('showProjectSettings'):
-                return this.showProjectSettigns(data);
-            case('setComboboxData'):
-                return this.toolbar.comboboxLoaded(
-                    data.toolbarId,
-                    data.itemId,
-                    data.items
-                )
-            case('actionCompleted'):
-            {
-                if (this.toolbar)
-                {
-                    this.toolbar.setItemNotRunning(data.toolbarId, data.itemId);
-                }
+    // handleLuaRpc(func, data)
+    // {
+    //     switch (func)
+    //     {
+    //         case('showProjectSettings'):
+    //             return this.showProjectSettigns(data);
+    //         case('setComboboxData'):
+    //             return this.toolbar.comboboxLoaded(
+    //                 data.toolbarId,
+    //                 data.itemId,
+    //                 data.items
+    //             )
+    //         case('actionCompleted'):
+    //         {
+    //             if (this.toolbar)
+    //             {
+    //                 this.toolbar.setItemNotRunning(data.toolbarId, data.itemId);
+    //             }
 
-                break;
-            }
-            default:
-                return;
-        }
-    }
+    //             break;
+    //         }
+    //         default:
+    //             return;
+    //     }
+    // }
 
-    onControlStream(head, data)
-    {
-        try
-        {
-            if (head.type === "welcome")
-                ipcRenderer.sendSync('haveCookieUpdate', {});
-            else if (head.type === "keep_alive")
-            {}
-            else if (head.type === "lua_rpc")
-            {
-                this.handleLuaRpc(head.functionName, JSON.parse(head.data))
-            }
-            else if (head.type === "lua_process")
-            {
-                if (head.message === "\x1b[2J")
-                {
-                    this.props.dispatch(setLogType(head.processName, head.kind));
-                    this.props.dispatch(clearLog(head.processName));
-                    this.props.dispatch(focusLogByName(head.processName));
-                }
-                else
-                    this.props.dispatch(addToLog(head.processName, head.message));
-            }
-            else if (head.type === "lua_process_info")
-            {
-                const info = JSON.parse(head.data);
-                if (info.what === "processEnded")
-                {
-                    let message = head.processName + " " + this.dict.translate("$ProcessEnded", "lua") + " " + info.status + "\n";
-                    this.props.dispatch(addToLog(head.processName, message));
-                }
-                else if (info.what === "processStartFailure")
-                {
-                    let message = head.processName + " " + this.dict.translate("$ProcessStartFail", "lua") + " " + info.error + "\n";
-                    this.props.dispatch(addToLog(head.processName, message));
-                    if (info.error === 2)
-                        this.props.dispatch(addToLog(head.processName, this.dict.translate("$ProcessNotFound", "lua") + "\n"));
-                    if (info.command !== undefined)
-                        this.props.dispatch(addToLog(head.processName, info.command));
-                }
-            }
-            else if (head.type === "create_input_form")
-            {
-                console.log(head.specs);
-                const spec = JSON.parse(head.specs);
-                console.log(spec);
+    // onMessage(head, data)
+    // {
+    //     try
+    //     {
+    //         if (head.type === "keep_alive")
+    //         {}
+    //         else if (head.type === "rejected_authentication")
+    //         {
+    //             console.log('control stream authentication rejected');
+    //         }
+    //         else if (head.type === "lua_rpc")
+    //         {
+    //             this.handleLuaRpc(head.functionName, JSON.parse(head.data))
+    //         }
+    //         else if (head.type === "debugger")
+    //         {
+    //             this.debugController.onMessage(head);
+    //         }
+    //         else if (head.type === "lua_process")
+    //         {
+    //             if (head.message === "\x1b[2J")
+    //             {
+    //                 this.props.dispatch(setLogType(head.processName, head.kind));
+    //                 this.props.dispatch(clearLog(head.processName));
+    //                 this.props.dispatch(focusLogByName(head.processName));
+    //             }
+    //             else
+    //                 this.props.dispatch(addToLog(head.processName, head.message));
+    //         }
+    //         else if (head.type === "lua_process_info")
+    //         {
+    //             const info = JSON.parse(head.data);
+    //             if (info.what === "processEnded")
+    //             {
+    //                 let message = head.processName + " " + this.dict.translate("$ProcessEnded", "lua") + " " + info.status + "\n";
+    //                 this.props.dispatch(addToLog(head.processName, message));
+    //             }
+    //             else if (info.what === "processStartFailure")
+    //             {
+    //                 let message = head.processName + " " + this.dict.translate("$ProcessStartFail", "lua") + " " + info.error + "\n";
+    //                 this.props.dispatch(addToLog(head.processName, message));
+    //                 if (info.error === 2)
+    //                     this.props.dispatch(addToLog(head.processName, this.dict.translate("$ProcessNotFound", "lua") + "\n"));
+    //                 if (info.command !== undefined)
+    //                     this.props.dispatch(addToLog(head.processName, info.command));
+    //             }
+    //         }
+    //         else if (head.type === "create_input_form")
+    //         {
+    //             console.log(head.specs);
+    //             const spec = JSON.parse(head.specs);
+    //             console.log(spec);
 
-                let schema = {};
+    //             let schema = {};
 
-                schema.categories = spec.categories.map(category => {
-                    return {
-                        id: category.id,
-                        caption: this.dict.translate(category.label, spec.dictionary),
-                        borderColor: category.border_color
-                    }
-                })
-                schema.fields = spec.fields.map(field => {
-                    let type = field.type;
-                    if (type === "text")
-                        type = "input";
-                    return {
-                        key: field.id,
-                        label: this.dict.translate(field.label, spec.dictionary),
-                        type: type,
-                        category: field.category
-                    }
-                })
-                this.setState({inputForm: schema, inputFormEnvs: spec.environments ? spec.environments : []});
-            }
-            else if (head.type === "toggle_source_header")
-            {
-                const checkProjectSettings = (onSplitWasDecided, onLocalWasDecided) => 
-                {
-                    this.backend.workspace().loadProjectMetafile
-                    (
-                        options => 
-                        {
-                            if ((head.specialDirExists || head.specialDirFile !== "") && options.splitSourceAndInclude !== true && options.ignoreSeemingSplit !== true) 
-                            {
-                                this.showYesNoBox(this.dict.translate('$LooksLikeSourceSplitButNotConfigured', 'project'), 
-                                    () => // yes, want to split
-                                    {
-                                        this.backend.workspace().injectProjectSettings({
-                                            splitSourceAndInclude: true,
-                                            ignoreSeemingSplit: false
-                                        });
-                                        onSplitWasDecided();
-                                    },
-                                    () => // no, dont want split
-                                    {
-                                        this.backend.workspace().injectProjectSettings({
-                                            splitSourceAndInclude: false,
-                                            ignoreSeemingSplit: true
-                                        });
-                                        onLocalWasDecided();
-                                    }
-                                );
-                            }
-                            else if (options.splitSourceAndInclude !== true && options.ignoreSeemingSplit === true)
-                            {
-                                onLocalWasDecided();
-                            }
-                            else if (options.splitSourceAndInclude === true && head.specialDirFile !== "")
-                            {
-                                onSplitWasDecided();
-                            }
-                            else if (head.specialDirFile === "" || !head.fileInSpecialDir)
-                            {
-                                onLocalWasDecided();
-                            }
-                            else
-                            {
-                                this.showOkBox('implementation_error, uncaught variation in file split decision:\n' + JSON.stringify(options) + "\n" + JSON.stringify(head));
-                                console.error('implementation_error, uncaught variation in file split decision', options, head);
-                            }
-                        }, 
-                        error => 
-                        {
-                            console.error(JSON.stringify(error));
-                        }
-                    )
-                };
+    //             schema.categories = spec.categories.map(category => {
+    //                 return {
+    //                     id: category.id,
+    //                     caption: this.dict.translate(category.label, spec.dictionary),
+    //                     borderColor: category.border_color
+    //                 }
+    //             })
+    //             schema.fields = spec.fields.map(field => {
+    //                 let type = field.type;
+    //                 if (type === "text")
+    //                     type = "input";
+    //                 return {
+    //                     key: field.id,
+    //                     label: this.dict.translate(field.label, spec.dictionary),
+    //                     type: type,
+    //                     category: field.category
+    //                 }
+    //             })
+    //             this.setState({inputForm: schema, inputFormEnvs: spec.environments ? spec.environments : []});
+    //         }
+    //         else if (head.type === "toggle_source_header")
+    //         {
+    //             const checkProjectSettings = (onSplitWasDecided, onLocalWasDecided) => 
+    //             {
+    //                 this.backend.workspace().loadProjectMetafile
+    //                 (
+    //                     options => 
+    //                     {
+    //                         if ((head.specialDirExists || head.specialDirFile !== "") && options.splitSourceAndInclude !== true && options.ignoreSeemingSplit !== true) 
+    //                         {
+    //                             this.showYesNoBox(this.dict.translate('$LooksLikeSourceSplitButNotConfigured', 'project'), 
+    //                                 () => // yes, want to split
+    //                                 {
+    //                                     this.backend.workspace().injectProjectSettings({
+    //                                         splitSourceAndInclude: true,
+    //                                         ignoreSeemingSplit: false
+    //                                     });
+    //                                     onSplitWasDecided();
+    //                                 },
+    //                                 () => // no, dont want split
+    //                                 {
+    //                                     this.backend.workspace().injectProjectSettings({
+    //                                         splitSourceAndInclude: false,
+    //                                         ignoreSeemingSplit: true
+    //                                     });
+    //                                     onLocalWasDecided();
+    //                                 }
+    //                             );
+    //                         }
+    //                         else if (options.splitSourceAndInclude !== true && options.ignoreSeemingSplit === true)
+    //                         {
+    //                             onLocalWasDecided();
+    //                         }
+    //                         else if (options.splitSourceAndInclude === true && head.specialDirFile !== "")
+    //                         {
+    //                             onSplitWasDecided();
+    //                         }
+    //                         else if (head.specialDirFile === "" || !head.fileInSpecialDir)
+    //                         {
+    //                             onLocalWasDecided();
+    //                         }
+    //                         else
+    //                         {
+    //                             this.showOkBox('implementation_error, uncaught variation in file split decision:\n' + JSON.stringify(options) + "\n" + JSON.stringify(head));
+    //                             console.error('implementation_error, uncaught variation in file split decision', options, head);
+    //                         }
+    //                     }, 
+    //                     error => 
+    //                     {
+    //                         console.error(JSON.stringify(error));
+    //                     }
+    //                 )
+    //             };
 
-                const openFile = (correspondingFile) => 
-                {
-                    const fileIfOpen = this.props.openFiles.findIndex(file => file.path === correspondingFile)
-                    if (fileIfOpen !== -1)
-                        this.props.dispatch(setActiveFile(fileIfOpen));
-                    else
-                        this.backend.workspace().loadFile(correspondingFile, undefined, fail => 
-                        {
-                            if (fail.fileNotFound === true) 
-                            {
-                                this.showYesNoBox(this.dict.translate('$FileNotFoundShallCreate', 'project') + "\n" + fail.path, () => 
-                                {
-                                    this.backend.workspace().createFile(correspondingFile, createFail => 
-                                    {
-                                        this.showOkBox(this.dict.translate('$CouldNotCreateFile', 'project') + "\n" + createFail)
-                                    })
-                                });
-                            }
-                            else 
-                                this.showOkBox('Error: ' + fail);
-                        });
-                }
-                checkProjectSettings
-                (
-                    () => {/* split decided */
-                        openFile(head.specialDirFile);
-                    },
-                    () => {/* local decided */
-                        openFile(head.inplaceFile);
-                    }
-                );
-            }
-            else
-            {
-                // Unhandled:
-                console.log(head);
-            }
-        }
-        catch(e)
-        {
-            console.error(e);
-        }
-    }
+    //             const openFile = (correspondingFile) => 
+    //             {
+    //                 const fileIfOpen = this.props.openFiles.findIndex(file => file.path === correspondingFile)
+    //                 if (fileIfOpen !== -1)
+    //                     this.props.dispatch(setActiveFile(fileIfOpen));
+    //                 else
+    //                     this.backend.workspace().loadFile(correspondingFile, undefined, fail => 
+    //                     {
+    //                         if (fail.fileNotFound === true) 
+    //                         {
+    //                             this.showYesNoBox(this.dict.translate('$FileNotFoundShallCreate', 'project') + "\n" + fail.path, () => 
+    //                             {
+    //                                 this.backend.workspace().createFile(correspondingFile, createFail => 
+    //                                 {
+    //                                     this.showOkBox(this.dict.translate('$CouldNotCreateFile', 'project') + "\n" + createFail)
+    //                                 })
+    //                             });
+    //                         }
+    //                         else 
+    //                             this.showOkBox('Error: ' + fail);
+    //                     });
+    //             }
+    //             checkProjectSettings
+    //             (
+    //                 () => {/* split decided */
+    //                     openFile(head.specialDirFile);
+    //                 },
+    //                 () => {/* local decided */
+    //                     openFile(head.inplaceFile);
+    //                 }
+    //             );
+    //         }
+    //         if (head.type === undefined || head.type === null) 
+    //         {
+    //             console.error("backend didn't send a message type. notify this to the backend dev");
+    //             return;
+    //         }
+    //         else if (head.type === "rejected_authentication")
+    //         {
+    //             console.log('data stream authentication rejected');
+    //         }
+    //         else if (head.type === "authentication_accepted")
+    //         {
+    //             this.props.dispatch(setConnected(true));
+    //             this.backend.toolbar().loadAll(res => {
+    //                 res.json().then(json => {
+    //                     this.initToolbars(json);
+    //                 })
+    //             });
+    //             if (this.props.preferences.backend.autoLoadWorkspace === true)
+    //             {
+    //                 const wspace = this.persistence.getLastWorspace(this.currentHost())
+    //                 if (wspace !== undefined && wspace !== null && wspace !== '')
+    //                 {
+    //                     this.backend.workspace().openWorkspace(wspace);
+    //                 }
+    //             }
+    //         }
+    //         else if (head.type === "file_tree") 
+    //         {
+    //             this.handleTreeUpdates(head, data);
+    //         }
+    //         else if (head.type === "file_content") 
+    //         {
+    //             let data = '';
+    //             if (head.chunks !== undefined)
+    //                 data = head.chunks.join();
+    //             this.callOnEditor(monaco => {
+    //                 monaco.updateFileModel({
+    //                     uri: head.path, 
+    //                     isAbsolute: head.isAbsolutePath, 
+    //                     data: data,
+    //                     focusLineNumber: head.line,
+    //                     focusColumn: head.linePos
+    //                 });
+    //             })
+    //             this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
+    //         }
+    //         else
+    //         {
+    //             // Unhandled:
+    //             console.log(head);
+    //         }
+    //     }
+    //     catch(e)
+    //     {
+    //         console.error(e);
+    //     }
+    // }
 
     callOnEditor = (fn) => 
     {
+        console.log(this.editor);
         if (this.editor)
         {
-            console.log(this.editor)
             const monaco = this.editor.getMonaco();
+            console.log(monaco);
             if (monaco)
             {
                 fn(monaco);
@@ -443,67 +510,9 @@ class MainWindow extends React.Component
         }
     }
 
-    onDataStream(head, data)
+    onStreamError(...args)
     {
-        try
-        {
-            if (head.type === undefined || head.type === null) 
-            {
-                console.error("backend didn't send a message type. notify this to the backend dev");
-                return;
-            }
-
-            if (head.type === "file_tree") 
-            {
-                this.handleTreeUpdates(head, data);
-                return;
-            }
-
-            if (head.type === "file_content") 
-            {
-                let data = '';
-                if (head.chunks !== undefined)
-                    data = head.chunks.join();
-                this.callOnEditor(monaco => {
-                    monaco.updateFileModel({
-                        uri: head.path, 
-                        isAbsolute: head.isAbsolutePath, 
-                        data: data,
-                        focusLineNumber: head.line,
-                        focusColumn: head.linePos
-                    });
-                })
-                this.props.dispatch(addOpenFileWithContent(head.path, head.isAbsolutePath, data));
-                return;
-            }
-
-            if (head.type === "welcome")
-            {
-                this.props.dispatch(setConnected(true));
-                this.backend.toolbar().loadAll(res => {
-                    res.json().then(json => {
-                        this.initToolbars(json);
-                    })
-                });
-                if (this.props.preferences.backend.autoLoadWorkspace === true)
-                {
-                    const wspace = this.persistence.getLastWorspace(this.currentHost())
-                    if (wspace !== undefined && wspace !== null && wspace !== '')
-                    {
-                        this.backend.workspace().openWorkspace(wspace);
-                    }
-                }
-            }
-        }
-        catch(e)
-        {
-            console.error(e);
-        }
-    }
-
-    onStreamError(err)
-    {
-        console.error(err);
+        console.error(...args);
     }
 
     onConnectionLoss(which)
@@ -520,7 +529,7 @@ class MainWindow extends React.Component
     {
         return {
             host: this.props.backend.ip,
-            port: this.props.backend.port
+            port: this.props.backend.websocketPort
         };
     }
 
@@ -530,23 +539,64 @@ class MainWindow extends React.Component
             this.keybindActor.loadKeybindsFromDrive(this.home);
     }
 
+    makeBackend = () =>
+    {
+        this.backend = new Backend
+        (
+            this.props.store,
+            this.persistence,
+            // Control Callback
+            (...args) => {/*...*/}, 
+            // on Connection Loss
+            (...args) => {this.onConnectionLoss(...args);},
+            // Error Callback
+            (...args) => {this.onStreamError(...args);},
+        );        
+        
+        this.debugController = new DebugController(this.backend, this.props.store);
+        
+        this.commonActions = new CommonActions
+        (
+            this.props.store,
+            this,
+            this.backend,
+            this.debugController
+        );
+        
+        this.connectToBackend = _.debounce(() => {
+            this.props.dispatch(setTryingToConnect(true));
+            this.backend.connect().then(() => {
+                this.backend.authenticate().then((authResponse) => {
+                    this.props.dispatch(setConnected(authResponse.authenticated));
+                    if (authResponse.authenticated)
+                        this.onAuthenticationSuccess();
+                });
+            });
+        }, 300)
+    }
+
     registerIpcHandler = () => 
     {
-        this.debouncedStart = _.debounce(() => {
-            this.backend.authenticate(() => {this.backend.readControl()});
-        }, 300)
-
         ipcRenderer.on('openWorkspace', (event, arg) => 
         {
             if (arg.canceled)
                 return;
-            this.backend.workspace().openWorkspace(arg.filePaths[0]);
-            this.persistence.setLastWorkspace(this.currentHost(), arg.filePaths[0]);
+            this.backend.workspace().openWorkspace(arg.filePaths[0]).then(() => {
+                this.persistence.setLastWorkspace(this.currentHost(), arg.filePaths[0]);    
+            });            
         })
 
         ipcRenderer.on('setHome', (event, arg) => {
             this.home = arg;
             this.loadKeybindsIfPossible();
+            this.props.dispatch(setConfigHome(this.home));
+
+            const persistor = new ReduxPersistanceHelper(this.props.store);
+            persistor.loadByDispatch('debugger_settings.json', [
+                fileContent => setDebuggingProfiles(fileContent.profiles),
+                fileContent => setGlobalDebuggerSettigns(fileContent.globalSettings),
+                () => setDebugInitialLoadDone()
+            ], this.home);
 
             this.persistence = new LocalPersistence(this.home, window.require('fs'));
             try
@@ -562,6 +612,7 @@ class MainWindow extends React.Component
                 catch(e)
                 {}
             }
+            this.makeBackend();
         })
 
         ipcRenderer.on('preferences', (event, arg) => {
@@ -570,16 +621,17 @@ class MainWindow extends React.Component
 
         ipcRenderer.on('setBackend', (event, arg) =>
         {
+            console.log(arg);
             this.props.dispatch(setBackendIp(arg.ip));
-            this.props.dispatch(setBackendPort(arg.port));
+            this.props.dispatch(setBackendHttpPort(arg.httpPort));
+            this.props.dispatch(setBackendWebsocketPort(arg.websocketPort));
             if (arg.autoConnect && this.props.backend.connected === false)
-                this.debouncedStart()
+                this.connectToBackend()
         })
 
         ipcRenderer.on('connectBackend', (event, arg) => 
         {
-            this.props.dispatch(setTryingToConnect(true));
-            this.backend.authenticate(() => {this.backend.readControl()});
+            this.connectToBackend();
         })
         
         ipcRenderer.on('testBackend', (event, arg) => 
@@ -607,26 +659,18 @@ class MainWindow extends React.Component
                 if (!file.synchronized)
                 {
                     this.showYesNoBox(this.dict.translate('$CloseWithUnsavedChanges', 'dialog'), () => {
-                        ipcRenderer.sendSync('closeNow', '');
+                        ipcRenderer.send('closeNow', '');
                     })
                     anyFound = true;
                     break;
                 }
             }
             if (!anyFound)
-                ipcRenderer.sendSync('closeNow', '');
-        })
-
-        ipcRenderer.on('cookie', (event, arg) => {
-            if (arg.name === 'aSID')
-            {
-                this.props.dispatch(setSessionId(arg.value));
-                this.backend.readData();
-            }
+                ipcRenderer.send('closeNow', '');
         })
     }
 
-    showYesNoBox(message, yesAction, noAction) 
+    showYesNoBox = (message, yesAction, noAction) =>
     {
         this.setState({
             yesNoBoxVisible: true,
@@ -636,7 +680,7 @@ class MainWindow extends React.Component
         this.noAction = noAction;
     }
 
-    showOkBox(message, okAction) 
+    showOkBox = (message, okAction) =>
     {
         this.setState({
             okBoxVisible: true,
@@ -645,7 +689,7 @@ class MainWindow extends React.Component
         this.okAction = okAction;
     }
 
-    onMessageBoxClose(whatButton)
+    onMessageBoxClose = (whatButton) =>
     {
         this.setState({
             yesNoBoxVisible: false
@@ -656,7 +700,7 @@ class MainWindow extends React.Component
             this.noAction();
     }
 
-    onOkBoxClose(whatButton)
+    onOkBoxClose = (whatButton) =>
     {
         this.setState({
             okBoxVisible: false
@@ -665,7 +709,7 @@ class MainWindow extends React.Component
             this.okAction();
     }
 
-    componentDidMount()
+    componentDidMount = () =>
     {
     }
 
@@ -714,6 +758,15 @@ class MainWindow extends React.Component
     setEditorRef = (editor) => 
     {
         this.editor = editor;
+        if (this.editor)
+        {
+            this.editor.emplaceGutterControl(GutterControl, this.props.store)
+            console.log('gutter control installed');
+        }
+        else
+        {
+            console.log('gutter control not installed right now');
+        }
     }
 
     setKeybindActor = (actor) => 
@@ -749,6 +802,7 @@ class MainWindow extends React.Component
                             backend={this.backend} 
                             cmake={new CMakeToolbarEvents()}
                             commonActions={this.commonActions}
+                            showOkBox={this.showOkBox}
                         />
                     </Slide>
                 </div>
@@ -756,6 +810,9 @@ class MainWindow extends React.Component
                     <SplitterLayout vertical={false} percentage={true} secondaryInitialSize={75}>
                         <div>
                             <Explorer 
+                                mainWindow={{
+                                    get: ()=>{return this;}
+                                }}
                                 onActiveProjectSet={this.onActiveProjectChange} 
                                 onDeleteFile={this.onDeleteFile}
                                 persistence={this.persistence} 
@@ -779,6 +836,7 @@ class MainWindow extends React.Component
                                             height={height} 
                                             className="logsAndOthers"
                                             tabsId="mainLogTabs"
+                                            debugController={this.debugController}
                                         ></LogsAndOthers>
                                     }
                                 </ReactResizeDetector>
@@ -786,6 +844,9 @@ class MainWindow extends React.Component
                         </div>
                     </SplitterLayout>
                 </div>
+
+                {/*Default Invisible Elements And Special Components Here*/}
+
                 <MessageBox boxStyle="YesNo" dict={this.dict} visible={this.state.yesNoBoxVisible} message={this.state.yesNoMessage} onButtonPress={(wb)=>{this.onMessageBoxClose(wb);}}/>
                 <MessageBox boxStyle="Ok" dict={this.dict} visible={this.state.okBoxVisible} message={this.state.okBoxMessage} onButtonPress={(wb)=>{this.onOkBoxClose(wb);}}/>
                 <MessageBox
@@ -807,13 +868,15 @@ class MainWindow extends React.Component
                                 {
                                     case("Ok"):
                                     {
-                                        console.log(data);
                                         this.setState({inputForm: null});
+                                        break;
                                     }
                                     case("Cancel"):
                                     {
                                         this.setState({inputForm: null});
+                                        break;
                                     }
+                                    default: break;
                                 }
                             }}
                             dict={this.dict}

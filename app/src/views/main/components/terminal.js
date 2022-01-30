@@ -50,8 +50,8 @@ class TerminalInstance extends React.Component
         const termContainer = document.getElementById('Terminal');
         this.term.open(termContainer);
 
-        this.fitAddon = new FitAddon();
-        this.term.loadAddon(this.fitAddon);
+        //this.fitAddon = new FitAddon();
+        //this.term.loadAddon(this.fitAddon);
         this.writePs1();
         
         // events:

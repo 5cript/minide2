@@ -30,7 +30,6 @@ export function setLogType(name, type)
     }
 }
 
-
 export function clearLog(name) 
 {
     return {
@@ -58,6 +57,30 @@ export function moveLogs(from, to)
         payload: {
             from: from,
             to: to
+        }
+    }
+}
+
+export function addDebugTerminal(name, data, props, closeable, instanceId)
+{
+    return {
+        type: 'ADD_DEBUG_TERMINAL',
+        payload: {
+            name: name,
+            data: data,
+            props: props,
+            closeable: closeable,
+            instanceId: instanceId
+        }
+    }
+}
+
+export function removeDebugTerminal(instanceId)
+{
+    return {
+        type: 'REMOVE_DEBUG_TERMINAL',
+        payload: {
+            instanceId: instanceId
         }
     }
 }

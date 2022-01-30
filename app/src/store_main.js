@@ -1,16 +1,13 @@
-const {createStore, applyMiddleware, compose} = require('redux');
-const { forwardToRenderer, triggerAlias, replayActionMain } = require('electron-redux');
+const {createStore} = require('redux');
+const eduxPreload = require('electron-redux/preload');
+const edux = require('electron-redux/main');
 
+eduxPreload.preload();
 const reducer = require('./reducers/reducers');
 
 let store = createStore(
     reducer,
-    applyMiddleware(
-        // <---- other middlewares HERE
-        forwardToRenderer
-    )
+    edux.stateSyncEnhancer()
 );
-
-replayActionMain(store);
 
 module.exports = store;

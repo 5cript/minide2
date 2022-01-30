@@ -1,0 +1,9 @@
+@use "react-widgets/scss/styles.scss" with (
+  $input-height: 2.5em,
+  $widget-font-size: 12px,
+  $widget-bg: var(--background-color),
+  $widget-color: var(--foreground-color), 
+  $input-color: var(--foreground-color),
+  $picker-btn-color: var(--foreground-color),
+  $widget-hover-color: var(--theme-very-dark)
+);

@@ -15,26 +15,33 @@ const initialState =
     hoveredNode: undefined
 };
 
-const findNodeAndSetStyle = (path, topNode, style, includeFiles) =>
+const findNodeAndDo = (path, topNode, includeFiles, operation) =>
 {
     let originSplit = path.split('/');
     originSplit.shift();
 
+    let prevNode = topNode;
     let curNode = topNode;
+    let index = -1;
     for (let depth = 1; depth !== originSplit.length; ++depth) 
     {
         let searchResult = binaryChildSearch(curNode, originSplit[depth]);
         if (searchResult.match === false && includeFiles)
-        {
             searchResult = binaryChildSearch(curNode, originSplit[depth], true);
-        }
         if (searchResult.match === false) 
+        {
             console.error('path not found in tree', curNode, originSplit[depth]);
+            return;
+        }
         else 
+        {
+            prevNode = curNode;
+            index = searchResult.index;
             curNode = curNode.children[searchResult.index];
+        }
     }
-    curNode.style = style;
-};
+    operation(curNode, prevNode, index);
+}
 
 module.exports = function reducer(state = initialState, action) 
 {
@@ -42,7 +49,7 @@ module.exports = function reducer(state = initialState, action)
     {
         case 'OPEN_WORKSPACE': 
         {
-            return {...state, root: action.payload.payload}
+            return {...state, root: action.payload.path}
         }
         case 'SET_HOVERED_NODE': 
         {
@@ -51,9 +58,9 @@ module.exports = function reducer(state = initialState, action)
             if (state.hoveredNode !== undefined)
             {
                 if (state.hoveredNode !== state.activeProject)
-                    findNodeAndSetStyle(state.hoveredNode, res, undefined, true);
+                    findNodeAndDo(state.hoveredNode, res, true, node => node.style = undefined);
                 else
-                    findNodeAndSetStyle(state.hoveredNode, res, {
+                    findNodeAndDo(state.hoveredNode, res, true, node => node.style = {
                         fontWeight: 'bold',
                         color: 'var(--theme-color)'
                     });
@@ -62,13 +69,13 @@ module.exports = function reducer(state = initialState, action)
             if (action.payload.path !== undefined)
             {
                 if (action.payload.path === state.activeProject)
-                    findNodeAndSetStyle(action.payload.path, res, {
+                    findNodeAndDo(action.payload.path, res, true, node => node.style = {
                         backgroundColor: 'var(--background-color-brighter)',
                         fontWeight: 'bold',
                         color: 'var(--theme-color)'
                     }, true)
                 else
-                    findNodeAndSetStyle(action.payload.path, res, {
+                    findNodeAndDo(action.payload.path, res, true, node => node.style = {
                         backgroundColor: 'var(--background-color-brighter)'
                     }, true)
             }
@@ -80,9 +87,9 @@ module.exports = function reducer(state = initialState, action)
             let res = _.cloneDeep(state.fileTree);
 
             if (state.activeProject !== undefined)
-                findNodeAndSetStyle(state.activeProject, res, undefined);
+                findNodeAndDo(state.activeProject, res, false, node => node.style = undefined);
 
-            findNodeAndSetStyle(action.payload.path, res, {
+                findNodeAndDo(action.payload.path, res, false, node => node.style = {
                 fontWeight: 'bold',
                 color: 'var(--theme-color)'
             });
@@ -168,6 +175,14 @@ module.exports = function reducer(state = initialState, action)
                 res.title = originSplit[0];
                 return {...state, root: action.payload.origin, fileTree: res};
             }
+            return {...state, fileTree: res};
+        }
+        case('DELETE_WORKSPACE_ELEMENT'): 
+        {
+            let res = _.cloneDeep(state.fileTree);
+            findNodeAndDo(action.payload.path, res, true, (_, prev, i) => {
+                prev.children.splice(i, 1);
+            });
             return {...state, fileTree: res};
         }
         default:

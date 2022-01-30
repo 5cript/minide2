@@ -2,7 +2,7 @@
 
 #include "state.hpp"
 #include "../session/session_obtainer.hpp"
-#include "../routers/streamer_fwd.hpp"
+#include "../streaming/streamer_base.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -17,7 +17,7 @@ namespace MinIDE::Scripting
     class LuaStreamer
     {
     public:
-        LuaStreamer(std::weak_ptr <StateCollection> weakStateRef, SessionObtainer sessionAccess, Routers::DataStreamer* streamer);
+        LuaStreamer(std::weak_ptr <StateCollection> weakStateRef, SessionObtainer sessionAccess, Streaming::StreamerBase* streamer);
         ~LuaStreamer();
 
         /**
@@ -76,5 +76,5 @@ namespace MinIDE::Scripting
         std::unique_ptr <Implementation> impl_;
     };
 
-    void loadStreamerAccess(std::weak_ptr <StateCollection> state, SessionObtainer sessionAccess, Routers::DataStreamer* streamer);
+    void loadStreamerAccess(std::weak_ptr <StateCollection> state, SessionObtainer sessionAccess, Streaming::StreamerBase* streamer);
 }

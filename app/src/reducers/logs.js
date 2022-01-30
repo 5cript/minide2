@@ -43,6 +43,54 @@ module.exports = function reducer(state={
                 ordering: ordering
             }
         }
+        case 'ADD_DEBUG_TERMINAL': 
+        {
+            let logs = _.cloneDeep(state.logs);
+            let ordering = [...state.ordering];
+            logs.push({
+                logName: action.payload.name,
+                data: action.payload.data ? action.payload.data : '',
+                logType: '_debug_terminal',
+                closeable: action.payload.closeable,
+                props: action.payload.props,
+                instanceId: action.payload.instanceId
+            })
+            ordering.push(logs.length - 1);
+            return {
+                ...state,
+                logs: logs,
+                ordering: ordering,
+                activeLog: logs.length - 1
+            }
+        }
+        case 'REMOVE_DEBUG_TERMINAL': 
+        {
+            let logs = _.cloneDeep(state.logs);
+            let ordering = [...state.ordering];
+
+            const index = logs.findIndex(elem => elem.instanceId === action.payload.instanceId);
+            if (index === -1)
+                return state;            
+            logs.splice(index, 1);
+
+            const orderingIndex = ordering.findIndex(elem => elem === index);
+            if (orderingIndex === -1)
+                return state;
+            ordering.splice(orderingIndex, 1);
+
+            ordering.map(elem => {
+                if (elem > index)
+                    return elem - 1;
+                return elem;
+            });
+
+            return {
+                ...state,
+                logs: logs,
+                ordering: ordering,
+                activeLog: state.activeLog >= logs.length ? logs.length - 1 : state.activeLog
+            }
+        }
         case 'SET_ACTIVE_LOG': 
         {
             return {

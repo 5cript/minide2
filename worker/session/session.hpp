@@ -5,7 +5,7 @@
 #include "toolbar_store.hpp"
 #include "../debugger/debugger.hpp"
 
-#include <attender/attender/session/session.hpp>
+#include <attender/session/session.hpp>
 #include <string>
 #include <functional>
 #include <mutex>
@@ -22,7 +22,7 @@ public:
     WorkspaceInfo workspace;
     std::string remoteAddress;
     std::string terminalEnvironment;
-    std::unordered_map <std::string, Debugger> debuggerInstances;
+    std::unordered_map <std::string, std::shared_ptr <Debugger>> debuggerInstances;
 
     ToolbarStore toolbarStore;
 

@@ -6,10 +6,10 @@
 #include <iostream>
 
 #include <attender/attender.hpp>
-#include <attender/attender/session/session_manager.hpp>
-#include <attender/attender/session/uuid_session_cookie_generator.hpp>
-#include <attender/attender/session/authorizer_interface.hpp>
-#include <attender/attender/session/basic_authorizer.hpp>
+#include <attender/session/session_manager.hpp>
+#include <attender/session/uuid_session_cookie_generator.hpp>
+#include <attender/session/authorizer_interface.hpp>
+#include <attender/session/basic_authorizer.hpp>
 
 void setupLog();
 void setupSignalHandler();

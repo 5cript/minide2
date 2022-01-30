@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {ShortcutRecorder, keybindRenderer} from '../../elements/shortcut_recorder';
 import SearchableTable from '../../elements/searchable_table';
 import {KeybindIo} from '../main/keybind_actor';
-import ReactModal from 'react-modal-resizable-draggable';
+import ReactModal from '../../elements/modal';
 
 // Other
 import Dictionary from '../../util/localization';

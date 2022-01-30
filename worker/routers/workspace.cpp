@@ -1,6 +1,6 @@
 #include "workspace.hpp"
 
-#include "../routers.hpp"
+#include "../communication_center.hpp"
 #include "../workspace/workspace.hpp"
 
 #include "../json.hpp"
@@ -45,7 +45,7 @@ namespace Routers
         }
     };
 //#####################################################################################################################
-    Workspace::Workspace(RouterCollection* collection, attender::tcp_server& server, Config const& config)
+    Workspace::Workspace(CommunicationCenter* collection, attender::http_server& server, Config const& config)
         : BasicRouter{collection, &server}
         , impl_{new Workspace::Implementation(config)}
     {
@@ -54,7 +54,7 @@ namespace Routers
 //---------------------------------------------------------------------------------------------------------------------
     Workspace::~Workspace() = default;
 //---------------------------------------------------------------------------------------------------------------------
-    void Workspace::registerRoutes(attender::tcp_server& server)
+    void Workspace::registerRoutes(attender::http_server& server)
     {
         /**
          *  Opens the workspace and makes a flat scan
@@ -85,7 +85,7 @@ namespace Routers
                 dir->origin = "/"s + sfs::path{root}.filename().string();
                 auto result = collection_->streamer().send
                 (
-                    StreamChannel::Data,
+                    Streaming::StreamChannel::Data,
                     req->ip(),
                     id,
                     dir.release()
@@ -172,7 +172,7 @@ namespace Routers
                 dir->origin = path;
                 auto result = collection_->streamer().send
                 (
-                    StreamChannel::Data,
+                    Streaming::StreamChannel::Data,
                     req->ip(),
                     id,
                     dir.release()
@@ -193,11 +193,6 @@ namespace Routers
             enable_cors(req, res, impl_->config.corsOption);
 
             auto sess = this_session(req);
-            std::cout << sess.controlId << "\n";
-            std::cout << sess.dataId << "\n";
-            std::cout << sess.workspace.root << "\n";
-            std::cout << "---\n";
-
             res->status(200).send("ok dokey");
         });
 
@@ -363,7 +358,7 @@ namespace Routers
 
                 auto result = collection_->streamer().send
                 (
-                    StreamChannel::Data,
+                    Streaming::StreamChannel::Data,
                     req->ip(),
                     id,
                     fc.release()
@@ -657,7 +652,7 @@ namespace Routers
 
                 auto result = collection_->streamer().send
                 (
-                    StreamChannel::Control,
+                    Streaming::StreamChannel::Control,
                     req->ip(),
                     id,
                     j,
@@ -668,6 +663,26 @@ namespace Routers
                     return respondWithError(res, "please first listen to the data stream or provide correct listener id");
                 res->status(200).end();
             });
+        });
+
+        cors_options(server, "/api/workspace/getRunConfigs", "GET", impl_->config.corsOption);
+        server.get("/api/workspace/getRunConfigs", [this](auto req, auto res)
+        {
+            enable_cors(req, res, impl_->config.corsOption);
+
+            auto sess = this_session(req);
+            if (sess.workspace.root.empty())
+                return respondWithError(res, "open a workspace first");
+            if (sess.workspace.activeProject.empty())
+                return respondWithError(res, "set an active project");
+
+            const auto runJsonFile = sess.workspace.activeProject / ".minIDE" / "run.json";
+            if (!sfs::exists(runJsonFile))
+                return res->send("{}");
+            if (!res->send_file(runJsonFile.string()))
+                return respondWithError(res, 404, "cannot open file or read file");
+            else
+                return;
         });
     }
 //---------------------------------------------------------------------------------------------------------------------
