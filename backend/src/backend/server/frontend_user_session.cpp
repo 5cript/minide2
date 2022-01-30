@@ -171,7 +171,7 @@ void FrontendUserSession::onAfterAuthentication()
 
         writeJson(json{
             {"ref", -1},
-            {"plugins_loaded", pluginNames},
+            {"pluginsLoaded", pluginNames},
         });
     }
     catch (std::exception const& exc)
@@ -219,8 +219,8 @@ bool FrontendUserSession::writeText(
 //---------------------------------------------------------------------------------------------------------------------
 bool FrontendUserSession::writeJson(json const& j, std::function<void(session_base*, std::size_t)> const& on_complete)
 {
-    std::string serialized = j.dump();
-    writeText(serialized, on_complete);
+    const std::string serialized = j.dump();
+    return writeText(serialized, on_complete);
 }
 //---------------------------------------------------------------------------------------------------------------------
 bool FrontendUserSession::writeBinary(

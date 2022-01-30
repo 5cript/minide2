@@ -215,29 +215,29 @@ class MainWindow extends React.Component
         */
     }
 
-    initToolbars = (json) =>
-    {
-        let toolbars = {}
-        let lookup = []
-        let ot = json.toolbars;
-        let preselect = undefined;
-        for (const i in ot)
-        {
-            const toolbar = ot[i];
-            if (preselect === undefined)
-                preselect = toolbar.id;
-            lookup.push(toolbar.id);
-            toolbars[toolbar.id] = {
-                items: toolbar.items,
-                name: toolbar.name,
-                id: toolbar.id
-            }
-        }
+    // initToolbars = (json) =>
+    // {
+    //     let toolbars = {}
+    //     let lookup = []
+    //     let ot = json.toolbars;
+    //     let preselect = undefined;
+    //     for (const i in ot)
+    //     {
+    //         const toolbar = ot[i];
+    //         if (preselect === undefined)
+    //             preselect = toolbar.id;
+    //         lookup.push(toolbar.id);
+    //         toolbars[toolbar.id] = {
+    //             items: toolbar.items,
+    //             name: toolbar.name,
+    //             id: toolbar.id
+    //         }
+    //     }
         
-        this.props.dispatch(initializeToolbars(toolbars, lookup));
-        if (this.toolbar)
-            this.toolbar.preselectToolbar(preselect);
-    }
+    //     this.props.dispatch(initializeToolbars(toolbars, lookup));
+    //     if (this.toolbar)
+    //         this.toolbar.preselectToolbar(preselect);
+    // }
 
     showProjectSettigns({settingsFile})
     {

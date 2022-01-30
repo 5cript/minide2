@@ -2,9 +2,9 @@ import ApiBase from './apibase'
 
 class Environment extends ApiBase
 {
-    constructor({store, persistence, errorCallback, writeMessage})
+    constructor({store, persistence, errorCallback, impl})
     {
-        super(store, persistence, writeMessage);
+        super(store, persistence, impl);
         this.errorCallback = errorCallback;
     }
 

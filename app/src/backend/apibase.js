@@ -1,10 +1,14 @@
 class ApiBase
 {
-    constructor(store, persistence, writeMessage)
+    constructor(store, persistence, impl)
     {
         this.store = store;
         this.persistence = persistence;
-        this.writeMessage = writeMessage;
+        this.impl = impl;
+    }
+
+    writeMessage = (...args) => {
+        return this.impl.writeMessage(...args);
     }
 
     tryParseJson = (maybeJson) =>

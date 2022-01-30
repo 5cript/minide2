@@ -82,7 +82,7 @@ class Toolbar extends React.Component {
             comboboxes: {}
         })
         
-        const toolbar = this.props.toolbars[this.props.shownBarId];
+        const toolbar = this.props.toolbarState[this.props.shownBarId];
         if (toolbar === undefined || _.isEmpty(toolbar))
             return;
             
@@ -157,7 +157,7 @@ class Toolbar extends React.Component {
 
     setItemNotRunning = (toolbarId, itemId) => 
     {
-        const toolbar = this.props.toolbars[toolbarId]
+        const toolbar = this.props.toolbarState[toolbarId]
         if (toolbar === undefined)
         {
             console.error('cannot enable items for this invalid toolbar id');
@@ -247,7 +247,7 @@ class Toolbar extends React.Component {
 
     updateRunProfileState = (toolbarId, itemId, selected) => 
     {
-        const toolbar = this.props.toolbars[toolbarId];
+        const toolbar = this.props.toolbarState[toolbarId];
         if (toolbar)
         {
             let profile = undefined;
@@ -305,10 +305,10 @@ class Toolbar extends React.Component {
 
     buildToolbar = (id) => 
     {
-        if (this.props.toolbars === undefined || _.isEmpty(this.props.toolbars))
+        if (this.props.toolbarState.toolbars === undefined || _.isEmpty(this.props.toolbarState.toolbars))
             return <div />
 
-        const toolbar = this.props.toolbars[id];
+        const toolbar = this.props.toolbarState.toolbars[id];
         if (toolbar === undefined || _.isEmpty(toolbar))
             return <div />
 
@@ -448,9 +448,9 @@ class Toolbar extends React.Component {
         }   
         else 
         {
-            for (let i in this.props.toolbars)
+            for (let i in this.props.toolbarState)
             {
-                this.props.dispatch(setActiveToolbar(this.props.toolbars[i].id));
+                this.props.dispatch(setActiveToolbar(this.props.toolbarState[i].id));
                 break;
             }
         }
@@ -472,10 +472,10 @@ class Toolbar extends React.Component {
                         }} />}
                     >
                     {
-                        Object.values(this.props.toolbars).map((toolbar, i) => {
+                        Object.keys(this.props.toolbarState.toolbars).map((id, i) => {
                             return <MenuItem key={i} value={
-                                toolbar.id
-                            }>{toolbar.name}</MenuItem>
+                                id
+                            }>{this.props.toolbarState.toolbars[id].name}</MenuItem>
                         })
                     }
                     </StyledSelect>
@@ -499,7 +499,7 @@ export default connect(state => {
         activeFile: state.openFiles.activeFile,
         shortcuts: state.shortcuts,
         locale: state.locale,
-        toolbars: state.toolbars.toolbars,
+        toolbarState: state.toolbars,
         lookup: state.toolbars.lookup,
         shownBarId: state.toolbars.activeToolbar
     }

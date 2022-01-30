@@ -1,7 +1,21 @@
 #include <backend/plugin_system/api/toolbar.hpp>
+#include <backend/utility/uuid.hpp>
 
 namespace PluginSystem::PluginApi
 {
+    void setIdOnObject(v8wrap::Object& obj)
+    {
+        std::string id;
+        if (obj.has("id"))
+        {
+            id = obj.get<std::string>("id") + "_" + makeUuid();
+            obj.set("userId", obj.get<std::string>("id"));
+        }
+        else
+            id = makeUuid();
+        obj.set("id", id);
+    }
+
     //#####################################################################################################################
     v8::Local<v8::Value> Toolbar::makeMenu(v8::FunctionCallbackInfo<v8::Value> const& args)
     {
@@ -19,15 +33,18 @@ namespace PluginSystem::PluginApi
             if (!entry.has("type"))
             {
                 if (entry.has("pngbase64"))
-                    entry.set("type", "icon_button");
+                    entry.set("type", "IconButton");
                 else
-                    entry.set("type", "button");
+                    entry.set("type", "Button");
             }
+            setIdOnObject(entry);
             return scope.Escape(static_cast<v8::Local<v8::Value>>(entry));
         });
         v8wrap::Object decorated{ctx, v8::Object::New(args.GetIsolate())};
-        decorated.set("type", "menu");
+        decorated.set("type", "Menu");
         decorated.set("entries", static_cast<v8::Local<v8::Value>>(transformed));
+        setIdOnObject(decorated);
+        decorated.set("generated", true);
         return decorated;
     }
     //---------------------------------------------------------------------------------------------------------------------
@@ -35,7 +52,9 @@ namespace PluginSystem::PluginApi
     {
         auto ctx = args.GetIsolate()->GetCurrentContext();
         v8wrap::Object decorated{ctx, v8::Object::New(args.GetIsolate())};
-        decorated.set("type", "splitter");
+        decorated.set("type", "Splitter");
+        setIdOnObject(decorated);
+        decorated.set("generated", true);
         return decorated;
     }
     //---------------------------------------------------------------------------------------------------------------------
@@ -47,9 +66,11 @@ namespace PluginSystem::PluginApi
         v8wrap::Object decorated{ctx, args[0]};
 
         if (decorated.has("pngbase64"))
-            decorated.set("type", "icon_button");
+            decorated.set("type", "IconButton");
         else
-            decorated.set("type", "button");
+            decorated.set("type", "Button");
+        setIdOnObject(decorated);
+        decorated.set("generated", true);
         return decorated;
     }
     //#####################################################################################################################

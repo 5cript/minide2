@@ -31,6 +31,9 @@ add_executable(
     # Persistence And Settings
     "backend/settings/environment.cpp"
 
+    # Utility
+    "backend/utility/uuid.cpp"
+
     # Plugin System
     "backend/plugin_system/api/console.cpp"
     "backend/plugin_system/api/resource_accessor.cpp"

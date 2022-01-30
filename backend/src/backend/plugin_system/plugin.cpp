@@ -43,7 +43,7 @@ namespace PluginSystem
         v8wrap::ModuleLoader moduleLoader;
         std::unique_ptr<PluginImplementation> pluginClass;
 
-        void runModule(v8::Local<v8::Value> defaultExport);
+        void runModule(v8::Local<v8::Value> defaultExport, Plugin const* plugin);
     };
     //---------------------------------------------------------------------------------------------------------------------
     Plugin::Implementation::Implementation(std::string const& pluginName, Api::AllApis const& allApis)
@@ -68,7 +68,7 @@ namespace PluginSystem
         , moduleLoader{}
     {}
     //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::Implementation::runModule(v8::Local<v8::Value> defaultExport)
+    void Plugin::Implementation::runModule(v8::Local<v8::Value> defaultExport, Plugin const* plugin)
     {
         auto& ctx = mainScript->context();
         auto object = v8wrap::Object::instantiateClass(ctx, defaultExport);
@@ -76,7 +76,7 @@ namespace PluginSystem
             throw std::runtime_error("Plugin class needs member called 'pluginType' to identify its type.");
         const auto type = object->get<std::string>("pluginType");
         if (type == "Toolbar")
-            pluginClass = std::make_unique<ToolbarPlugin>(std::move(object));
+            pluginClass = std::make_unique<ToolbarPlugin>(std::move(object), plugin);
         else
             throw std::runtime_error("Unknown plugin type called: "s + type);
     }
@@ -116,7 +116,7 @@ namespace PluginSystem
                 throw std::runtime_error("There needs to be a default export.");
         }
         LOG() << "Got default export.\n";
-        impl_->runModule(defaultExport);
+        impl_->runModule(defaultExport, this);
     }
     //---------------------------------------------------------------------------------------------------------------------
     void Plugin::initialize(std::weak_ptr<FrontendUserSession> session) const

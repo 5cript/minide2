@@ -1,11 +1,23 @@
 import Router from './apibase';
+import {toolbarInitialized} from '../actions/toolbar_actions';
 
 class ToolbarApi extends Router
 {
-    constructor({store, persistence, errorCallback, writeMessage})
+    constructor({store, persistence, errorCallback, impl})
     {
-        super(store, persistence, writeMessage);
+        super(store, persistence, impl);
         this.errorCallback = errorCallback;
+
+        this.registerEventListeners();
+    }
+
+    registerEventListeners = () => {
+        this.impl.registerEventListener('toolbarInitialized', (payload) => {
+            console.log(payload);
+            this.store.dispatch(toolbarInitialized(
+                payload
+            ))
+        });
     }
 
     loadAll = async () =>

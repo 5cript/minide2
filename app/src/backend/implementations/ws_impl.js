@@ -1,6 +1,7 @@
 import Router from '../apibase';
 import {DateTime} from 'luxon';
 import {SHA256} from 'crypto-js';
+import {generateUuid} from '../../util/random_id';
 
 class ResponsePromise
 {
@@ -25,6 +26,7 @@ class WebSocketImplementation
         this.onError = onError;
         this.replyId = 0;
         this.replyWaiter = {};
+        this.eventHooks = {};
         
         this.textBuffer = '';
         setInterval(() => {
@@ -39,6 +41,30 @@ class WebSocketImplementation
                 }
             }
         }, replyTimeoutRefreshMilliseconds);
+    }
+
+    registerEventListener = (eventName, onEvent) => {
+        if (!this.eventHooks.hasOwnProperty(eventName))
+            this.eventHooks[eventName] = []
+
+        const id = generateUuid();
+        this.eventHooks[eventName].push({
+            id,
+            onEvent
+        });
+        return id;
+    }
+
+    removeEventListener = (eventName, id) => {
+        if (!this.eventHooks.hasOwnProperty(eventName))
+        {
+            console.log('There is no hook for that event name.');
+            return;
+        }
+
+        this.eventHooks[eventName] = this.eventHooks[eventName].filter(hook => hook.id !== id);
+        if (this.eventHooks[eventName].length === 0)
+            delete this.eventHooks[eventName];
     }
     
     writeMessage = async (type, payload, onBinary) =>
@@ -99,6 +125,14 @@ class WebSocketImplementation
                     else
                         reply.responsePromise.resolve(json);
                     delete this.replyWaiter[json.ref];
+                    return;
+                }
+                const hooks = this.eventHooks[json.event];
+                if (hooks !== undefined) {
+                    hooks.forEach((hook) => {
+                        hook.onEvent(json);
+                    })
+                    return;
                 }
                 else
                     this.onMessage(json);

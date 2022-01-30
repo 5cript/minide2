@@ -17,9 +17,9 @@ class Backend extends ApiBase
 
         this.impl = new WebSocketImplementation({store, onMessage, onConnectionLoss, onError});
 
-        this.workspaceRoutes = new WorkspaceApi({store, persistence, onError, writeMessage: this.impl.writeMessage});
-        this.toolbarRoutes = new ToolbarApi({store, persistence, onError, writeMessage: this.impl.writeMessage});
-        this.debuggerRoutes = new DebuggerRouter({store, persistence, onError, writeMessage: this.impl.writeMessage});
+        this.workspaceRoutes = new WorkspaceApi({store, persistence, onError, impl: this.impl});
+        this.toolbarRoutes = new ToolbarApi({store, persistence, onError, impl: this.impl});
+        this.debuggerRoutes = new DebuggerRouter({store, persistence, onError, impl: this.impl});
         
         this.routers = [
             this.workspaceRoutes,

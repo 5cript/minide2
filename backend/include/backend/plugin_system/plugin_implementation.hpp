@@ -8,11 +8,14 @@ class FrontendUserSession;
 
 namespace PluginSystem
 {
+    class Plugin;
+
     class PluginImplementation
     {
       public:
-        PluginImplementation(std::unique_ptr<v8wrap::Object>&& pluginClass)
+        PluginImplementation(std::unique_ptr<v8wrap::Object>&& pluginClass, Plugin const* owner)
             : pluginClass_{std::move(pluginClass)}
+            , owner_{owner}
         {}
         virtual ~PluginImplementation() = default;
         PluginImplementation(PluginImplementation const&) = delete;
@@ -29,5 +32,6 @@ namespace PluginSystem
       protected:
         std::unique_ptr<v8wrap::Object> pluginClass_;
         std::weak_ptr<FrontendUserSession> session_;
+        Plugin const* owner_;
     };
 }
