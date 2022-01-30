@@ -25,8 +25,7 @@ namespace PluginSystem
             toolbarDefinition.set("elements", elements.asValue());
 
             sess->enqueue_write([result{v8wrap::JSON::stringify(pluginClass_->context(), toolbarDefinition.asValue())}](
-                                    attender::websocket::session_base* sess, std::size_t
-                                ) {
+                                    attender::websocket::session_base* sess, std::size_t) {
                 static_cast<FrontendUserSession*>(sess)->writeText(result);
             });
         }

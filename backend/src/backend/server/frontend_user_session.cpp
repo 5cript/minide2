@@ -73,8 +73,7 @@ void FrontendUserSession::Implementation::loadPlugins()
                 Api::AllApis{
                     .workspace = &workspace,
                     .user = &user,
-                }
-            );
+                });
             plugin.run();
             plugin.initialize(session);
         }
@@ -84,8 +83,7 @@ void FrontendUserSession::Implementation::loadPlugins()
 FrontendUserSession::FrontendUserSession(
     attender::websocket::connection* owner,
     std::weak_ptr<BackendControl> server,
-    std::string sessionId
-)
+    std::string sessionId)
     : attender::websocket::session_base{owner}
     , impl_{std::make_unique<Implementation>(server, sessionId)}
 {}
@@ -153,8 +151,7 @@ void FrontendUserSession::onJson(json const& j)
             },
             [this](auto, auto) {
                 onAfterAuthentication();
-            }
-        );
+            });
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -187,8 +184,7 @@ void FrontendUserSession::onAfterAuthentication()
             },
             [this](auto, auto) {
                 endSession();
-            }
-        );
+            });
     }
     catch (...)
     {
@@ -199,8 +195,7 @@ void FrontendUserSession::onAfterAuthentication()
             },
             [this](auto, auto) {
                 endSession();
-            }
-        );
+            });
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -215,8 +210,7 @@ void FrontendUserSession::respondWithError(int ref, std::string const& msg)
 //---------------------------------------------------------------------------------------------------------------------
 bool FrontendUserSession::writeText(
     std::string const& txt,
-    std::function<void(session_base*, std::size_t)> const& on_complete
-)
+    std::function<void(session_base*, std::size_t)> const& on_complete)
 {
     std::stringstream sstr;
     sstr << "0x" << std::hex << std::setw(8) << std::setfill('0') << txt.size() << "|" << txt;
@@ -233,8 +227,7 @@ bool FrontendUserSession::writeBinary(
     int ref,
     std::string const& data,
     std::size_t amount,
-    std::function<void(session_base*, std::size_t)> const& on_complete
-)
+    std::function<void(session_base*, std::size_t)> const& on_complete)
 {
     // TODO: Improve me.
     const auto size = std::min(data.size(), amount);

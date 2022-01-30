@@ -24,8 +24,7 @@ namespace PluginSystem::PluginApi
     inline void makeResourceAccessorClass(
         v8::Local<v8::Context> context,
         v8pp::jsmodule& mod,
-        std::filesystem::path const& resourceDirectory
-    )
+        std::filesystem::path const& resourceDirectory)
     {
         v8pp::class_<ResourceAccessor> resourceAccessor(context->GetIsolate());
         resourceAccessor

@@ -35,8 +35,7 @@ namespace Filesystem
             Filesystem::path const& dir,
             CacheUpdateObserver observer = {},
             bool scan = true,
-            bool saveChanges = true
-        );
+            bool saveChanges = true);
         ~DirectoryCache();
 
       private:

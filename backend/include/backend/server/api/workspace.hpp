@@ -23,8 +23,7 @@ namespace Api
             std::string path,
             sfs::path const& root,
             bool mustExist = true,
-            bool enforceWorkspaceRelative = false
-        );
+            bool enforceWorkspaceRelative = false);
 
         std::tuple<
             sfs::path, // include/source path file (empty, if original is not within a include/source directory)

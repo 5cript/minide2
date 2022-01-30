@@ -38,7 +38,6 @@ void BackendControl::start(std::string const& port)
             connection->create_session<FrontendUserSession>(weak, id).setup();
             shared->connections_[id] = std::move(connection);
         },
-        port
-    );
+        port);
 }
 //#####################################################################################################################

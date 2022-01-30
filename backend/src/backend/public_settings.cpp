@@ -59,8 +59,8 @@ void PublicSettings::setEnvironments(std::unordered_map<std::string, SettingPart
     save();
 }
 //---------------------------------------------------------------------------------------------------------------------
-std::optional<std::unordered_map<std::string, std::string>> PublicSettings::compileEnvironment(std::string const& name
-) const
+std::optional<std::unordered_map<std::string, std::string>>
+PublicSettings::compileEnvironment(std::string const& name) const
 {
     auto findEnv = [this](std::string const& name) -> std::optional<SettingParts::Environment> {
         auto iter = environments_.find(name);
@@ -82,8 +82,7 @@ std::optional<std::unordered_map<std::string, std::string>> PublicSettings::comp
         if (!inheritedEnv)
         {
             throw std::runtime_error(
-                "environment inherits other environment that wasn't found"s + "{\"inherited\":\""s + inherits + "\"}"
-            );
+                "environment inherits other environment that wasn't found"s + "{\"inherited\":\""s + inherits + "\"}");
         }
 
         bool sensitive = true;

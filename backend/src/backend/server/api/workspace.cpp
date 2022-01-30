@@ -38,8 +38,7 @@ namespace Api
             enlist(
                 j["ref"].get<int>(),
                 j["payload"]["path"].get<std::string>(),
-                j["payload"].contains("recursive") ? j["payload"]["recursive"].get<bool>() : false
-            );
+                j["payload"].contains("recursive") ? j["payload"]["recursive"].get<bool>() : false);
         });
 
         /*

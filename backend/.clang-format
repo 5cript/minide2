@@ -1,4 +1,5 @@
-AlignAfterOpenBracket: BlockIndent
+#AlignAfterOpenBracket: BlockIndent
+AlignAfterOpenBracket: AlwaysBreak
 AlignEscapedNewlines: DontAlign
 AlignOperands: true
 AlignTrailingComments: false

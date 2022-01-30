@@ -18,8 +18,7 @@ class FrontendUserSession
     FrontendUserSession(
         attender::websocket::connection* owner,
         std::weak_ptr<BackendControl> server,
-        std::string sessionId
-    );
+        std::string sessionId);
     ~FrontendUserSession();
     FrontendUserSession(FrontendUserSession&&) = delete;
     FrontendUserSession(FrontendUserSession const&) = delete;
@@ -44,8 +43,7 @@ class FrontendUserSession
         int ref,
         std::string const& data,
         std::size_t amount,
-        std::function<void(session_base*, std::size_t)> const& on_complete
-    );
+        std::function<void(session_base*, std::size_t)> const& on_complete);
 
   private:
     void onAfterAuthentication();

@@ -17,8 +17,7 @@ namespace Filesystem
             /*std::function <void(std::string const&, const filewatch::Event)> const& watch,*/
             CacheUpdateObserver observer,
             bool scan,
-            bool saveChange
-        );
+            bool saveChange);
 
         Filesystem::path dir;
         // std::unique_ptr <filewatch::FileWatch <std::wstring>> watcher;
@@ -35,8 +34,7 @@ namespace Filesystem
         /*std::function <void(std::string const&, const filewatch::Event)> const& watch,*/
         CacheUpdateObserver observer,
         bool scan,
-        bool saveChange
-    )
+        bool saveChange)
         : dir{dir_} //, watcher{}
         , contents{}
         , renameCache{}
@@ -58,8 +56,7 @@ namespace Filesystem
         Filesystem::path const& dir,
         CacheUpdateObserver observer,
         bool scan,
-        bool saveChanges
-    )
+        bool saveChanges)
         : impl_{new DirectoryCache::Implementation(
               *this,
               dir,
@@ -83,8 +80,7 @@ namespace Filesystem
               */
               std::move(observer),
               scan,
-              saveChanges
-          )}
+              saveChanges)}
     {}
     //---------------------------------------------------------------------------------------------------------------------
     DirectoryCache::~DirectoryCache() = default;
