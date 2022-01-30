@@ -133,6 +133,7 @@ hash-library
 node
 v8pp
 v8wrap
+backend/.vscode
 
 tcp-server/bin/
 tcp-server/obj/
