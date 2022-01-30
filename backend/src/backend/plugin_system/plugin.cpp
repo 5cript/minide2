@@ -118,13 +118,14 @@ namespace PluginSystem
             else
                 throw std::runtime_error("There needs to be a default export.");
         }
+        PluginApi::Console::print(ctx, defaultExport);
         LOG() << "Got default export.\n";
         impl_->runModule(defaultExport);
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::initialize() const
+    void Plugin::initialize(std::weak_ptr<FrontendUserSession> session) const
     {
-        impl_->pluginClass->initialize();
+        impl_->pluginClass->initialize(std::move(session));
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::string Plugin::name() const

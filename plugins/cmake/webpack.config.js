@@ -1,6 +1,10 @@
-const webpack = require('webpack');
-const fs = require('fs');
-const path = require('path');
+import webpack from 'webpack';
+import fs from 'fs';
+import path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const compiler = webpack({});
 
@@ -16,8 +20,35 @@ compiler.run((err, stats) => {
     });
 });
 
-module.exports = {
+export default {
     externals: {
-        'minide_plugin': 'minide_plugin'
+        minide: 'minide'
+    },
+    entry: './src/index.js',
+    target: 'es2020',
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'node-loader',
+                exclude: /node_modules/,
+            }
+        ]
+    },
+    resolve: {
+        extensions: ['.js', '.jsx'],
+    },
+    output: {
+        filename: 'main.js',
+        path: path.resolve(__dirname, "./dist"),
+        environment: {module: true},
+        library: {
+            type: 'module'
+        }
+    },
+    externalsType: 'module',
+    devtool: 'source-map',
+    experiments: {
+        outputModule: true
     }
 }

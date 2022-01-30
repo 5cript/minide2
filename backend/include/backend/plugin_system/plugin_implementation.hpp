@@ -4,6 +4,8 @@
 
 #include <memory>
 
+class FrontendUserSession;
+
 namespace PluginSystem
 {
     class PluginImplementation
@@ -19,9 +21,13 @@ namespace PluginSystem
         PluginImplementation& operator=(PluginImplementation const&) = delete;
         PluginImplementation& operator=(PluginImplementation&&) = default;
 
-        virtual void initialize() = 0;
+        virtual void initialize(std::weak_ptr<FrontendUserSession>&& session)
+        {
+            session_ = std::move(session);
+        }
 
     protected:
         std::unique_ptr<v8wrap::Object> pluginClass_;
+        std::weak_ptr<FrontendUserSession> session_;
     };
 }

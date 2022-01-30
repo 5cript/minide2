@@ -26,6 +26,7 @@ struct FrontendUserSession::Implementation
     bool authenticated;
     std::shared_ptr <Writer> activeWriter;
     v8wrap::Isolate javascriptIsolate;
+    std::weak_ptr<FrontendUserSession> session;
 
     // API
     Api::User user;
@@ -63,9 +64,10 @@ FrontendUserSession::Implementation::Implementation
     , plugins{}
 {}
 //---------------------------------------------------------------------------------------------------------------------
-void FrontendUserSession::Implementation::imbueOwner(std::weak_ptr<FrontendUserSession> session)
+void FrontendUserSession::Implementation::imbueOwner(std::weak_ptr<FrontendUserSession> sess)
 {
-    workspace.setSession(session);
+    session = sess;
+    workspace.setSession(sess);
 }
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::Implementation::loadPlugins()
@@ -80,7 +82,7 @@ void FrontendUserSession::Implementation::loadPlugins()
                 .user = &user
             });
             plugin.run();
-            plugin.initialize();
+            plugin.initialize(session);
         }
     }
 }
@@ -97,10 +99,6 @@ FrontendUserSession::FrontendUserSession
 }
 //---------------------------------------------------------------------------------------------------------------------
 FrontendUserSession::~FrontendUserSession() = default;
-//---------------------------------------------------------------------------------------------------------------------
-FrontendUserSession::FrontendUserSession(FrontendUserSession&&) = default;
-//---------------------------------------------------------------------------------------------------------------------
-FrontendUserSession& FrontendUserSession::operator=(FrontendUserSession&&) = default;
 //---------------------------------------------------------------------------------------------------------------------
 void FrontendUserSession::setWriter(std::shared_ptr <Writer> writer)
 {
@@ -159,7 +157,7 @@ void FrontendUserSession::onJson(json const& j)
         writeJson(json{
             {"ref", j["ref"]},
             {"authenticated", true}
-        }, [this](auto){
+        }, [this](auto, auto){
             onAfterAuthentication();
         });
     }
@@ -190,7 +188,7 @@ void FrontendUserSession::onAfterAuthentication()
         writeJson(json{
             {"ref", -1},
             {"error", exc.what()}
-        }, [this](auto){
+        }, [this](auto, auto){
             endSession();
         });
     }
@@ -199,7 +197,7 @@ void FrontendUserSession::onAfterAuthentication()
         writeJson(json{
             {"ref", -1},
             {"error", "Non standard exception caught."}
-        }, [this](auto){
+        }, [this](auto, auto){
             endSession();
         });
     }
@@ -214,7 +212,7 @@ void FrontendUserSession::respondWithError(int ref, std::string const& msg)
     });
 }
 //---------------------------------------------------------------------------------------------------------------------
-bool FrontendUserSession::writeJson(json const& j, std::function<void(std::size_t)> const& on_complete)
+bool FrontendUserSession::writeJson(json const& j, std::function<void(session_base*, std::size_t)> const& on_complete)
 {
     // TODO: Improve me.
     std::string serialized = j.dump();
@@ -223,7 +221,7 @@ bool FrontendUserSession::writeJson(json const& j, std::function<void(std::size_
     return write_text(sstr.str(), on_complete);
 }
 //---------------------------------------------------------------------------------------------------------------------
-bool FrontendUserSession::writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(std::size_t)> const& on_complete)
+bool FrontendUserSession::writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(session_base*, std::size_t)> const& on_complete)
 {
     // TODO: Improve me.
     const auto size = std::min(data.size(), amount);

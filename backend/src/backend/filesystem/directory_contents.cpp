@@ -17,7 +17,7 @@ namespace Filesystem
 
     }
 //---------------------------------------------------------------------------------------------------------------------
-    void DirectoryContent::scan(bool recursive, int recursionLimit)
+    void DirectoryContent::scan(bool recursive, int)
     {
         constexpr int dirStackShortening = 4096;
         namespace fs = sfs;

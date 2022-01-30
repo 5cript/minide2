@@ -16,10 +16,10 @@ class FrontendUserSession : public attender::websocket::session_base
 public:
     FrontendUserSession(attender::websocket::connection* owner, std::weak_ptr<BackendControl> server, std::string sessionId);
     ~FrontendUserSession();
-    FrontendUserSession(FrontendUserSession&&);
+    FrontendUserSession(FrontendUserSession&&) = delete;
     FrontendUserSession(FrontendUserSession const&) = delete;
 
-    FrontendUserSession& operator=(FrontendUserSession&&);
+    FrontendUserSession& operator=(FrontendUserSession&&) = delete;
     FrontendUserSession& operator=(FrontendUserSession const&) = delete;
 
     void setWriter(std::shared_ptr <Writer> writer);
@@ -31,10 +31,10 @@ public:
     void on_error(boost::system::error_code, char const*) override {};
     void on_write_complete(std::size_t) override;
 
-    bool writeJson(json const& j, std::function<void(std::size_t)> const& on_complete = [](auto){});
+    bool writeJson(json const& j, std::function<void(session_base*, std::size_t)> const& on_complete = {});
     void onJson(json const& j);
     void respondWithError(int ref, std::string const& msg);
-    bool writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(std::size_t)> const& on_complete);
+    bool writeBinary(int ref, std::string const& data, std::size_t amount, std::function<void(session_base*, std::size_t)> const& on_complete);
 
 private:
     void onAfterAuthentication();

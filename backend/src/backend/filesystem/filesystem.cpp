@@ -7,7 +7,7 @@ namespace Filesystem
 //#####################################################################################################################
     namespace
     {
-        void replaceAll(std::string& in, std::string const& needle, std::string const& replacement)
+        [[maybe_unused]] void replaceAll(std::string& in, std::string const& needle, std::string const& replacement)
         {
             if (needle.empty())
                 return;

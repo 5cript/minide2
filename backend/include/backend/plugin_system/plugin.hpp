@@ -3,6 +3,8 @@
 #include <backend/server/api/apis.hpp>
 #include <backend/filesystem/filesystem.hpp>
 
+class FrontendUserSession;
+
 namespace PluginSystem
 {
 
@@ -21,7 +23,7 @@ public:
     Plugin(Plugin&&);
     Plugin& operator=(Plugin&&);
     
-    void initialize() const;
+    void initialize(std::weak_ptr<FrontendUserSession> session) const;
 
 private:
     void exposeGlobals() const;
