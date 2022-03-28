@@ -40,7 +40,8 @@ int main(int, char* argv[])
         }};
 
     // Websocket Server
-    std::shared_ptr<BackendControl> wsServer = std::make_shared<BackendControl>(context.get_io_service());
+    std::shared_ptr<Backend::Server::BackendControl> wsServer =
+        std::make_shared<Backend::Server::BackendControl>(context.get_io_service());
     wsServer->start(std::to_string(config.websocketPort));
     LOG() << "Running ws server on " << config.websocketPort << ".\n";
 

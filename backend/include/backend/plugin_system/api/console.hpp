@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-namespace PluginSystem::PluginApi::Console
+namespace Backend::PluginSystem::PluginApi::Console
 {
 
     std::ostream& print(v8::Local<v8::Context> context, v8::Local<v8::Value> value);

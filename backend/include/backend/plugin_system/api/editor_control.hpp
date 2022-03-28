@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace PluginSystem::PluginApi
+namespace Backend::PluginSystem::PluginApi
 {
     struct EditorControl
     {
@@ -23,10 +23,10 @@ namespace PluginSystem::PluginApi
         }
     };
 
-    inline void makeEditorControlClass(v8::Local<v8::Context> context, v8pp::jsmodule& mod)
+    inline void makeEditorControlClass(v8::Local<v8::Context> context, v8pp::module& mod)
     {
         v8pp::class_<EditorControl> EditorControl(context->GetIsolate());
-        EditorControl.ctor<>().set("save", &EditorControl::save).set("saveAll", &EditorControl::saveAll);
-        mod.set("EditorControl", EditorControl);
+        EditorControl.ctor<>().function("save", &EditorControl::save).function("saveAll", &EditorControl::saveAll);
+        mod.class_("EditorControl", EditorControl);
     }
 }

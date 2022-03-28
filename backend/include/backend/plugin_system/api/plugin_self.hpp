@@ -1,6 +1,6 @@
 #pragma once
 
-namespace PluginSystem::PluginApi
+namespace Backend::PluginSystem::PluginApi
 {
     class PluginSelf
     {};

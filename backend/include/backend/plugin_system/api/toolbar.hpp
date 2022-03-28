@@ -1,5 +1,8 @@
 #pragma once
 
+#include <backend/plugin_system/contextualizer.hpp>
+#include <backend/plugin_system/api/session_aware.hpp>
+
 #include <v8.h>
 
 #include <v8wrap/array.hpp>
@@ -13,27 +16,36 @@
 #include <iterator>
 #include <iostream>
 
-namespace PluginSystem::PluginApi
+namespace Backend::PluginSystem::PluginApi
 {
-    struct Toolbar
+    class Toolbar : public SessionAware<Toolbar>
     {
-        std::string pluginType = "Toolbar";
+      public:
+        static const std::string pluginType;
 
-        Toolbar()
-        {}
+        Toolbar() = default;
+
+      public:
         v8::Local<v8::Value> makeMenu(v8::FunctionCallbackInfo<v8::Value> const& args);
         v8::Local<v8::Value> makeSplitter(v8::FunctionCallbackInfo<v8::Value> const& args);
         v8::Local<v8::Value> makeIconButton(v8::FunctionCallbackInfo<v8::Value> const& args);
     };
 
-    inline void makeToolbarClass(v8::Local<v8::Context> context, v8pp::jsmodule& mod)
+    template <typename OnConstructionCallbackT>
+    inline void makeToolbarClass(
+        v8::Local<v8::Context> context,
+        v8pp::module& mod,
+        OnConstructionCallbackT&& onConstructionCallback)
     {
         v8pp::class_<Toolbar> toolbar(context->GetIsolate());
-        toolbar.ctor<>()
-            .set("pluginType", &Toolbar::pluginType)
-            .set("makeMenu", &Toolbar::makeMenu)
-            .set("makeSplitter", &Toolbar::makeSplitter)
-            .set("makeIconButton", &Toolbar::makeIconButton);
-        mod.set("Toolbar", toolbar);
+
+        Contextualizer<Toolbar>::Constructor<>::bindConstructor(
+            toolbar, std::forward<OnConstructionCallbackT>(onConstructionCallback));
+
+        toolbar.const_("pluginType", Toolbar::pluginType)
+            .function("makeMenu", &Toolbar::makeMenu)
+            .function("makeSplitter", &Toolbar::makeSplitter)
+            .function("makeIconButton", &Toolbar::makeIconButton);
+        mod.class_("Toolbar", toolbar);
     }
 }

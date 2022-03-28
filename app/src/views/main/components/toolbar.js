@@ -96,51 +96,13 @@ class Toolbar extends React.Component {
         }
     }
 
-    decideSpecialAction = (action) => 
-    {
-        switch(action)
-        {
-            case('save'): 
-            {
-                this.props.commonActions.saveFile();
-                break;
-            }
-            case('save_all'):
-            {
-                this.props.commonActions.saveAllFiles();
-                break;
-            }
-            case('cpp_debug'):
-            {
-                try
-                {
-                    this.props.commonActions.startDebugger();
-                }
-                catch(error)
-                {
-                    this.props.showOkBox(this.props.dict.translate(error.message, 'dialog'));
-                }
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
     buttonAction = (toolbar, item) => 
     {
         if (item.running && item.cancelable)
-            this.props.backend.toolbar().cancelAction(toolbar.id, item.id, true);
+            return this.props.backend.toolbar().cancelAction(toolbar.id, item.id, true);
 
         if (item.disabled)
             return;
-
-        if (item.special_actions && item.special_actions.length > 0)
-        {
-            item.special_actions.forEach(element => {
-                this.decideSpecialAction(element);
-            });
-        }
 
         this.props.dispatch(setItemRunning(toolbar.id, item.id, true));
 		if (item.disables)
@@ -308,7 +270,10 @@ class Toolbar extends React.Component {
         if (this.props.toolbarState.toolbars === undefined || _.isEmpty(this.props.toolbarState.toolbars))
             return <div />
 
-        const toolbar = this.props.toolbarState.toolbars[id];
+        const toolbar = {
+            id,
+            ...this.props.toolbarState.toolbars[id]
+        };
         if (toolbar === undefined || _.isEmpty(toolbar))
             return <div />
 

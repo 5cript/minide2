@@ -1,6 +1,6 @@
 #include <backend/server/api/user.hpp>
 
-namespace Api
+namespace Backend::Server::Api
 {
     bool User::authenticate(json const& payload)
     {

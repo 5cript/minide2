@@ -2,7 +2,7 @@ const _ = require('lodash');
 
 module.exports = function reducer(state={
     toolbars: {/*
-        name: '';
+        name: '',
         items: [{
             id: 'uniqueName',
             type // what is this element?

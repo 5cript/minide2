@@ -35,9 +35,9 @@ export function setItemRunning(toolbarId, itemId, running)
     return {
         type: 'SET_TOOLBAR_ITEM_RUNNING',
         payload: {
-            toolbarId: toolbarId,
-            itemId: itemId,
-            running: running
+            toolbarId,
+            itemId,
+            running
         }
     }
 }

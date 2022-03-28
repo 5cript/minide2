@@ -4,18 +4,21 @@
 
 #include <functional>
 
-class Subscription
+namespace Backend::Server::Stream
 {
-  public:
-    using ParameterType = json;
-    using FunctionType = std::function<bool(ParameterType const&)>;
-
-    explicit Subscription(FunctionType cb);
-    bool operator()(ParameterType const& param)
+    class Subscription
     {
-        return m_callback(param);
-    }
+      public:
+        using ParameterType = json;
+        using FunctionType = std::function<bool(ParameterType const&)>;
 
-  private:
-    FunctionType m_callback;
-};
+        explicit Subscription(FunctionType cb);
+        bool operator()(ParameterType const& param)
+        {
+            return m_callback(param);
+        }
+
+      private:
+        FunctionType m_callback;
+    };
+}

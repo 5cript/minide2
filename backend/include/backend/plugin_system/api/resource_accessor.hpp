@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-namespace PluginSystem::PluginApi
+namespace Backend::PluginSystem::PluginApi
 {
     class ResourceAccessor
     {
@@ -23,7 +23,7 @@ namespace PluginSystem::PluginApi
 
     inline void makeResourceAccessorClass(
         v8::Local<v8::Context> context,
-        v8pp::jsmodule& mod,
+        v8pp::module& mod,
         std::filesystem::path const& resourceDirectory)
     {
         v8pp::class_<ResourceAccessor> resourceAccessor(context->GetIsolate());
@@ -31,7 +31,8 @@ namespace PluginSystem::PluginApi
             .ctor<>([&](v8::FunctionCallbackInfo<v8::Value> const&) {
                 return new ResourceAccessor(resourceDirectory);
             })
-            .set("loadPng", &ResourceAccessor::loadPng);
-        mod.set("ResourceAccessor", resourceAccessor);
+            .function("loadPng", &ResourceAccessor::loadPng);
+
+        mod.class_("ResourceAccessor", resourceAccessor);
     }
 }

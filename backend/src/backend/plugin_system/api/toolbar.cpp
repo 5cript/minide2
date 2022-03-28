@@ -1,7 +1,9 @@
 #include <backend/plugin_system/api/toolbar.hpp>
 #include <backend/utility/uuid.hpp>
 
-namespace PluginSystem::PluginApi
+#include <iostream>
+
+namespace Backend::PluginSystem::PluginApi
 {
     void setIdOnObject(v8wrap::Object& obj)
     {
@@ -17,6 +19,8 @@ namespace PluginSystem::PluginApi
     }
 
     //#####################################################################################################################
+    const std::string Toolbar::pluginType = "Toolbar";
+    //---------------------------------------------------------------------------------------------------------------------
     v8::Local<v8::Value> Toolbar::makeMenu(v8::FunctionCallbackInfo<v8::Value> const& args)
     {
         v8::EscapableHandleScope scope{args.GetIsolate()};
@@ -60,6 +64,9 @@ namespace PluginSystem::PluginApi
     //---------------------------------------------------------------------------------------------------------------------
     v8::Local<v8::Value> Toolbar::makeIconButton(v8::FunctionCallbackInfo<v8::Value> const& args)
     {
+        if (session())
+            std::cout << "yay got session!\n";
+
         if (args.Length() != 1)
             throw std::runtime_error("Expecting exactly one argument to makeMenu, being an object.");
         auto ctx = args.GetIsolate()->GetCurrentContext();

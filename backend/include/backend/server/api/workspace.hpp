@@ -9,7 +9,7 @@
 #include <string>
 #include <mutex>
 
-namespace Api
+namespace Backend::Server::Api
 {
     class Workspace : public ApiBase
     {

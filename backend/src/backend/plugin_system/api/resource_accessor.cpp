@@ -14,7 +14,7 @@
 
 using namespace std::string_literals;
 
-namespace PluginSystem::PluginApi
+namespace Backend::PluginSystem::PluginApi
 {
     //#####################################################################################################################
     ResourceAccessor::ResourceAccessor(std::filesystem::path const& resourceDirectory)
@@ -26,10 +26,9 @@ namespace PluginSystem::PluginApi
         Filesystem::Jail jail{resourceDirectory_};
         if (auto maybePath = jail.relativeToRoot(fileName); maybePath)
         {
-            auto path = *maybePath;
-            std::ifstream reader{path, std::ios_base::binary};
+            std::ifstream reader{*maybePath, std::ios_base::binary};
             if (!reader.good())
-                throw std::runtime_error("Could not open file at '"s + path.string() + "'.");
+                throw std::runtime_error("Could not open file at '"s + maybePath->string() + "'.");
 
             // verify image only:
             namespace bg = boost::gil;

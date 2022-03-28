@@ -16,26 +16,26 @@ class CMakeToolbar extends minide.Toolbar
 	{
 		return [
 			this.makeMenu([
-				{
+				this.makeIconButton({
 					label: "Save",
 					pngbase64: this.resources.loadPng("./images/save.png"),
 					action: () => {
 						this.editor.save();
 					}
-				},
+				}),
 				this.makeSplitter(),
-				{
+				this.makeIconButton({
 					label: "Project Settings",
 					action: () => {
 						console.log('ProjectSettingsActionCalled')
 					}
-				},
-				{
+				}),
+				this.makeIconButton({
 					label: "Add New Target",
 					action: () => {
 						console.log("NewTargetCalled")
 					}
-				}
+				})
 			]),
 			this.makeSplitter(),
 			this.makeIconButton({
@@ -43,14 +43,14 @@ class CMakeToolbar extends minide.Toolbar
 				action: () => {
 					this.editor.save();
 				},
-				pngbase64: ""
+				pngbase64: this.resources.loadPng("./images/save.png")
 			}),
 			this.makeIconButton({
 				id: "saveAll",
 				action: () => {
 					this.editor.saveAll();
 				},
-				pngbase64: ""
+				pngbase64: this.resources.loadPng("./images/save_all.png")
 			})
 		]
 	}

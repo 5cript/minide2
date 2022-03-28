@@ -6,30 +6,33 @@
 #include <string>
 #include <fstream>
 
-class FrontendUserSession;
-
-class Writer
+namespace Backend::Server
 {
-  public:
-    virtual ~Writer() = default;
-    virtual void write() = 0;
-};
+    class FrontendUserSession;
 
-class FileWriter
-    : public Writer
-    , public std::enable_shared_from_this<FileWriter>
-{
-  public:
-    constexpr static unsigned bufferSize = 4096;
+    class Writer
+    {
+      public:
+        virtual ~Writer() = default;
+        virtual void write() = 0;
+    };
 
-    FileWriter(int ref, sfs::path const& file, std::weak_ptr<FrontendUserSession> session);
-    ~FileWriter() = default;
-    void write() override;
-    bool good() const;
+    class FileWriter
+        : public Writer
+        , public std::enable_shared_from_this<FileWriter>
+    {
+      public:
+        constexpr static unsigned bufferSize = 4096;
 
-  private:
-    int ref_;
-    std::ifstream reader_;
-    std::string buffer_;
-    std::weak_ptr<FrontendUserSession> session_;
-};
+        FileWriter(int ref, sfs::path const& file, std::weak_ptr<FrontendUserSession> session);
+        ~FileWriter() = default;
+        void write() override;
+        bool good() const;
+
+      private:
+        int ref_;
+        std::ifstream reader_;
+        std::string buffer_;
+        std::weak_ptr<FrontendUserSession> session_;
+    };
+}

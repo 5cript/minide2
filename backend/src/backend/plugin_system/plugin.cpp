@@ -26,32 +26,35 @@
 
 using namespace std::string_literals;
 
-namespace PluginSystem
+namespace Backend::PluginSystem
 {
     //#####################################################################################################################
     struct Plugin::Implementation
     {
-        Implementation(std::string const& pluginName, Api::AllApis const& allApis);
+        Implementation(std::string const& pluginName, Server::Api::AllApis const& allApis);
 
         std::string name;
         sfs::path pluginDirectory;
         sfs::path pluginDataDirectory;
-        Api::AllApis apis;
+        Server::Api::AllApis apis;
         v8wrap::Isolate isolate;
+        v8wrap::ModuleLoader moduleLoader;
         std::shared_ptr<v8wrap::Script> mainScript;
         std::shared_ptr<v8wrap::Module> mainModule;
-        v8wrap::ModuleLoader moduleLoader;
         std::unique_ptr<PluginImplementation> pluginClass;
+
+        std::vector<PluginApi::SessionAware<PluginApi::Toolbar>*> fabricatedToolbars;
 
         void runModule(v8::Local<v8::Value> defaultExport, Plugin const* plugin);
     };
     //---------------------------------------------------------------------------------------------------------------------
-    Plugin::Implementation::Implementation(std::string const& pluginName, Api::AllApis const& allApis)
+    Plugin::Implementation::Implementation(std::string const& pluginName, Server::Api::AllApis const& allApis)
         : name{pluginName}
         , pluginDirectory{inHomeDirectory() / Plugin::pluginsDir / pluginName}
         , pluginDataDirectory{inHomeDirectory() / Plugin::pluginDataDir / pluginName}
         , apis{allApis}
         , isolate{}
+        , moduleLoader{}
         , mainScript{std::make_shared<v8wrap::Script>(v8wrap::Script::CreationParameters{
               .isolate = isolate,
               .fileName = pluginName + "/main.js",
@@ -61,11 +64,9 @@ namespace PluginSystem
               .context = mainScript->context(),
               .fileName = pluginName + "/main.js",
               .script = Filesystem::loadFile(pluginDirectory / pluginMainFile),
-              .onModuleLoad =
-                  [this](v8::Local<v8::Context> ctx, std::string const& path) {
-                      return moduleLoader.load(ctx, path);
-                  }})}
-        , moduleLoader{}
+              .onModuleLoad = [this](v8::Local<v8::Context> ctx, std::string const& path) {
+                  return moduleLoader.load(ctx, path);
+              }})}
     {}
     //---------------------------------------------------------------------------------------------------------------------
     void Plugin::Implementation::runModule(v8::Local<v8::Value> defaultExport, Plugin const* plugin)
@@ -81,12 +82,15 @@ namespace PluginSystem
             throw std::runtime_error("Unknown plugin type called: "s + type);
     }
     //#####################################################################################################################
-    Plugin::Plugin(std::string const& pluginName, Api::AllApis const& allApis)
+    Plugin::Plugin(std::string const& pluginName, Server::Api::AllApis const& allApis)
         : impl_{std::make_unique<Implementation>(pluginName, allApis)}
     {
         using namespace v8wrap;
-        v8pp::jsmodule minideModule(impl_->mainScript->isolate());
-        PluginApi::makeToolbarClass(impl_->mainScript->context(), minideModule);
+        v8pp::module minideModule(impl_->mainScript->isolate());
+        PluginApi::makeToolbarClass(
+            impl_->mainScript->context(), minideModule, [this](PluginApi::SessionAware<PluginApi::Toolbar>* toolbar) {
+                impl_->fabricatedToolbars.push_back(toolbar);
+            });
         PluginApi::makeEditorControlClass(impl_->mainScript->context(), minideModule);
         PluginApi::makeResourceAccessorClass(impl_->mainScript->context(), minideModule, impl_->pluginDataDirectory);
 
@@ -119,8 +123,11 @@ namespace PluginSystem
         impl_->runModule(defaultExport, this);
     }
     //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::initialize(std::weak_ptr<FrontendUserSession> session) const
+    void Plugin::initialize(std::weak_ptr<Server::FrontendUserSession> session) const
     {
+        for (auto* toolbar : impl_->fabricatedToolbars)
+            toolbar->imbueSession(session);
+
         impl_->pluginClass->initialize(std::move(session));
     }
     //---------------------------------------------------------------------------------------------------------------------
@@ -134,8 +141,8 @@ namespace PluginSystem
         auto context = impl_->isolate->GetCurrentContext();
 
         // console
-        v8pp::jsmodule console(impl_->isolate);
-        console.set("log", &PluginApi::Console::log);
+        v8pp::module console(impl_->isolate);
+        console.function("log", &PluginApi::Console::log);
         v8::Local<v8::Object> global = context->Global()->GetPrototype().As<v8::Object>();
         (void)global->Set(context, v8pp::to_v8(impl_->isolate, "console"), console.new_instance());
     }

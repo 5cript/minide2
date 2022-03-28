@@ -4,9 +4,12 @@
 
 #include <memory>
 
-class FrontendUserSession;
+namespace Backend::Server
+{
+    class FrontendUserSession;
+}
 
-namespace PluginSystem
+namespace Backend::PluginSystem
 {
     class Plugin;
 
@@ -24,14 +27,14 @@ namespace PluginSystem
         PluginImplementation& operator=(PluginImplementation const&) = delete;
         PluginImplementation& operator=(PluginImplementation&&) = default;
 
-        virtual void initialize(std::weak_ptr<FrontendUserSession>&& session)
+        virtual void initialize(std::weak_ptr<Backend::Server::FrontendUserSession>&& session)
         {
             session_ = std::move(session);
         }
 
       protected:
         std::unique_ptr<v8wrap::Object> pluginClass_;
-        std::weak_ptr<FrontendUserSession> session_;
+        std::weak_ptr<Backend::Server::FrontendUserSession> session_;
         Plugin const* owner_;
     };
 }

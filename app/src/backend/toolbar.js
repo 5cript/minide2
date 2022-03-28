@@ -13,7 +13,6 @@ class ToolbarApi extends Router
 
     registerEventListeners = () => {
         this.impl.registerEventListener('toolbarInitialized', (payload) => {
-            console.log(payload);
             this.store.dispatch(toolbarInitialized(
                 payload
             ))
@@ -22,59 +21,53 @@ class ToolbarApi extends Router
 
     loadAll = async () =>
     {
-        return this.writeMessage("/api/toolbar/loadAll");
+        // FIXME: not needed anymore i think
+        return this.writeMessage(`/api/toolbar/loadAll`);
     }
 
     callAction = async (toolbarId, itemId) =>
     {
-        return this.writeMessage("/api/toolbar/callAction", {
-            toolbarId: toolbarId,
-            itemId: itemId
-        });
+        return this.writeMessage(`/api/toolbar/${toolbarId}/callAction`, {itemId});
     }
 
     cancelAction = async (toolbarId, itemId, force) =>
     {
-        return this.writeMessage("/api/toolbar/cancelAction", {
-            toolbarId: toolbarId,
-            itemId: itemId,
-            force: force
+        return this.writeMessage(`/api/toolbar/${toolbarId}/cancelAction`, {
+            itemId,
+            force
         });
     }
 
     menuAction = async (toolbarId, itemId, label) =>
     {
-        return this.writeMessage("/api/toolbar/menuAction", {
-            toolbarId: toolbarId,
-            itemId:  itemId,
+        return this.writeMessage(`/api/toolbar/${toolbarId}/menuAction`, {
+            itemId,
             menuEntryLabel: label
         });
     }
 
     loadCombobox = async (toolbarId, itemId) =>
     {
-        return this.writeMessage("/api/toolbar/loadCombobox", {
-            toolbarId: toolbarId,
-            itemId: itemId
+        return this.writeMessage(`/api/toolbar/${toolbarId}/loadCombobox`, {
+            itemId
         });
     }
 
     comboxSelect = async (toolbarId, itemId, selected) =>
     {
-        return this.writeMessage("/api/toolbar/comboboxSelect", {
-            toolbarId: toolbarId,
-            itemId: itemId,
-            selected: selected
+        return this.writeMessage(`/api/toolbar/${toolbarId}/comboboxSelect`, {
+            itemId,
+            selected
         })
     }
 
     logDoubleClick = async (toolbarId, logName, lineNumber, lineString) =>
     {
-        return this.writeMessage("/api/toolbar/logDoubleClick", {
-            toolbarId: toolbarId,
-            logName: logName,
-            lineNumber: lineNumber,
-            lineString: lineString
+        // FIXME: Whats this?
+        return this.writeMessage(`/api/toolbar/${toolbarId}/logDoubleClick`, {
+            logName,
+            lineNumber,
+            lineString
         });
     }
 }

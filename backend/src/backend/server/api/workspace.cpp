@@ -10,7 +10,7 @@
 
 using namespace std::string_literals;
 
-namespace Api
+namespace Backend::Server::Api
 {
     //#####################################################################################################################
     void Workspace::doSubscribe()

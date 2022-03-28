@@ -127,6 +127,7 @@ class WebSocketImplementation
                     delete this.replyWaiter[json.ref];
                     return;
                 }
+                console.log('onMessage', json);
                 const hooks = this.eventHooks[json.event];
                 if (hooks !== undefined) {
                     hooks.forEach((hook) => {
@@ -135,7 +136,9 @@ class WebSocketImplementation
                     return;
                 }
                 else
+                {
                     this.onMessage(json);
+                }
             }
             catch(e) {
                 this.onError("error in stream reader",e);
@@ -168,7 +171,7 @@ class WebSocketImplementation
                 this.onError();
             }
             this.wsClient.onmessage = (event) => {
-                console.log("dataMessage", event);
+                console.log("dataMessage received");
                 if (event.data instanceof ArrayBuffer)
                 {
                     var enc = new TextDecoder("utf-8");

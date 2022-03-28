@@ -2,7 +2,7 @@
 
 #include <backend/json.hpp>
 
-namespace Api
+namespace Backend::Server::Api
 {
     class User
     {

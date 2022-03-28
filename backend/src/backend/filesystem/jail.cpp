@@ -40,7 +40,7 @@ namespace Filesystem
         if (fakeJailAsRoot)
             return this->fakeJailAsRoot(proxi);
         else
-            return {jailRoot_ / proxi.generic_string()};
+            return sfs::path{(jailRoot_ / proxi).generic_string()};
     }
     //---------------------------------------------------------------------------------------------------------------------
     sfs::path Jail::fakeJailAsRoot(sfs::path const& other) const

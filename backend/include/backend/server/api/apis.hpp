@@ -3,13 +3,11 @@
 #include "user.hpp"
 #include "workspace.hpp"
 
-namespace Api
+namespace Backend::Server::Api
 {
-
     struct AllApis
     {
         Workspace* workspace;
         User* user;
     };
-
 }

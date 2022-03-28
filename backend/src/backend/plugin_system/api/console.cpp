@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-namespace PluginSystem::PluginApi::Console
+namespace Backend::PluginSystem::PluginApi::Console
 {
     //#####################################################################################################################
     void log(v8::FunctionCallbackInfo<v8::Value> const& args)
