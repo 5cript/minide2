@@ -1,13 +1,10 @@
 #pragma once
 
+#include <backend/server/frontend_user_session.hpp>
+
 #include <v8wrap/object.hpp>
 
 #include <memory>
-
-namespace Backend::Server
-{
-    class FrontendUserSession;
-}
 
 namespace Backend::PluginSystem
 {
@@ -16,10 +13,27 @@ namespace Backend::PluginSystem
     class PluginImplementation
     {
       public:
-        PluginImplementation(std::unique_ptr<v8wrap::Object>&& pluginClass, Plugin const* owner)
-            : pluginClass_{std::move(pluginClass)}
-            , owner_{owner}
-        {}
+        void deferredConstruct(
+            Plugin* owner,
+            v8::Isolate* isolate,
+            v8::Local<v8::Value> pluginClass,
+            std::weak_ptr<Server::FrontendUserSession> session)
+        {
+            owner_ = owner;
+            pluginClass_.Reset(isolate, pluginClass);
+            session_ = std::move(session);
+        }
+
+        std::shared_ptr<Server::FrontendUserSession> session()
+        {
+            return session_.lock();
+        }
+        std::weak_ptr<Server::FrontendUserSession> weakSession()
+        {
+            return session_;
+        }
+
+        PluginImplementation() = default;
         virtual ~PluginImplementation() = default;
         PluginImplementation(PluginImplementation const&) = delete;
         PluginImplementation(PluginImplementation&&) = default;
@@ -27,14 +41,11 @@ namespace Backend::PluginSystem
         PluginImplementation& operator=(PluginImplementation const&) = delete;
         PluginImplementation& operator=(PluginImplementation&&) = default;
 
-        virtual void initialize(std::weak_ptr<Backend::Server::FrontendUserSession>&& session)
-        {
-            session_ = std::move(session);
-        }
-
       protected:
-        std::unique_ptr<v8wrap::Object> pluginClass_;
-        std::weak_ptr<Backend::Server::FrontendUserSession> session_;
-        Plugin const* owner_;
+        Plugin* owner_;
+        v8::Persistent<v8::Value> pluginClass_;
+
+      private:
+        std::weak_ptr<Server::FrontendUserSession> session_;
     };
 }

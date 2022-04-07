@@ -3,6 +3,13 @@
 #include <backend/log.hpp>
 #include <backend/filesystem/home_directory.hpp>
 #include <backend/filesystem/load_file.hpp>
+#include <backend/utility/visit_overloaded.hpp>
+#include <backend/plugin_system/api/console.hpp>
+#include <backend/plugin_system/api/plugin_self.hpp>
+#include <backend/plugin_system/api/toolbar.hpp>
+#include <backend/plugin_system/api/editor_control.hpp>
+#include <backend/plugin_system/api/resource_accessor.hpp>
+
 #include <v8wrap/isolate.hpp>
 #include <v8wrap/module.hpp>
 #include <v8wrap/script.hpp>
@@ -11,18 +18,13 @@
 #include <v8wrap/object.hpp>
 #include <v8wrap/module_loader.hpp>
 
-#include <backend/plugin_system/toolbar_plugin.hpp>
-#include <backend/plugin_system/api/console.hpp>
-#include <backend/plugin_system/api/plugin_self.hpp>
-#include <backend/plugin_system/api/toolbar.hpp>
-#include <backend/plugin_system/api/editor_control.hpp>
-#include <backend/plugin_system/api/resource_accessor.hpp>
-
 #include <v8pp/class.hpp>
 #include <v8pp/module.hpp>
 
 #include <filesystem>
 #include <iostream>
+#include <variant>
+#include <mutex>
 
 using namespace std::string_literals;
 
@@ -41,11 +43,14 @@ namespace Backend::PluginSystem
         v8wrap::ModuleLoader moduleLoader;
         std::shared_ptr<v8wrap::Script> mainScript;
         std::shared_ptr<v8wrap::Module> mainModule;
-        std::unique_ptr<PluginImplementation> pluginClass;
+        std::variant<std::monostate, PluginApi::Toolbar*> fabricatedPlugin;
 
-        std::vector<PluginApi::SessionAware<PluginApi::Toolbar>*> fabricatedToolbars;
+        v8::Persistent<v8::Context> persistedContext;
 
-        void runModule(v8::Local<v8::Value> defaultExport, Plugin const* plugin);
+        void runModule(
+            v8::Local<v8::Value> defaultExport,
+            Plugin* plugin,
+            std::weak_ptr<Server::FrontendUserSession> session);
     };
     //---------------------------------------------------------------------------------------------------------------------
     Plugin::Implementation::Implementation(std::string const& pluginName, Server::Api::AllApis const& allApis)
@@ -64,22 +69,31 @@ namespace Backend::PluginSystem
               .context = mainScript->context(),
               .fileName = pluginName + "/main.js",
               .script = Filesystem::loadFile(pluginDirectory / pluginMainFile),
-              .onModuleLoad = [this](v8::Local<v8::Context> ctx, std::string const& path) {
-                  return moduleLoader.load(ctx, path);
-              }})}
+              .onModuleLoad =
+                  [this](v8::Local<v8::Context> ctx, std::string const& path) {
+                      return moduleLoader.load(ctx, path);
+                  }})}
+        , persistedContext{isolate, mainScript->context()}
     {}
     //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::Implementation::runModule(v8::Local<v8::Value> defaultExport, Plugin const* plugin)
+    void Plugin::Implementation::runModule(
+        v8::Local<v8::Value> defaultExport,
+        Plugin* plugin,
+        std::weak_ptr<Server::FrontendUserSession> session)
     {
+        v8::HandleScope handle_scope(isolate);
         auto& ctx = mainScript->context();
-        auto object = v8wrap::Object::instantiateClass(ctx, defaultExport);
-        if (!object->has("pluginType"))
-            throw std::runtime_error("Plugin class needs member called 'pluginType' to identify its type.");
-        const auto type = object->get<std::string>("pluginType");
-        if (type == "Toolbar")
-            pluginClass = std::make_unique<ToolbarPlugin>(std::move(object), plugin);
-        else
-            throw std::runtime_error("Unknown plugin type called: "s + type);
+        v8::Local<v8::Value> pluginInstance = v8wrap::Object<>::instantiateClass(ctx, defaultExport)->asValue();
+
+        visitOverloaded(
+            fabricatedPlugin,
+            [](std::monostate) {
+                throw std::runtime_error("Plugin was not properly constructed or is of unknown type"s);
+            },
+            [&pluginInstance, plugin, &session, &ctx](auto* pluginImplementationDerivate) {
+                pluginImplementationDerivate->deferredConstruct(plugin, ctx->GetIsolate(), pluginInstance, session);
+                pluginImplementationDerivate->initialize(ctx);
+            });
     }
     //#####################################################################################################################
     Plugin::Plugin(std::string const& pluginName, Server::Api::AllApis const& allApis)
@@ -87,10 +101,9 @@ namespace Backend::PluginSystem
     {
         using namespace v8wrap;
         v8pp::module minideModule(impl_->mainScript->isolate());
-        PluginApi::makeToolbarClass(
-            impl_->mainScript->context(), minideModule, [this](PluginApi::SessionAware<PluginApi::Toolbar>* toolbar) {
-                impl_->fabricatedToolbars.push_back(toolbar);
-            });
+        PluginApi::makeToolbarClass(impl_->mainScript->context(), minideModule, [this](PluginApi::Toolbar* toolbar) {
+            impl_->fabricatedPlugin = toolbar;
+        });
         PluginApi::makeEditorControlClass(impl_->mainScript->context(), minideModule);
         PluginApi::makeResourceAccessorClass(impl_->mainScript->context(), minideModule, impl_->pluginDataDirectory);
 
@@ -98,13 +111,41 @@ namespace Backend::PluginSystem
         exposeGlobals();
     }
     //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::run() const
+    void Plugin::performAsyncScriptAction(std::function<void(v8::Local<v8::Context> context)> const& action)
     {
-        (void)impl_->mainModule->evaluate();
-        extractExports();
+        v8::Locker locker(impl_->isolate);
+        impl_->isolate->Enter();
+
+        try
+        {
+            v8::HandleScope handle_scope(impl_->isolate);
+            v8::Local<v8::Context> context = v8::Local<v8::Context>::New(impl_->isolate, impl_->persistedContext);
+            v8::Context::Scope contextScope(context);
+
+            visitOverloaded(
+                impl_->fabricatedPlugin,
+                [](std::monostate) {
+                    throw std::runtime_error("Plugin was not properly constructed or is of unknown type"s);
+                },
+                [&context, &action](auto* pluginImplementationDerivate) {
+                    action(context);
+                });
+        }
+        catch (std::exception const& exc)
+        {
+            LOG() << "Exception in script action: " << exc.what() << "\n";
+        }
+        impl_->isolate->Exit();
+        v8::Unlocker unlocker(impl_->isolate);
     }
     //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::extractExports() const
+    void Plugin::run(std::weak_ptr<Server::FrontendUserSession> session)
+    {
+        (void)impl_->mainModule->evaluate();
+        extractExports(std::move(session));
+    }
+    //---------------------------------------------------------------------------------------------------------------------
+    void Plugin::extractExports(std::weak_ptr<Server::FrontendUserSession>&& session)
     {
         v8::HandleScope handle_scope(impl_->isolate);
         auto& ctx = impl_->mainScript->context();
@@ -120,15 +161,7 @@ namespace Backend::PluginSystem
                 throw std::runtime_error("There needs to be a default export.");
         }
         LOG() << "Got default export.\n";
-        impl_->runModule(defaultExport, this);
-    }
-    //---------------------------------------------------------------------------------------------------------------------
-    void Plugin::initialize(std::weak_ptr<Server::FrontendUserSession> session) const
-    {
-        for (auto* toolbar : impl_->fabricatedToolbars)
-            toolbar->imbueSession(session);
-
-        impl_->pluginClass->initialize(std::move(session));
+        impl_->runModule(defaultExport, this, std::move(session));
     }
     //---------------------------------------------------------------------------------------------------------------------
     std::string Plugin::name() const

@@ -39,7 +39,6 @@ add_executable(
     "backend/plugin_system/api/resource_accessor.cpp"
     "backend/plugin_system/api/toolbar.cpp"
     "backend/plugin_system/plugin.cpp"
-    "backend/plugin_system/toolbar_plugin.cpp"
 )
 
 find_package(Threads REQUIRED)

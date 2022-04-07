@@ -76,8 +76,7 @@ namespace Backend::Server
                         .workspace = &workspace,
                         .user = &user,
                     });
-                plugin.run();
-                plugin.initialize(session);
+                plugin.run(session);
             }
         }
     }

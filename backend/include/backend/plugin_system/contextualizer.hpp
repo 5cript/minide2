@@ -7,6 +7,17 @@
 namespace Backend::PluginSystem
 {
     template <typename T>
+    class Contextualized
+    {
+      public:
+        template <typename OnConstructionCallbackT>
+        void contextualize(OnConstructionCallbackT&& onConstructionCallback)
+        {
+            onConstructionCallback(static_cast<T*>(this));
+        }
+    };
+
+    template <typename T>
     class Contextualizer
     {
       public:

@@ -27,36 +27,31 @@ class ToolbarApi extends Router
 
     callAction = async (toolbarId, itemId) =>
     {
-        return this.writeMessage(`/api/toolbar/${toolbarId}/callAction`, {itemId});
+        return this.writeMessage(`/api/toolbar/${toolbarId}/callAction/${itemId}`);
     }
 
     cancelAction = async (toolbarId, itemId, force) =>
     {
-        return this.writeMessage(`/api/toolbar/${toolbarId}/cancelAction`, {
-            itemId,
+        return this.writeMessage(`/api/toolbar/${toolbarId}/cancelAction/${itemId}`, {
             force
         });
     }
 
     menuAction = async (toolbarId, itemId, label) =>
     {
-        return this.writeMessage(`/api/toolbar/${toolbarId}/menuAction`, {
-            itemId,
+        return this.writeMessage(`/api/toolbar/${toolbarId}/menuAction/${itemId}`, {
             menuEntryLabel: label
         });
     }
 
     loadCombobox = async (toolbarId, itemId) =>
     {
-        return this.writeMessage(`/api/toolbar/${toolbarId}/loadCombobox`, {
-            itemId
-        });
+        return this.writeMessage(`/api/toolbar/${toolbarId}/loadCombobox/${itemId}`);
     }
 
     comboxSelect = async (toolbarId, itemId, selected) =>
     {
-        return this.writeMessage(`/api/toolbar/${toolbarId}/comboboxSelect`, {
-            itemId,
+        return this.writeMessage(`/api/toolbar/${toolbarId}/comboboxSelect/${itemId}`, {
             selected
         })
     }

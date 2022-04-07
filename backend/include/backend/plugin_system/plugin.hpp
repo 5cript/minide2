@@ -3,6 +3,8 @@
 #include <backend/server/api/apis.hpp>
 #include <backend/filesystem/filesystem.hpp>
 
+#include <v8.h>
+
 class FrontendUserSession;
 
 namespace Backend::PluginSystem
@@ -16,18 +18,18 @@ namespace Backend::PluginSystem
         constexpr static char const* pluginMainFile = "main.js";
 
         std::string name() const;
-        void run() const;
+        void run(std::weak_ptr<Server::FrontendUserSession> session);
+
+        void performAsyncScriptAction(std::function<void(v8::Local<v8::Context> context)> const& action);
 
         Plugin(std::string const& pluginName, Server::Api::AllApis const& allApis);
         ~Plugin();
         Plugin(Plugin&&);
         Plugin& operator=(Plugin&&);
 
-        void initialize(std::weak_ptr<Server::FrontendUserSession> session) const;
-
       private:
         void exposeGlobals() const;
-        void extractExports() const;
+        void extractExports(std::weak_ptr<Server::FrontendUserSession>&& session);
 
       private:
         struct Implementation;

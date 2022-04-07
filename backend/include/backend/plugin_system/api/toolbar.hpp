@@ -1,7 +1,8 @@
 #pragma once
 
 #include <backend/plugin_system/contextualizer.hpp>
-#include <backend/plugin_system/api/session_aware.hpp>
+#include <backend/plugin_system/plugin_implementation.hpp>
+#include <backend/server/stream/subscriber.hpp>
 
 #include <v8.h>
 
@@ -18,17 +19,37 @@
 
 namespace Backend::PluginSystem::PluginApi
 {
-    class Toolbar : public SessionAware<Toolbar>
+    class Toolbar
+        : public PluginImplementation
+        , public Contextualized<Toolbar>
+        , public Server::Stream::Subscriber
     {
       public:
         static const std::string pluginType;
 
-        Toolbar() = default;
+        Toolbar();
+        ~Toolbar();
+
+        void initialize(v8::Local<v8::Context> context);
 
       public:
         v8::Local<v8::Value> makeMenu(v8::FunctionCallbackInfo<v8::Value> const& args);
         v8::Local<v8::Value> makeSplitter(v8::FunctionCallbackInfo<v8::Value> const& args);
         v8::Local<v8::Value> makeIconButton(v8::FunctionCallbackInfo<v8::Value> const& args);
+
+      private:
+        struct ToolbarAction
+        {
+            Toolbar* toolbar;
+            v8wrap::Object<>* decorated;
+            std::string path;
+            std::function<void(v8::Local<v8::Context> context, v8wrap::Object<>& plugin, json const& j)> callback;
+        };
+        void registerActionHandler(ToolbarAction options);
+
+      private:
+        struct Implementation;
+        std::unique_ptr<Implementation> impl_;
     };
 
     template <typename OnConstructionCallbackT>
